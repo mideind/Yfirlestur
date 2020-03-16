@@ -3,10 +3,9 @@
 
     Greynir: Natural language processing for Icelandic
 
-    Web server main module
+    Yfirlestur.is server main module
 
     Copyright (C) 2020 Miðeind ehf.
-    Original author: Vilhjálmur Þorsteinsson
 
        This program is free software: you can redistribute it and/or modify
        it under the terms of the GNU General Public License as published by
@@ -23,11 +22,11 @@
 
     This module is written in Python 3 and is compatible with PyPy3.
 
-    This is the main module of the Greynir web server. It uses Flask
+    This is the main module of the Yfirlestur.is web server. It uses Flask
     as its web server and templating engine. In production, this module is
     typically run inside Gunicorn (using servlets) under nginx or a
     compatible WSGi HTTP(S) server. For development, it can be run
-    directly from the command line and accessed through port 5000.
+    directly from the command line and accessed through port 5001.
 
     Flask routes are imported from routes/*
 
@@ -53,7 +52,6 @@ from reynir.fastparser import Fast_Parser
 import reynir_correct
 
 from settings import Settings, ConfigError
-from article import Article as ArticleProxy
 
 # RUNNING_AS_SERVER is True if we're executing under nginx/Gunicorn,
 # but False if the program was invoked directly as a Python main module.
@@ -170,27 +168,18 @@ def server_error(e):
     return "Eftirfarandi villa kom upp: {0}".format(e), 500
 
 
-@app.context_processor
-def inject_nn_bools():
-    """ Inject bool switches for neural network features """
-    return dict(
-        nn_parsing_enabled=Settings.NN_PARSING_ENABLED,
-        nn_translate_enabled=Settings.NN_TRANSLATION_ENABLED,
-    )
-
-
 # Initialize the main module
 t0 = time.time()
 try:
     # Read configuration file
-    Settings.read(os.path.join("config", "Greynir.conf"))
+    Settings.read(os.path.join("config", "Yfirlestur.conf"))
 except ConfigError as e:
-    logging.error("Greynir did not start due to a configuration error:\n{0}".format(e))
+    logging.error("Yfirlestur.is did not start due to a configuration error:\n{0}".format(e))
     sys.exit(1)
 
 if Settings.DEBUG:
     print(
-        "\nStarting Greynir web app at {6} with debug={0}, "
+        "\nStarting Yfirlestur.is web app at {6} with debug={0}, "
         "host={1}:{2}, db_host={3}:{4}\n"
         "Python {5}".format(
             Settings.DEBUG,
@@ -225,9 +214,8 @@ if not RUNNING_AS_SERVER:
     # Additional files that should cause a reload of the web server application
     # Note: Reynir.grammar is automatically reloaded if its timestamp changes
     extra_files = [
-        "Greynir.conf",
+        "Yfirlestur.conf",
         "ReynirPackage.conf",
-        "Index.conf",
         "Verbs.conf",
         "Adjectives.conf",
         "AdjectivePredicates.conf",
@@ -284,7 +272,7 @@ if not RUNNING_AS_SERVER:
     except socket_error as e:
         if e.errno == errno.EADDRINUSE:  # Address already in use
             logging.error(
-                "Greynir web app is already running at host {0}:{1}".format(
+                "Another server is already running at host {0}:{1}".format(
                     Settings.HOST, Settings.PORT
                 )
             )
@@ -293,7 +281,6 @@ if not RUNNING_AS_SERVER:
             raise
 
     finally:
-        ArticleProxy.cleanup()
         BIN_Db.cleanup()
 
 else:
@@ -306,7 +293,7 @@ else:
 
     # Log our startup
     log_str = (
-        "Greynir instance starting with "
+        "Yfirlestur.is instance starting with "
         "host={0}:{1}, db_host={2}:{3} on Python {4}".format(
             Settings.HOST,
             Settings.PORT,

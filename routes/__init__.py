@@ -17,7 +17,7 @@
     along with this program.  If not, see http://www.gnu.org/licenses/.
 
 
-    This module contains all routes for the Greynir Flask web application.
+    This module contains all routes for the Yfirlestur.is Flask web application.
     It also contains a number of utility functions and decorators,
     including @async_task which encapsulates a route in an asynchronous
     wrapper.
@@ -28,6 +28,7 @@ import threading
 import time
 import uuid
 import io
+import json
 from functools import wraps
 from datetime import datetime, timedelta
 
@@ -42,9 +43,6 @@ from werkzeug.exceptions import HTTPException, InternalServerError
 # Maximum length of incoming GET/POST parameters
 _MAX_TEXT_LENGTH = 16384
 _MAX_TEXT_LENGTH_VIA_URL = 512
-
-_MAX_URL_LENGTH = 512
-_MAX_UUID_LENGTH = 36
 
 _TRUTHY = frozenset(("true", "1", "yes"))
 
@@ -347,9 +345,3 @@ def get_status(task):
 # Import routes from other files
 from .api import *
 from .main import *
-from .loc import *
-from .news import *
-from .people import *
-from .stats import *
-from .salescloud import *
-from nn.routes import *
