@@ -216,15 +216,14 @@ if not RUNNING_AS_SERVER:
     extra_files = [
         "Yfirlestur.conf",
         "ReynirPackage.conf",
+        "ReynirCorrect.conf",
         "Verbs.conf",
         "Adjectives.conf",
         "AdjectivePredicates.conf",
         "Prepositions.conf",
         "Prefs.conf",
         "Phrases.conf",
-        "Vocab.conf",
         "Names.conf",
-        "ReynirCorrect.conf",
     ]
 
     dirs = list(

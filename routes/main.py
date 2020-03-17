@@ -27,7 +27,7 @@ import sys
 
 from flask import render_template, request, redirect
 
-import reynir
+import reynir_correct
 
 from doc import SUPPORTED_DOC_MIMETYPES
 
@@ -51,18 +51,20 @@ def correct():
 
 
 @routes.route("/about")
-@max_age(seconds=10 * 60)
+# @max_age(seconds=10 * 60)
 def about():
     """ Handler for the 'About' page """
     try:
-        reynir_version = reynir.__version__
+        reynir_correct_version = reynir_correct.__version__
         python_version = "{0} ({1})".format(
             ".".join(str(n) for n in sys.version_info[:3]),
             platform.python_implementation(),
         )
     except AttributeError:
-        reynir_version = ""
+        reynir_correct_version = ""
         python_version = ""
     return render_template(
-        "about.html", reynir_version=reynir_version, python_version=python_version
+        "about.html",
+        reynir_correct_version=reynir_correct_version,
+        python_version=python_version
     )

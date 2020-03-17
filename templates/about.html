@@ -32,6 +32,17 @@ blockquote cite {
    margin-left: 0.2rem;
 }
 
+li.list-group-item p i {
+   display: inline-block;
+   white-space: nowrap;
+}
+
+p.small {
+   margin-top: 2px;
+   margin-bottom: 2px;
+   font-size: 14px;
+}
+
 </style>
 
 {% endblock %}
@@ -43,48 +54,44 @@ blockquote cite {
    <div class="panel-body">
       <div style="float:right"><img class="villi img-rounded"
       src="{{ url_for('static', filename='img/vth.jpg') }}" width="80" height="97"></div>
-      <p class="lead"><b>Greynir</b> er málgreinir fyrir íslensku.</p>
-      <p class="author"><i>Upphafsmaður Greynis er<br>
-      <a href="http://blog.pressan.is/vthorsteinsson"
-      target="_blank">Vilhjálmur Þorsteinsson</a></i></p>
+      <p class="lead"><b>Yfirlestur.is</b> er vefur sem rýnir íslenskan texta.</p>
+      <p class="author"><i>Upphafsmaður Yfirlestrar.is<br>er Vilhjálmur Þorsteinsson</i></p>
    </div>
    <ul class="list-group">
    <li class="list-group-item">
-      <p>Greynir les <a href="{{ url_for('routes.stats') }}">nýjustu fréttir og greinar</a>
-      jafnóðum af helstu íslensku fréttavefjunum.
-      Hann þáttar textann í málsgreinatré samkvæmt
-      <a href="https://github.com/mideind/ReynirPackage/blob/master/src/reynir/Reynir.grammar"
-      target="_blank">innbyggðum málfræðireglum fyrir íslensku</a>.
-      Trén innihalda og endurspegla setningarhluta, svo sem frumlög, andlög,
-      aðra nafnliði, sagnliði, forsetningarliði, samtengingar og svo framvegis.</p>
-      <p>Litið er til falls, tölu, kyns, persónu og annarra málfræðieiginleika
-      og -reglna til að finna sem réttasta trjágreiningu hverrar málsgreinar.
-      Slík greining getur þó aldrei orðið fullkomin enda er tungumálið afar
-      sveigjanlegt verkfæri.</p>
-      <p>Þegar málsgreinatrén hafa verið fundin eru eimaðar upp
-      úr þeim upplýsingar á borð við nöfn fólks, titla og starfsheiti,
-      og skilgreiningar á sérnöfnum. Um þessi gögn má spyrja Greyni með
-      fyrirspurnum á venjulegri íslensku, ritaðri eða talaðri.</p>
-      <p>Greynir flokkar fréttir og greinar sjálfkrafa í efnisflokka eftir
-      innihaldi þeirra. Hann heldur jafnframt til haga
-      <a href="{{ url_for('routes.stats') }}">tölfræði um greinarnar</a>,
-      m.a. um hlutföll kynjanna.</p>
-      <p>Fylgjast má með fréttum af Greyni í
-      <a href="https://www.facebook.com/groups/835777623244578/" target="_blank">Facebook-hópi
-         hans</a>.
+      <p>
+         Yfirlestur.is les íslenskan texta og bendir á ýmislegt sem betur
+         mætti fara í stafsetningu og málfari, með sjálfvirkum hætti.
       </p>
-   </li>
-   <li class="list-group-item">
-      <p>Nafnið <strong>Greynir</strong> er samsett úr orðunum
-      <em>grey</em>, <em>greinir</em> og <em>reynir</em> (no. og so.),
-      sbr. <em>Greyið hann Greynir reynir að greina þessa grein</em>.</p>
-      <blockquote>
-         Sem nafnorð vísar <em>reynir</em> til Reynimels 40 í Reykjavík
-         þar sem amma mín og afi (alnafni) bjuggu,
-         og ég sjálfur í barnæsku — og til Reynis Hugasonar heitins
-         sem var fyrsti vinnuveitandi minn á sviði hugbúnaðargerðar.
-         <cite>&mdash; V.Þ.</cite>
-      </blockquote>
+      <p>
+         Vefurinn finnur <b>stafsetningarvillur</b>, þ.e. vekur athygli á orðum sem ekki finnast
+         í orðabókum (einkum <a href="https://bin.arnastofnun.is">Beygingarlýsingu íslensks nútímamáls</a>)
+         og eru jafnframt ólíkleg til að vera gild samsett orð.
+         Einnig finnur hann <b>samhengisháðar villur</b>, svo sem <i>að ýmsu ?leiti</i>
+         og <i>á næsta ?leyti</i>, tvöfölduð orð (<i>eru eru</i>), ranga notkun hástafa
+         og lágstafa (<i>Þetta er ?Franskt rauðvín</i>), o.m.fl.
+      </p>
+      <p>
+         Markverðasta nýjungin er þó sú að Yfirlestur.is bendir
+         á <b>málfræðileg atriði</b> sem betur mættu fara. Til dæmis finnur tólið tilvik
+         þar sem sagnir eru notaðar með frumlagi í öðru falli en
+         réttast þykir, svo sem <i>?Manninum á verkstæðinu vantaði hamar</i> og
+         <i>?Litla drenginn með rauðu slaufuna hlakkaði til jólanna</i>. Þá grípur
+         það misræmi milli eintölu og fleirtölu á borð við
+         <i>Fjöldi stuðningsmanna KR ?fögnuðu að leik loknum</i> og
+         <i>Einn af leiðangursmönnunum ?sögðu að ferðin hefði verið erfið.</i>
+      </p>
+      <p>
+         Þótt Yfirlestur.is sé að ýmsu leyti öflugri en sambærileg tól
+         sem áður hafa boðist fyrir íslensku er hann ekki fullkominn og á
+         eftir að þróast áfram í samstarfi við notendur. Ábendingar um endurbætur
+         eru vel þegnar í tölvupósti á <a href="mailto:mideind@mideind.is">mideind@mideind.is</a>.
+      </p>
+      <p>
+         Yfirlestur.is byggir á máltæknivélinni <a href="https://greynir.is">Greyni</a>,
+         en hvor tveggja hugbúnaðurinn er smíðaður hjá
+         <a href="https://mideind.is">Miðeind ehf.</a>
+      </p>
    </li>
    <li class="list-group-item">
       <p><a href="https://mideind.is"><img src="{{ url_for('static', filename='img/mideind-horizontal-small.png') }}"
@@ -94,9 +101,9 @@ blockquote cite {
          <b>Höfundaréttur &copy; 2020 Miðeind ehf.</b>
          <br>
          <span>[Þróunarútgáfa]</span> <!-- This text is replaced by a date stamp in deploy.sh -->
-{%- if reynir_version %}
+{%- if reynir_correct_version %}
          &bull;
-         <span>ReynirPackage {{ reynir_version }}</span>
+         <span>ReynirCorrect {{ reynir_correct_version }}</span>
 {%- endif -%}
 {%- if python_version %}
          &bull;
@@ -104,49 +111,39 @@ blockquote cite {
 {%- endif -%}
       </p>
       <p>
-         Frumforrit Greynis og tengdar skrár eru opin og 
-         <a href="https://github.com/mideind/Greynir" target="_blank">aðgengileg á GitHub</a>.
-      </p>
-      <p>
-         Samhengisfrjálsa málfræði (<i>context-free grammar</i>) Greynis
-         fyrir íslensku má
-         <a href="https://github.com/mideind/ReynirPackage/blob/master/src/reynir/Reynir.grammar"
-         target="_blank">sjá hér</a>.
-         Forritaskil (API) Greynis eru
-         <a href="{{ url_for('routes.apidoc') }}">skjöluð hér</a>.
-      </p>
-      <p>
-         Máltæknivél Greynis er einnig fáanleg sem sjálfstæður
-         <a href="https://greynir.is/doc/" target="_blank">Python-pakki</a>.
+         Kjarni Yfirlestrar.is er fáanlegur sem sjálfstæður
+         <a href="https://pypi.org/project/reynir-correct/" target="_blank">Python-pakki</a>.
       </p>
       <a href="https://www.gnu.org/licenses/gpl-3.0.html"
          target="_blank"><img src="{{ url_for('static', filename='img/GPLv3.png') }}"
          width="151" height="60" style="float:right;"></a>
       <p>
-         Um frumforrit Greynis og tengdar skrár gildir notkunarleyfið
+         Hugbúnaðarleyfið
          <a href="https://www.gnu.org/licenses/gpl-3.0.html"
-         target="_blank">GNU General Public License v3</a>.
-         <br>Hugbúnaðarleyfi til notkunar í lokuðum hugbúnaði og vefjum
-         má nálgast <a href="{{ url_for('routes.buy') }}">hér</a>.
+         target="_blank">GNU General Public License v3</a> gildir um frumforrit
+         Yfirlestrar.is og Greynis.
+         <br>Hugbúnaðarleyfi vegna notkunar Greynis í lokuðum hugbúnaði og vefjum
+         má nálgast <a href="https://greynir.is/buy">hér</a>.
       </p>
    </li>
    <li class="list-group-item">
-      Greynis-verkefnið hlaut styrki úr
-      <a href="https://www.rannis.is/sjodir/rannsoknir/maltaeknisjodur/"
-      target="_blank">Máltæknisjóði</a> í desember 2016 og desember 2017.
+      <p class="small">
+         Yfirlestur.is nýtir hugbúnað og gögn sem þróuð eru sem hluti af
+         <a href="https://www.stjornarradid.is/lisalib/getfile.aspx?itemid=56f6368e-54f0-11e7-941a-005056bc530c">5
+            ára máltækniáætlun stjórnvalda</a> til stuðnings máltækni fyrir íslensku.
+      </p>
    </li>
    <li class="list-group-item">
-      Greynir byggir á opnum gögnum
-      <a href="http://bin.arnastofnun.is" target="_blank"><i>Beygingarlýsingar
-      íslensks nútímamáls</i></a> (BÍN).
-      Höfundarrétt að BÍN á
-      <a href="http://www.arnastofnun.is" target="_blank"><i>Stofnun Árna Magnússonar
-      í íslenskum fræðum</i></a>. BÍN er notuð í Greyni samkvæmt
-      <a href="http://bin.arnastofnun.is/gogn/skilmalar/"
-      target="_blank">skilmálum SÁM</a>.
-   </li>
-   <li class="list-group-item">
-      Vefviðmót Greynis notar kortagögn frá <a href="https://www.openstreetmap.org">OpenStreetMap</a>, <a href="https://maps.google.com">Google</a> og <a href="https://is.wikipedia.org">Wikipedíu.</a>
+      <p class="small">
+         Yfirlestur.is byggir á opnum gögnum
+         <a href="http://bin.arnastofnun.is" target="_blank"><i>Beygingarlýsingar
+         íslensks nútímamáls</i></a> (BÍN).
+         Höfundarrétt að BÍN á
+         <a href="http://www.arnastofnun.is" target="_blank"><i>Stofnun Árna Magnússonar
+         í íslenskum fræðum</i></a>. BÍN er notuð í Greyni og á þessum vef samkvæmt
+         <a href="http://bin.arnastofnun.is/gogn/skilmalar/"
+         target="_blank">skilmálum SÁM</a>.
+      </p>
    </li>
    </ul>
 </div>
