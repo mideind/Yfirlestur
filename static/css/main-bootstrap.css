@@ -2,7 +2,7 @@
 
    main-bootstrap.css
 
-   CSS file for Greynir web front-end
+   CSS file for Yfirlestur.is web front-end
 
    Copyright (C) 2020 Miðeind ehf.
 
@@ -259,7 +259,7 @@ a {
 }
 
 .progress-bar {
-   background-color: #006eff;
+   background-color: #ffb400;
 }
 
 .progress-bar-success {
@@ -790,21 +790,6 @@ span.art-list {
    margin-left: 4px;
 }
 
-span.art-link {
-   margin-left: 8px;
-   color: #d0d0d0;
-   cursor: pointer;
-}
-
-span.art-link:hover {
-   outline: #006eff solid 1px;
-}
-
-span.art-link img {
-   margin: 2px;
-   vertical-align: text-bottom;
-}
-
 p.image {
    position: relative;
    margin-top: 0.4em;
@@ -812,30 +797,6 @@ p.image {
    padding-left: 2.4em;
    padding-top: 0;
    padding-bottom: 0;
-}
-
-span.imgreport {
-   display: none;
-   position: absolute;
-   bottom: 10px;
-   left: 50px;
-   font-size: 0.75em;
-}
-
-span.imgreport a {
-   color: white !important;
-   text-decoration: none;
-   text-shadow:
-   #000 0px 0px 2px,
-   #000 0px 0px 2px,
-   #000 0px 0px 2px,
-   #000 0px 0px 2px,
-   #000 0px 0px 2px,
-   #000 0px 0px 2px;
-}
-
-span.imgreport a:hover {
-   text-decoration: none;
 }
 
 div#info,
@@ -1669,29 +1630,6 @@ div#treegrid table {
    cursor: default;
 }
 
-/* Autosuggestions in query field */
-.autocomplete-suggestions {
-   border: 1px solid #999;
-   background: #FFF;
-   overflow: auto;
-}
-
-.autocomplete-suggestions strong {
-   color: #006eff;
-}
-
-.autocomplete-suggestion {
-   padding: 2px 5px;
-   white-space: nowrap;
-   overflow: hidden;
-   font-size: 18px;
-   cursor: pointer;
-}
-
-.autocomplete-selected {
-   background: #F0F0F0;
-}
-
 /* Disable text selection in element */
 
 .noselect {
@@ -1735,42 +1673,48 @@ div.minheight {
    min-height: 300px;
 }
 
-/* Location maps */
-
-div#icemap, div#worldmap {
-   height: 470px;
-   width: 100%;
-}
-
-@media(max-width: 768px) {
-   div#icemap, div#worldmap {
-      height: 300px;
-   }
-}
-
-img.mapflag {
-   max-height: 12px;
-   margin-left: 4px;
-   margin-bottom: 2px;
-   margin-right: 5px;
-}
-
-img.titleflag {
-   max-height: 20px;
-   margin-right: 8px;
-   margin-left: 10px;
-   margin-top: -6px;
-}
-
-span#map-results-progress {
-   font-size: 0.8em;
-   margin-left: 8px;
-}
-
 p.no-results {
    margin: 10px;
 }
 
 .hidden {
    display: none;
+}
+
+.navbar-default {
+   background-image: linear-gradient(to bottom,#ffb400 0,#ffb400 100%);   
+}
+
+.panel-warning>.panel-heading {
+   color: white;
+   background-image: linear-gradient(to bottom,#ffb400 0,#ffb400 100%);   
+}
+
+.navbar-default .navbar-nav>.active>a,
+.navbar-default .navbar-nav>.active>a:focus,
+.navbar-default .navbar-nav>.active>a:hover {
+   color: white;
+   background-image: linear-gradient(to bottom,#ff7c24 0,#ff7c24 100%);
+}
+
+.navbar-brand, .navbar-nav>li>a {
+   text-shadow: none;
+   color: #aa5218;
+}
+
+.navbar-default .navbar-nav>li>a {
+   text-shadow: none;
+   color: #aa5218;
+}
+
+textarea::selection {
+   color: white;
+   background-color: #ff7c24;
+}
+
+.form-control:focus {
+   border-color: #ffb400;
+   outline: 0;
+   -webkit-box-shadow: inset 0 1px 1px rgba(0,0,0,.075), 0 0 8px rgba(255,124,36,.6);
+   box-shadow: inset 0 1px 1px rgba(0,0,0,.075), 0 0 8px rgba(255,124,36,.6);
 }

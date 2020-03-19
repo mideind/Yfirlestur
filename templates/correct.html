@@ -5,6 +5,14 @@
 
 <link href="{{ url_for('static', filename='css/main-bootstrap.css') }}" rel='stylesheet' type='text/css'>
 
+<style>
+
+button#txt-ok {
+   background-color: #ff7c24;
+}
+
+</style>
+
 {% endblock %}
 
 {% block content %}
@@ -27,7 +35,7 @@
 
    <div id="correct-buttons" class="row buttons">
       <div class="col-xs-4 col-sm-3 col-md-2 pull-right">
-         <button class="btn btn-info btn-lg btn-block"
+         <button class="btn btn-warning btn-lg btn-block"
             id="txt-ok" title="Lesa yfir texta" tabindex="3"
             onclick="correct()">
             <span class='glyphicon glyphicon-restart glyphicon-spin-white' style="display:none;"></span>
@@ -40,8 +48,8 @@
       </form>
 
       <div class="col-xs-4 col-sm-3 col-md-2 pull-right">
-         <button class="btn btn-success btn-lg btn-block" id="file-ok" 
-            title="Smelltu hér til þess að hlaða upp skjali til yfirlestrar (styður TXT, RTF, HTML og DOCX snið)" 
+         <button class="btn btn-warning btn-lg btn-block" id="file-ok" 
+            title="Hlaða upp skjali til yfirlestrar (styður TXT, RTF, HTML og DOCX snið)" 
             tabindex="3" onclick="selectFile()">
             <span class='glyphicon glyphicon-restart glyphicon-spin-white' style="display:none;"></span>
             <span class="glyphicon glyphicon-upload normal"></span> Skjal
@@ -101,8 +109,6 @@
                <li>Það tókst að trjágreina <span id="num-parsed-sent">0</span>
                   <span id="paragraphs">málsgreinar</span> eða
                   <span id="num-parsed-ratio">0,0</span>%.</li>
-               <li>Margræðnistuðull var
-                  <span id="avg-ambig-factor">1,00</span>.</li>
             </ul>
          </div>
 
@@ -634,7 +640,7 @@
 
    function init() {
       // Activate the top navbar
-      $("#navid-correct").addClass("active");
+      $("#navid-main").addClass("active");
 
       // Drag and drop handling for textarea
       $("#file-input").attr("accept", supported_mime_types.join(","));

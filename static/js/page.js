@@ -122,7 +122,7 @@ function queryLocation(name, ev) {
 function showParse(ev) {
    // A sentence has been clicked: show its parse grid
    var sentText = $(ev.delegateTarget).text();
-   openURL("/treegrid?txt=" + encodeURIComponent(sentText), ev);
+   openURL("https://greynir.is/treegrid?txt=" + encodeURIComponent(sentText), ev);
 }
 
 function showPerson(ev) {
@@ -453,7 +453,7 @@ function populateStats(stats) {
    } else {
       $("#num-parsed-ratio").text("0.0");
    }
-   $("#avg-ambig-factor").text(format_is(stats.ambiguity, 2));
+   // $("#avg-ambig-factor").text(format_is(stats.ambiguity, 2));
    $("div#statistics").css("display", "block");
 }
 
