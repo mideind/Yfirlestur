@@ -11,6 +11,21 @@ button#txt-ok {
    background-color: #ff7c24;
 }
 
+div.input-correct {
+   margin-top: 24px;
+}
+
+textarea#txt {
+   margin-bottom: 2em;
+}
+
+textarea#txt.with-background {
+   background-image: url('/static/img/yfirlestur_opengraph.png');
+   background-position: -24px center;
+   background-repeat: no-repeat;
+   background-size: auto 50%;
+}
+
 </style>
 
 {% endblock %}
@@ -23,7 +38,7 @@ button#txt-ok {
 
       <div class="col-xs-12" id="txt-div">
 
-         <textarea rows="12" class="form-control input-lg"
+         <textarea rows="15" class="form-control input-lg with-background"
             id="txt" tabindex="1" maxlength="16384" autofocus required
             placeholder="Sláðu inn texta eða veldu skjal til að lesa yfir...">
             {{- default_text -}}
@@ -601,11 +616,14 @@ button#txt-ok {
    function correct() {
       // Submit the contents of the textarea to the server
       // for tokenization and parsing
-      var s = $("#txt").val().trim();
+      var txt = $("#txt");
+      var s = txt.val().trim();
+      txt.toggleClass("with-background", txt.val() == "");
       if (s && s.length) {
          // Ask the server to tokenize and parse the given text, asynchronously
          new CorrectionTask().submitText(s);
       } else {
+         // Nothing to do
          $("#txt").focus();
       }
    }
@@ -620,6 +638,7 @@ button#txt-ok {
    }
 
    function uploadFile(file) {
+      $("#txt").removeClass("with-background");
       var fd = new FormData();
       var f = (file === undefined) ? $('#file-input')[0].files[0] : file;
       if (f === undefined) {
@@ -633,7 +652,7 @@ button#txt-ok {
       }
 
       fd.set('file', f);   
-      $("#txt").val("");
+      $("#txt").val("").removeClass("with-background");
 
       new CorrectionTask().submitFile(fd);
    }
@@ -644,21 +663,38 @@ button#txt-ok {
 
       // Drag and drop handling for textarea
       $("#file-input").attr("accept", supported_mime_types.join(","));
-      $("#txt").on("drop", function(event) {
-         event.preventDefault();  
-         event.stopPropagation();
-         var file = event.originalEvent.dataTransfer.files[0];
-         uploadFile(file);
-      });
+
+      var txt = $("#txt");
+      txt
+         .on("drop",
+            function(event) {
+               $(this).removeClass("with-background");
+               event.preventDefault();
+               event.stopPropagation();
+               var file = event.originalEvent.dataTransfer.files[0];
+               uploadFile(file);
+            }
+         );
 
       // Clicking on the annotation detail popup should make it disappear
-      $("#detail").on("click touchend", function(ev) {
-         $(this).css("visibility", "hidden");
-         ev.stopPropagation();
-         ev.preventDefault();
-         return false;
-      });
+      $("#detail")
+         .on("click touchend",
+            function(ev) {
+               $(this).css("visibility", "hidden");
+               ev.stopPropagation();
+               ev.preventDefault();
+               return false;
+            }
+         );
 
+      // Only show the background logo if the textarea box is empty
+      txt
+         .toggleClass("with-background", txt.val() == "")
+         .on("change keyup paste",
+            function(event) {
+               $(this).toggleClass("with-background", $(this).val() == "");
+            }
+         );
    }
 
    $(document).ready(init);
