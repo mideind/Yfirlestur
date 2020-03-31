@@ -559,7 +559,8 @@ div#output li {
 }
 
 div#output h3 {
-   color: #ff7c24;
+   /* color: #ff7c24; */
+   color: #666666;
 }
 
 div#column {
@@ -653,8 +654,8 @@ div#detail {
    visibility: hidden;
    position: absolute;
    background-color: #eeeeee;
-   border-radius: 4px;
-   box-shadow: 2px 2px 4px 2px #555555;
+   border-radius: 3px;
+   box-shadow: 2px 2px 4px 2px #999999;
    z-index: 10;
    min-width: 160px;
    max-width: 360px;
@@ -816,7 +817,7 @@ span.sent {
 }
 
 span.sent.err {
-   border-color: #eb3732;
+   border-color: #ff7c24;
    border-style: dotted;
 }
 
@@ -826,12 +827,12 @@ span.sent.err:hover {
 }
 
 span.sent.err-corr {
-   color: #eb3732;
+   color: #ff7c24;
 }
 
 span.errtok {
    font-weight: 700;
-   color: #eb3732;
+   color: #ff7c24;
 }
 
 span.corrtok:before {
@@ -844,7 +845,7 @@ span.corrtok:before {
 }
 
 span.corrtok.unknown:before {
-   color: #eb3732;
+   color: #ff7c24;
 }
 
 span.corrtok.advisory:before {
@@ -951,12 +952,12 @@ div.result i.c.highlight {
 }
 
 div.result i.warntok {
-   color: #e28400;
+   color: #ffb400;
 }
 
 /* Note: errtok should appear after warntok, since it has higher priority */
 div.result i.errtok {
-   color: #eb3732;
+   color: #ff7c24;
 }
 
 div.result i:hover {
@@ -1031,7 +1032,7 @@ div.canvas {
 
 div.canvas svg g path {
    fill: none;
-   stroke: #eb3732;
+   stroke: #ff7c24;
    stroke-dasharray: 3;
    stroke-opacity: 0.4;
    stroke-width: 2px;
@@ -1102,9 +1103,9 @@ div.correct div.annotation {
 
 div.annotation div.ann-text {
    font-style: italic;
-   color: #eb3732;
+   color: #ff7c24;
    background-color: white;
-   border: 1px solid #eb3732;
+   border: 1px solid #ff7c24;
    border-radius: 5px;
    padding: 6px;
    margin-bottom: 0.5em;
@@ -1112,16 +1113,16 @@ div.annotation div.ann-text {
 }
 
 div.annotation div.ann-text:hover {
-   background-color: rgba(217, 83, 79, 0.10);
+   background-color: rgba(255, 124, 36, 0.05);
 }
 
 div.annotation div.ann-text.warning {
-   color: #e28400;
-   border: 1px solid #e28400;
+   color: #ffb400;
+   border: 1px solid #ffb400;
 }
 
 div.annotation div.ann-text.warning:hover {
-   background-color: #ffeed6;
+   background-color: rgba(255, 180, 0, 0.05);
 }
 
 div.annotation div.ann-detail {

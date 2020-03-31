@@ -411,8 +411,8 @@ textarea#txt.with-background {
       var html = $(this).parent().find("div.ann-detail").html();
       var frame = $(this).parent().parent().parent();
       $("#detail").html(html);
-      var top = frame.position().top - 24 - $("#detail").height() +
-         $(this).parent().position().top;
+      var top = frame.position().top - 30 - $("#detail").height() +
+         $(this).parent().position().top + $(this).position().top;
       var left = $(this).offset().left - frame.offset().left;
       // Position the detail popup
       $("#detail")
@@ -647,7 +647,7 @@ textarea#txt.with-background {
 
       // Make sure file type is supported
       if (!isSupportedFileType(f)) {
-         showError("Greynir styður ekki yfirlestur á skjölum á þessu sniði.");
+         showError("Ekki er unnt að lesa yfir skjöl á þessu sniði.");
          return;
       }
 
@@ -692,7 +692,16 @@ textarea#txt.with-background {
          .toggleClass("with-background", txt.val() == "")
          .on("change keyup paste",
             function(event) {
-               $(this).toggleClass("with-background", $(this).val() == "");
+               var el = $(this);
+               // We run the actual background toggler after 200ms
+               // because the paste event is triggered before the
+               // text content (el.val()) is modified
+               setTimeout(
+                  function() {
+                     el.toggleClass("with-background", el.val() == "");
+                  },
+                  200
+               );
             }
          );
    }
