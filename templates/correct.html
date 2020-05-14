@@ -38,7 +38,7 @@ textarea#txt.with-background {
 
       <div class="col-xs-12" id="txt-div">
 
-         <textarea rows="15" class="form-control input-lg with-background"
+         <textarea rows="15" class="form-control input-lg"
             id="txt" tabindex="1" maxlength="16384" autofocus required
             placeholder="Sláðu inn texta eða veldu skjal til að lesa yfir...">
             {{- default_text -}}
@@ -217,8 +217,8 @@ textarea#txt.with-background {
             // from the Location header
             this.url = resp.getResponseHeader("Location");
             this.updateProgress();
-            // Initiate a progress check every 2 seconds
-            this.ival = setInterval(this.poll.bind(this), 2000);
+            // Initiate a progress check every 1.5 seconds
+            this.ival = setInterval(this.poll.bind(this), 1500);
          }
          else {
             // Something is wrong here
@@ -230,6 +230,7 @@ textarea#txt.with-background {
       CorrectionTask.prototype.handleError = function(resp) {
          // An error occurred: stop polling and update the UI
          this.stop();
+         // Progress complete
          this.progress = 1.0;
          this.updateProgress();
          // An error occurred on the server or in the communications
@@ -261,6 +262,7 @@ textarea#txt.with-background {
          }
          // Either we're done, or an error has occurred
          this.stop();
+         // Progress complete
          this.progress = 1.0;
          this.updateProgress();
          if (resp.status == 200) {
@@ -411,8 +413,9 @@ textarea#txt.with-background {
       var html = $(this).parent().find("div.ann-detail").html();
       var frame = $(this).parent().parent().parent();
       $("#detail").html(html);
-      var top = frame.position().top - 30 - $("#detail").height() +
-         $(this).parent().position().top + $(this).position().top;
+      var top = frame.position().top
+         - ($("#detail").height() + 30)
+         + $(this).position().top;
       var left = $(this).offset().left - frame.offset().left;
       // Position the detail popup
       $("#detail")
@@ -687,20 +690,20 @@ textarea#txt.with-background {
             }
          );
 
-      // Only show the background logo if the textarea box is empty
+      // Show the background logo if the textarea box is empty
       txt
          .toggleClass("with-background", txt.val() == "")
-         .on("change keyup paste",
+         .on("change keyup paste focus blur popstate",
             function(event) {
                var el = $(this);
-               // We run the actual background toggler after 200ms
+               // We run the actual background toggler after 100ms
                // because the paste event is triggered before the
                // text content (el.val()) is modified
                setTimeout(
                   function() {
                      el.toggleClass("with-background", el.val() == "");
                   },
-                  200
+                  100
                );
             }
          );

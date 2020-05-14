@@ -103,7 +103,8 @@ def check_grammar(text, *, progress_func=None):
                     suggest=ann.suggest,
                 )
                 for ann in sent.annotations
-            ]
+            ],
+            corrected=sent.tidy_text,
         )
 
     pgs = [

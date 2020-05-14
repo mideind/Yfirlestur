@@ -53,6 +53,7 @@ import reynir_correct
 
 from settings import Settings, ConfigError
 
+
 # RUNNING_AS_SERVER is True if we're executing under nginx/Gunicorn,
 # but False if the program was invoked directly as a Python main module.
 RUNNING_AS_SERVER = __name__ != "__main__"
@@ -200,10 +201,10 @@ if not RUNNING_AS_SERVER:
 
     if os.environ.get("GREYNIR_ATTACH_PTVSD"):
         # Attach to the VSCode PTVSD debugger, enabling remote debugging via SSH
-        import ptvsd
+        # import ptvsd
 
-        ptvsd.enable_attach()
-        ptvsd.wait_for_attach()  # Blocks execution until debugger is attached
+        # ptvsd.enable_attach()
+        # ptvsd.wait_for_attach()  # Blocks execution until debugger is attached
         ptvsd_attached = True
         print("Attached to PTVSD")
     else:
