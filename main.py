@@ -192,7 +192,7 @@ if Settings.DEBUG:
             datetime.utcnow(),
         )
     )
-    # Clobber Settings.DEBUG in ReynirPackage and ReynirCorrect
+    # Clobber Settings.DEBUG in ReynirPackage and GreynirCorrect
     reynir.Settings.DEBUG = True
     reynir_correct.Settings.DEBUG = True
 
@@ -217,7 +217,7 @@ if not RUNNING_AS_SERVER:
     extra_files = [
         "Yfirlestur.conf",
         "ReynirPackage.conf",
-        "ReynirCorrect.conf",
+        "GreynirCorrect.conf",
         "Verbs.conf",
         "Adjectives.conf",
         "AdjectivePredicates.conf",
