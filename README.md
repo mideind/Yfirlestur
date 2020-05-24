@@ -138,7 +138,7 @@ resp = rq.json()
 
 # Enumerate through the returned paragraphs, sentences and annotations
 for ix, pg in enumerate(resp["result"]):
-    print(f"\n{ix+1}. málsgrein")
+    print(f"\n{ix+1}. efnisgrein")
     for sent in pg:
         print(f"   {sent['corrected']}")
         for ann in sent["annotations"]:
@@ -153,14 +153,14 @@ This program prints the following output:
 ```bash
 $ python test.py
 
-1. málsgrein
+1. efnisgrein
    Manninum á verkstæðinu vantar hamar.
       000 002 P_WRONG_CASE_þgf_þf  Á líklega að vera 'Manninn á verkstæðinu'
       003 003 S004                 Orðið 'vanntar' var leiðrétt í 'vantar'
    Guðjón setti kókið í kælir.
       004 004 P_NT_EndingIR        Á sennilega að vera 'kæli'
 
-2. málsgrein
+2. efnisgrein
    Mér dreymdi stóran brauðhleif.
       000 000 P_WRONG_CASE_þgf_þf  Á líklega að vera 'Mig'
       001 001 S004                 Orðið 'dreimdi' var leiðrétt í 'dreymdi'
