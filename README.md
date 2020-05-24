@@ -7,9 +7,10 @@
 ### Spelling and grammar correction for Icelandic
 
 *Yfirlestur.is* is a public website where you can enter or submit your Icelandic text
-and have it checked for spelling and grammar errors. The tool also gives
-hints on words and structures that might not be appropriate, depending
-on the intended audience for the text.
+and have it checked for spelling and grammar errors.
+
+The tool also gives hints on words and structures that might not be appropriate,
+depending on the intended audience for the text.
 
 Try Yfirlestur (in Icelandic) at [https://yfirlestur.is](https://yfirlestur.is)!
 
@@ -24,8 +25,9 @@ The core spelling and grammar checking functionality of Yfirlestur.is is provide
 
 ## HTTPS API
 
-Yfirlestur.is provides an HTTPS application programming interface (API) to perform
-spelling and grammar checking. The API is based on HTTPS GET/POST and JSON.
+In addition to its graphical web front-end, Yfirlestur.is exposes a public
+HTTPS/JSON application programming interface (API) to perform spelling and grammar
+checking.
 
 This API can for example by accessed by `curl` as follows:
 
@@ -33,7 +35,7 @@ This API can for example by accessed by `curl` as follows:
     $ curl https://yfirlestur.is/correct.api -d "text=Manninum á verkstæðinu vantar hamar"
 ```
 
-...or, of course, by a HTTPS `POST` from your own code - see below.
+...or, of course, via a HTTPS `POST` from your own code - see below.
 
 All text is assumed to be coded in UTF-8.
 
@@ -158,6 +160,9 @@ $ python test.py
       002 002 S001                 Orðið 'stórann' var leiðrétt í 'stóran'
       003 003 S004                 Orðið 'brauðhleyf' var leiðrétt í 'brauðhleif'
 ```
+
+The open source *GreynirCorrect* engine that powers Yfirlestur.is
+is further [documented here](https://yfirlestur.is/doc/).
 
 ## Copyright and licensing
 
