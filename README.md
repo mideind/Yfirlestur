@@ -15,13 +15,15 @@ depending on the intended audience for the text.
 Try Yfirlestur (in Icelandic) at [https://yfirlestur.is](https://yfirlestur.is)!
 
 <a href="https://raw.githubusercontent.com/mideind/Yfirlestur/master/static/img/yfirlestur-example.png?raw=true" title="Yfirlestur annotation">
-<img src="static/img/yfirlestur-example-small.png" width="400" height="298" alt="Yfirlestur annotation" style="margin-top: 10px; margin-bottom: 10px">
+<img src="static/img/yfirlestur-example-small.png" width="720" height="536" alt="Yfirlestur annotation" style="margin-top: 10px; margin-bottom: 10px">
 </a>
 
 *Text with annotations, as displayed by Yfirlestur.is*
 
 The core spelling and grammar checking functionality of Yfirlestur.is is provided by the
 [GreynirCorrect](https://github.com/mideind/GreynirCorrect) engine, by the same authors.
+The engine is currently in early release and user feedback is greatly appreciated,
+either through GitHub Issues or by e-mail to [mideind@mideind.is](mideind@mideind.is).
 
 ## HTTPS API
 
