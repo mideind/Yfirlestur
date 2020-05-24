@@ -1,6 +1,7 @@
 [![Join the chat at https://gitter.im/Greynir/Lobby](https://badges.gitter.im/Greynir/Lobby.svg)](https://gitter.im/Greynir/Lobby?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)
 
-<img src="static/img/yfirlestur-logo-large.png" alt="Yfirlestur" width="200" height="140" align="right" style="margin-left:20px; margin-bottom: 20px;">
+<img src="static/img/yfirlestur-logo-large.png" alt="Yfirlestur" width="200" height="140"
+  align="right" style="margin-left:20px; margin-bottom: 20px;">
 
 # Yfirlestur
 
@@ -14,16 +15,15 @@ depending on the intended audience for the text.
 
 Try Yfirlestur (in Icelandic) at [https://yfirlestur.is](https://yfirlestur.is)!
 
-<a href="https://raw.githubusercontent.com/mideind/Yfirlestur/master/static/img/yfirlestur-example.png?raw=true" title="Yfirlestur annotation">
-<img src="static/img/yfirlestur-example-small.png" width="720" height="536" alt="Yfirlestur annotation" style="margin-top: 10px; margin-bottom: 10px">
-</a>
+<img src="static/img/yfirlestur-example-small.png" width="720" height="536"
+  alt="Yfirlestur annotation" style="margin-top: 18px; margin-bottom: 6px">
 
 *Text with annotations, as displayed by Yfirlestur.is*
 
 The core spelling and grammar checking functionality of Yfirlestur.is is provided by the
 [GreynirCorrect](https://github.com/mideind/GreynirCorrect) engine, by the same authors.
 The engine is currently in early release and user feedback is greatly appreciated,
-either through GitHub Issues or by e-mail to [mideind@mideind.is](mideind@mideind.is).
+either through GitHub Issues or by e-mail to [mideind@mideind.is](mailto:mideind@mideind.is).
 
 ## HTTPS API
 
@@ -31,13 +31,16 @@ In addition to its graphical web front-end, Yfirlestur.is exposes a public
 HTTPS/JSON application programming interface (API) to perform spelling and grammar
 checking.
 
-This API can for example by accessed by `curl` as follows:
+### From the command line
+
+This API can for example by accessed by `curl` from the Linux/MacOS command line
+as follows (try it!):
 
 ```bash
     $ curl https://yfirlestur.is/correct.api -d "text=Manninum á verkstæðinu vantar hamar"
 ```
 
-...or, of course, via a HTTPS `POST` from your own code - see below.
+...or, of course, via a HTTPS `POST` from your own code; see below.
 
 All text is assumed to be coded in UTF-8.
 
@@ -110,6 +113,8 @@ the annotation job, such as the number of tokens and sentences processed,
 and how many of those sentences could be parsed. The `valid` field is
 `true` if the request was correctly formatted and could be processed
 without error, or `false` if there was a problem.
+
+### From Python
 
 As an example of accessing the Yfirlestur API from Python, here is
 a short demo program which submits two paragraphs of text to the
