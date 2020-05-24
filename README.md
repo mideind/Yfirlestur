@@ -24,7 +24,9 @@ The core spelling and grammar checking functionality of Yfirlestur.is is provide
 
 ## HTTPS API
 
-Yfirlestur.is provides an HTTPS application programming interface (API) based on JSON.
+Yfirlestur.is provides an HTTPS application programming interface (API) to perform
+spelling and grammar checking. The API is based on HTTPS GET/POST and JSON.
+
 This API can for example by accessed by `curl` as follows:
 
 ```
@@ -75,13 +77,13 @@ The example returns the following JSON (formatted for ease of reading):
 
 The `result` field contains the result of the annotation, as a list of paragraphs,
 each containing a list of sentences, each containing a list of annotations (under
-the `annotations` field). Of course, if a sentence has no annotations, its annotation
-list will be empty.
+the `annotations` field). Of course, if a sentence is correct and has no annotations,
+its annotation list will be empty.
 
 Each sentence has a field containing a `corrected` version of it, where all
 likely errors have been corrected, as well as a list of `tokens`. The tokens
 originate in the [Tokenizer package](https://github.com/mideind/Tokenizer)
-and are documented there.
+and their format is documented there.
 
 Each annotation applies to a span of sentence tokens, starting with the index
 given in `start` and ending with the index in `end`. Both indices are 0-based
@@ -97,12 +99,63 @@ Finally, some annotations contain a `suggest` field with text that could
 replace the text within the token span, if the user agrees with
 the suggestion being made.
 
-The result JSON further contains a `stats` field with information about
+The result JSON further includes a `stats` field with information about
 the annotation job, such as the number of tokens and sentences processed,
 and how many of those sentences could be parsed. The `valid` field is
 `true` if the request was correctly formatted and could be processed
 without error, or `false` if there was a problem.
 
+As an example of accessing the Yfirlestur API from Python, here is
+a short demo program which submits two paragraphs of text to the
+spelling and grammar checker:
+
+```
+import requests
+import json
+
+# The text to check, two paragraphs of two and one sentences, respectively
+my_text = (
+    "Manninum á verkstæðinu vanntar hamar. Guðjón setti kókið í kælir.\n"
+    "Mér dreimdi stórann brauðhleyf."
+)
+
+# Make the POST request, submitting the text
+rq = requests.post("https://yfirlestur.is/correct.api", data=dict(text=my_text))
+
+# Retrieve the JSON response
+resp = rq.json()
+
+# Enumerate through the returned paragraphs, sentences and annotations
+for ix, pg in enumerate(resp["result"]):
+    print(f"\n{ix+1}. málsgrein")
+    for sent in pg:
+        print(f"   {sent['corrected']}")
+        for ann in sent["annotations"]:
+            print(
+                f"      {ann['start']:03} {ann['end']:03} "
+                f"{ann['code']:20} {ann['text']}"
+            )
+```
+
+This program prints the following output:
+
+```
+$ python test.py
+
+1. málsgrein
+   Manninum á verkstæðinu vantar hamar.
+      000 002 P_WRONG_CASE_þgf_þf  Á líklega að vera 'Manninn á verkstæðinu'
+      003 003 S004                 Orðið 'vanntar' var leiðrétt í 'vantar'
+   Guðjón setti kókið í kælir.
+      004 004 P_NT_EndingIR        Á sennilega að vera 'kæli'
+
+2. málsgrein
+   Mér dreymdi stóran brauðhleif.
+      000 000 P_WRONG_CASE_þgf_þf  Á líklega að vera 'Mig'
+      001 001 S004                 Orðið 'dreimdi' var leiðrétt í 'dreymdi'
+      002 002 S001                 Orðið 'stórann' var leiðrétt í 'stóran'
+      003 003 S004                 Orðið 'brauðhleyf' var leiðrétt í 'brauðhleif'
+```
 
 ## Copyright and licensing
 
