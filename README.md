@@ -29,49 +29,51 @@ spelling and grammar checking. The API is based on HTTPS GET/POST and JSON.
 
 This API can for example by accessed by `curl` as follows:
 
-```
+```bash
     $ curl https://yfirlestur.is/correct.api -d "text=Manninum á verkstæðinu vantar hamar"
 ```
 
-...or, of course, by a HTTPS `POST` from your own code. All text is assumed to be coded in UTF-8.
+...or, of course, by a HTTPS `POST` from your own code - see below.
 
-The example returns the following JSON (formatted for ease of reading):
+All text is assumed to be coded in UTF-8.
 
-```
+The example returns the following JSON (shown indented, for ease of reading):
+
+```json
 {
-    "result": [
-        [
-            {
-                "annotations": [
-                    {
-                        "code":"P_WRONG_CASE_þgf_þf",
-                        "detail":"Sögnin 'að vanta' er ópersónuleg. Frumlag hennar á að vera í þolfalli í stað þágufalls.",
-                        "end":2,
-                        "start":0,
-                        "suggest":"Manninn á verkstæðinu",
-                        "text":"Á líklega að vera 'Manninn á verkstæðinu'"
-                    }
-                ],
-                "corrected":"Manninum á verkstæðinu vantar hamar",
-                "tokens": [
-                    {"k":6,"x":"Manninum"},
-                    {"k":6,"x":"á"},
-                    {"k":6,"x":"verkstæðinu"},
-                    {"k":6,"x":"vantar"},
-                    {"k":6,"x":"hamar"}
-                ]
-            }
+  "result": [
+    [
+      {
+        "annotations": [
+          {
+            "code":"P_WRONG_CASE_þgf_þf",
+            "detail":"Sögnin 'að vanta' er ópersónuleg. Frumlag hennar á að vera í þolfalli í stað þágufalls.",
+            "end":2,
+            "start":0,
+            "suggest":"Manninn á verkstæðinu",
+            "text":"Á líklega að vera 'Manninn á verkstæðinu'"
+          }
+        ],
+        "corrected":"Manninum á verkstæðinu vantar hamar",
+        "tokens": [
+          {"k":6,"x":"Manninum"},
+          {"k":6,"x":"á"},
+          {"k":6,"x":"verkstæðinu"},
+          {"k":6,"x":"vantar"},
+          {"k":6,"x":"hamar"}
         ]
-    ],
-    "stats":
-        {
-            "ambiguity":1.0,
-            "num_parsed":1,
-            "num_sentences":1,
-            "num_tokens":5
-        },
-    "text":"Manninum á verkstæðinu vantar hamar",
-    "valid":true
+      }
+    ]
+  ],
+  "stats":
+    {
+      "ambiguity":1.0,
+      "num_parsed":1,
+      "num_sentences":1,
+      "num_tokens":5
+    },
+  "text":"Manninum á verkstæðinu vantar hamar",
+  "valid":true
 }
 ```
 
@@ -109,7 +111,7 @@ As an example of accessing the Yfirlestur API from Python, here is
 a short demo program which submits two paragraphs of text to the
 spelling and grammar checker:
 
-```
+```python
 import requests
 import json
 
@@ -139,7 +141,7 @@ for ix, pg in enumerate(resp["result"]):
 
 This program prints the following output:
 
-```
+```bash
 $ python test.py
 
 1. málsgrein
