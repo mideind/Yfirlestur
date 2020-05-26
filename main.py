@@ -159,14 +159,14 @@ def send_font(path):
 @app.errorhandler(404)
 def page_not_found(e):
     """ Return a custom 404 error """
-    return "Þessi vefslóð er ekki rétt", 404
+    return render_template("404.html")
 
 
 # Custom 500 error handler
 @app.errorhandler(500)
 def server_error(e):
     """ Return a custom 500 error """
-    return "Eftirfarandi villa kom upp: {0}".format(e), 500
+    return render_template("500.html")
 
 
 # Initialize the main module
