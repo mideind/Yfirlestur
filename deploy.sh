@@ -8,10 +8,10 @@
 #
 
 SRC=~/github/Yfirlestur
-DEST=/usr/share/nginx/yfirlestur.is # Production
-SERVICE="yfirlestur"
+DEST=/usr/share/nginx/yfirlestur.is
+SERVICE=yfirlestur
 
-read -p "This will deploy Greynir to **PRODUCTION**. Confirm? (y/n): " CONFIRMED
+read -p "This will deploy Yfirlestur to **PRODUCTION**. Confirm? (y/n): " CONFIRMED
 
 if [ "$CONFIRMED" != "y" ]; then
     echo "Deployment aborted"
