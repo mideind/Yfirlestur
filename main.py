@@ -41,9 +41,9 @@ import re
 import logging
 from datetime import datetime
 
-from flask import Flask, send_from_directory
-from flask_caching import Cache
-from flask_cors import CORS
+from flask import Flask, render_template, send_from_directory
+from flask_caching import Cache  # type: ignore
+from flask_cors import CORS  # type: ignore
 
 from werkzeug.middleware.proxy_fix import ProxyFix
 
@@ -134,7 +134,7 @@ def hashed_url_for_static_file(endpoint, values):
 
     if "static" == endpoint or endpoint.endswith(".static"):
         filename = values.get("filename")
-        if filename and (filename.endswith(".js") or filename.endswith(".css")):
+        if filename and filename.endswith((".js", ".css")):
             # if "." in endpoint:  # has higher priority
             #     blueprint = endpoint.rsplit(".", 1)[0]
             # else:
@@ -215,7 +215,7 @@ if not RUNNING_AS_SERVER:
     # Run a default Flask web server for testing if invoked directly as a main program
 
     # Additional files that should cause a reload of the web server application
-    # Note: Reynir.grammar is automatically reloaded if its timestamp changes
+    # Note: Greynir.grammar is automatically reloaded if its timestamp changes
     extra_files = [
         "Yfirlestur.conf",
         "ReynirPackage.conf",
