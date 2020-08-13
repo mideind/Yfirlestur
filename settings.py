@@ -160,10 +160,10 @@ class Settings:
 
     # Postgres SQL database server hostname and port
     DB_HOSTNAME = os.environ.get("GREYNIR_DB_HOST", "localhost")
-    DB_PORT = os.environ.get("GREYNIR_DB_PORT", "5432")  # Default PostgreSQL port
+    db_port_str = os.environ.get("GREYNIR_DB_PORT", "5432")  # Default PostgreSQL port
 
     try:
-        DB_PORT = int(DB_PORT)
+        DB_PORT = int(db_port_str)
     except ValueError:
         raise ConfigError(
             "Invalid environment variable value: DB_PORT={0}"
@@ -172,9 +172,9 @@ class Settings:
 
     # Flask server host and port
     HOST = os.environ.get("GREYNIR_HOST", "localhost")
-    PORT = os.environ.get("GREYNIR_PORT", "5000")
+    port_str = os.environ.get("GREYNIR_PORT", "5000")
     try:
-        PORT = int(PORT)
+        PORT = int(port_str)
     except ValueError:
         raise ConfigError(
             "Invalid environment variable value: GREYNIR_PORT={0}"

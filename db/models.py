@@ -23,11 +23,9 @@
 
 """
 
+from typing import Type
 
-from sqlalchemy import text
-from sqlalchemy.ext.declarative import declarative_base
-from sqlalchemy.orm import relationship, backref
-from sqlalchemy import (
+from sqlalchemy import (  # type: ignore
     Table,
     Column,
     Integer,
@@ -40,11 +38,15 @@ from sqlalchemy import (
     Index,
     ForeignKey,
     PrimaryKeyConstraint,
-    func
+    func,
+    text
 )
-from sqlalchemy.dialects.postgresql import JSONB, INET
-from sqlalchemy.dialects.postgresql import UUID as psql_UUID
-from sqlalchemy.ext.hybrid import Comparator, hybrid_property
+from sqlalchemy.orm import relationship, backref  # type: ignore
+from sqlalchemy.ext.declarative import declarative_base  # type: ignore
+from sqlalchemy.ext.hybrid import Comparator, hybrid_property  # type: ignore
+from sqlalchemy.dialects.postgresql import (  # type: ignore
+    JSONB, INET, UUID as psql_UUID
+)
 
 
 class CaseInsensitiveComparator(Comparator):
@@ -59,7 +61,7 @@ class CaseInsensitiveComparator(Comparator):
 
 
 # Create the SQLAlchemy ORM Base class
-Base = declarative_base()
+Base = declarative_base()  # type: Type
 
 
 class Root(Base):
@@ -715,7 +717,7 @@ class Feedback(Base):
 
     def __repr__(self):
         return "Feedback(name='{0}', email='{1}', topic='{2}', comment='{3}')".format(
-            self.question, self.answer, self.topic, self.comment
+            self.name, self.email, self.topic, self.comment
         )
 
     @classmethod

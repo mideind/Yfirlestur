@@ -21,29 +21,33 @@
 
 """
 
+from typing import Union
+
 import abc
 from io import BytesIO
 import re
 from zipfile import ZipFile
 from pathlib import Path
 import html2text
-from striprtf.striprtf import rtf_to_text
+from striprtf.striprtf import rtf_to_text  # type: ignore
 
 # Use defusedxml module to prevent parsing of malicious XML
-from defusedxml import ElementTree
+from defusedxml import ElementTree  # type: ignore
 
 
 DEFAULT_TEXT_ENCODING = "UTF-8"
 
 
 class MalformedDocumentError(Exception):
+
     pass
 
 
 class Document(abc.ABC):
-    """ Abstract base class for documents. """
 
-    def __init__(self, path_or_bytes):
+    """ Abstract base class for documents """
+
+    def __init__(self, path_or_bytes: Union[str, bytes]) -> None:
         """ Accepts either a file path or bytes object """
         if isinstance(path_or_bytes, str):
             # It's a file path

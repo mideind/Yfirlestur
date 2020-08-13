@@ -23,19 +23,20 @@
 
 """
 
+from typing import Optional
+
 import platform
 
-from sqlalchemy import create_engine
-from sqlalchemy.orm import sessionmaker
+from sqlalchemy import create_engine, desc, func as dbfunc  # type: ignore
+from sqlalchemy.orm import sessionmaker  # type: ignore
+from sqlalchemy.exc import (  # type: ignore
+    SQLAlchemyError as DatabaseError,
+    IntegrityError,
+    DataError,
+    OperationalError
+)
 
 from settings import Settings, ConfigError
-
-from sqlalchemy.exc import SQLAlchemyError as DatabaseError
-from sqlalchemy.exc import IntegrityError
-from sqlalchemy.exc import DataError
-from sqlalchemy.exc import OperationalError
-from sqlalchemy import desc
-from sqlalchemy import func as dbfunc
 
 from .models import Base
 
@@ -83,7 +84,8 @@ class classproperty:
 class SessionContext:
     """ Context manager for database sessions """
 
-    _db = None  # Singleton instance of Scraper_DB
+    # Singleton instance of Scraper_DB
+    _db = None  # type: Optional[Scraper_DB]
 
     # pylint: disable=no-self-argument
     @classproperty

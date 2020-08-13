@@ -32,6 +32,8 @@
 
 """
 
+from typing import List
+
 import sys
 import os
 import time
@@ -66,7 +68,7 @@ cors = CORS(app)
 app.config["CORS_HEADERS"] = "Content-Type"
 
 # Fix access to client remote_addr when running behind proxy
-app.wsgi_app = ProxyFix(app.wsgi_app)
+setattr(app, "wsgi_app", ProxyFix(app.wsgi_app))
 
 app.config["JSON_AS_ASCII"] = False  # We're fine with using Unicode/UTF-8
 app.config["MAX_CONTENT_LENGTH"] = 1 * 1024 * 1024  # 1 MB, max upload file size
@@ -141,7 +143,7 @@ def hashed_url_for_static_file(endpoint, values):
             # if blueprint:
             #     static_folder = app.blueprints[blueprint].static_folder
             # else:
-            static_folder = app.static_folder
+            static_folder = app.static_folder or ""
 
             param_name = "h"
             while param_name in values:
@@ -229,7 +231,7 @@ if not RUNNING_AS_SERVER:
 
     dirs = list(
         map(os.path.dirname, [__file__, reynir.__file__, reynir_correct.__file__])
-    )
+    )  # type: List[str]
     for i, fname in enumerate(extra_files):
         # Look for the extra file in the different package directories
         for directory in dirs:
