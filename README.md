@@ -189,7 +189,8 @@ A PARTICULAR PURPOSE. See the GNU General Public License for more details.
 
 The full text of the GNU General Public License v3 is
 [included here](https://github.com/mideind/Yfirlestur/blob/master/LICENSE)
-and also available here: [https://www.gnu.org/licenses/gpl-3.0.html](https://www.gnu.org/licenses/gpl-3.0.html).
+and also available here:
+[https://www.gnu.org/licenses/gpl-3.0.html](https://www.gnu.org/licenses/gpl-3.0.html).
 
 If you wish to use this set of programs in ways that are not covered under the
 GNU GPLv3 license, please contact us at [mideind@mideind.is](mailto:mideind@mideind.is)
