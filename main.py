@@ -32,7 +32,7 @@
 
 """
 
-from typing import List
+from typing import List, Pattern, Dict, Any, Optional, Union
 
 import sys
 import os
@@ -41,7 +41,7 @@ import re
 import logging
 from datetime import datetime
 
-from flask import Flask, render_template, send_from_directory
+from flask import Flask, render_template, send_from_directory, jsonify
 from flask_caching import Cache  # type: ignore
 from flask_cors import CORS  # type: ignore
 
@@ -94,11 +94,11 @@ app.register_blueprint(routes)
 
 
 # Utilities for Flask/Jinja2 formatting of numbers using the Icelandic locale
-def make_pattern(rep_dict):
+def make_pattern(rep_dict: Dict[str, Any]) -> Pattern:
     return re.compile("|".join([re.escape(k) for k in rep_dict.keys()]), re.M)
 
 
-def multiple_replace(string, rep_dict, pattern=None):
+def multiple_replace(string: str, rep_dict: Dict[str, str], pattern: Optional[Pattern]=None) -> str:
     """ Perform multiple simultaneous replacements within string """
     if pattern is None:
         pattern = make_pattern(rep_dict)
@@ -110,31 +110,31 @@ _PATTERN_IS = make_pattern(_REP_DICT_IS)
 
 
 @app.template_filter("format_is")
-def format_is(r, decimals=0):
+def format_is(r: float, decimals: int=0) -> str:
     """ Flask/Jinja2 template filter to format a number for the Icelandic locale """
     fmt = "{0:,." + str(decimals) + "f}"
     return multiple_replace(fmt.format(float(r)), _REP_DICT_IS, _PATTERN_IS)
 
 
 @app.template_filter("format_ts")
-def format_ts(ts):
+def format_ts(ts: datetime) -> str:
     """ Flask/Jinja2 template filter to format a timestamp """
     return str(ts)[0:19]
 
 
 # Flask cache busting for static .css and .js files
 @app.url_defaults
-def hashed_url_for_static_file(endpoint, values):
+def hashed_url_for_static_file(endpoint: str, values: Dict[str, Union[int, str]]) -> None:
     """ Add a ?h=XXX parameter to URLs for static .js and .css files,
         where XXX is calculated from the file timestamp """
 
-    def static_file_hash(filename):
+    def static_file_hash(filename: str) -> int:
         """ Obtain a timestamp for the given file """
         return int(os.stat(filename).st_mtime)
 
     if "static" == endpoint or endpoint.endswith(".static"):
         filename = values.get("filename")
-        if filename and filename.endswith((".js", ".css")):
+        if isinstance(filename, str) and filename.endswith((".js", ".css")):
             # if "." in endpoint:  # has higher priority
             #     blueprint = endpoint.rsplit(".", 1)[0]
             # else:
@@ -153,7 +153,7 @@ def hashed_url_for_static_file(endpoint, values):
 
 @app.route("/static/fonts/<path:path>")
 @max_age(seconds=24 * 60 * 60)  # Cache font for 24 hours
-def send_font(path):
+def send_font(path: str):
     return send_from_directory("static/fonts", path)
 
 
@@ -169,6 +169,12 @@ def page_not_found(e):
 def server_error(e):
     """ Return a custom 500 error """
     return render_template("500.html")
+
+
+@app.errorhandler(410)
+def resource_gone(e):
+    """ Return a custom 410 GONE error """
+    return jsonify(valid=False, error=str(e)), 410
 
 
 # Initialize the main module
@@ -218,7 +224,7 @@ if not RUNNING_AS_SERVER:
     # Note: Greynir.grammar is automatically reloaded if its timestamp changes
     extra_files = [
         "Yfirlestur.conf",
-        "ReynirPackage.conf",
+        "GreynirPackage.conf",
         "GreynirCorrect.conf",
         "Verbs.conf",
         "Adjectives.conf",
@@ -262,6 +268,10 @@ if not RUNNING_AS_SERVER:
         werkzeug_log = logging.getLogger("werkzeug")
         if werkzeug_log:
             werkzeug_log.setLevel(logging.WARNING)
+
+        # Pre-load the correction engine into memory
+        reynir_correct.check_single("Þetta er upphitun")
+
         # Run the Flask web server application
         app.run(
             host=Settings.HOST,
@@ -308,6 +318,5 @@ else:
     print(log_str)
     sys.stdout.flush()
 
-    # Running as a server module: pre-load the grammar into memory
-    with Fast_Parser() as fp:
-        pass
+    # Pre-load the correction engine into memory
+    reynir_correct.check_single("Þetta er upphitun")

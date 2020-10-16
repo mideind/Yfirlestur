@@ -165,7 +165,7 @@ textarea#txt.with-background {
          // Note: the following should not be a serverJsonQuery call,
          // this is done via a HTTP form post
          // Endpoints with .task suffix are not cached
-         serverQuery('/correct.task',
+         serverQuery('/correct.process',
             {
                text : txt
             },
@@ -180,7 +180,7 @@ textarea#txt.with-background {
          this.updateProgress();
          // Send off ajax request
          $.ajax({
-            url: '/correct.task',  
+            url: '/correct.process',
             type: 'POST',
             data: fd,
             success: this.start.bind(this),
@@ -189,14 +189,6 @@ textarea#txt.with-background {
             contentType: false,
             processData: false
          });
-         /*
-         serverQuery('/correct.task',
-            fd,
-            this.start.bind(this),
-            null,
-            this.handleError.bind(this)
-         );
-         */
       };
 
       CorrectionTask.prototype.clearResult = function() {
@@ -221,7 +213,8 @@ textarea#txt.with-background {
             this.ival = setInterval(this.poll.bind(this), 1500);
          }
          else {
-            // Something is wrong here
+            // Something is wrong here; we may have waited too long
+            // or the task status URL is invalid for some reason
             this.wait(false);
             showError("<b>Samband næst ekki</b> við netþjón Greynis");
          }

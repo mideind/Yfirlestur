@@ -21,7 +21,7 @@
 
 """
 
-from typing import Union
+from typing import Union, Dict, Type
 
 import abc
 from io import BytesIO
@@ -39,7 +39,6 @@ DEFAULT_TEXT_ENCODING = "UTF-8"
 
 
 class MalformedDocumentError(Exception):
-
     pass
 
 
@@ -58,11 +57,11 @@ class Document(abc.ABC):
             self.data = path_or_bytes
 
     @abc.abstractmethod
-    def extract_text(self):
+    def extract_text(self) -> str:
         """ All subclasses must implement this method """
-        pass
+        raise NotImplementedError
 
-    def write_to_file(self, path):
+    def write_to_file(self, path: str) -> None:
         with open(path, "wb") as f:
             f.write(self.data)
 
@@ -70,7 +69,7 @@ class Document(abc.ABC):
 class PlainTextDocument(Document):
     """ Plain text document """
 
-    def extract_text(self):
+    def extract_text(self) -> str:
         return self.data.decode(DEFAULT_TEXT_ENCODING)
 
 
@@ -78,7 +77,7 @@ class HTMLDocument(Document):
     """ HTML document """
 
     @staticmethod
-    def remove_header_prefixes(text):
+    def remove_header_prefixes(text: str) -> str:
         """ Removes all line starting with '#'. Annoyingly, html2text 
             adds markdown-style headers for <h*> tags """
         lines = text.split("\n")
@@ -87,7 +86,7 @@ class HTMLDocument(Document):
                 lines[i] = re.sub(r"[#]+\s", "", line)
         return "\n".join(lines)
 
-    def extract_text(self):
+    def extract_text(self) -> str:
         html = self.data.decode(DEFAULT_TEXT_ENCODING)
 
         h = html2text.HTML2Text()
@@ -108,7 +107,7 @@ class HTMLDocument(Document):
 class RTFDocument(Document):
     """ Rich text document """
 
-    def extract_text(self):
+    def extract_text(self) -> str:
         txt = self.data.decode(DEFAULT_TEXT_ENCODING)
 
         # Hack to handle Apple's extensions to the RTF format
@@ -120,7 +119,7 @@ class RTFDocument(Document):
 class PDFDocument(Document):
     """ Adobe PDF document """
 
-    def extract_text(self):
+    def extract_text(self) -> str:
         raise NotImplementedError
 
 
@@ -133,7 +132,7 @@ class DocxDocument(Document):
     TEXT_TAG = WORD_NAMESPACE + "t"
     BREAK_TAG = WORD_NAMESPACE + "br"
 
-    def extract_text(self):
+    def extract_text(self) -> str:
 
         zipfile = ZipFile(BytesIO(self.data), "r")
 
@@ -165,7 +164,7 @@ class DocxDocument(Document):
 
 
 # Map file mime type to document class
-MIMETYPE_TO_DOC_CLASS = {
+MIMETYPE_TO_DOC_CLASS: Dict[str, Type[Document]] = {
     "text/plain": PlainTextDocument,
     "text/html": HTMLDocument,
     "text/rtf": RTFDocument,

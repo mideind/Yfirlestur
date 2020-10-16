@@ -24,7 +24,7 @@
 
 """
 
-from typing import Dict, Any
+from typing import Dict, Any, Callable
 
 import threading
 import time
@@ -36,8 +36,9 @@ from datetime import datetime, timedelta
 
 from flask import (
     Blueprint, jsonify, make_response, current_app, Response,
-    abort, request, url_for, _request_ctx_stack
+    abort, request, url_for,
 )
+from flask import _request_ctx_stack  # type: ignore
 from flask.ctx import RequestContext
 from werkzeug.exceptions import HTTPException, InternalServerError
 
@@ -52,7 +53,7 @@ cache = current_app.config["CACHE"]
 routes = Blueprint("routes", __name__)
 
 
-def max_age(seconds):
+def max_age(seconds: int) -> Callable[[Callable], Callable]:
     """ Caching decorator for Flask - augments response
         with a max-age cache header """
 
@@ -311,7 +312,7 @@ def async_task(f):
             json.dumps(dict(progress=0.0)),
             202,  # ACCEPTED
             {
-                "Location": fancy_url_for("routes.get_status", task=task_id),
+                "Location": fancy_url_for("routes.get_task_status", task=task_id),
                 "Content-Type": "application/json; charset=utf-8",
             }
         )
@@ -319,8 +320,8 @@ def async_task(f):
     return wrapped
 
 
-@routes.route('/status/<task>', methods=['GET'])
-def get_status(task):
+@routes.route('/task_status/<task>', methods=['GET'])
+def get_task_status(task):
     """ Return the status of an asynchronous task. If this request returns a
         202 ACCEPTED status code, it means that task hasn't finished yet.
         Else, the response from the task is returned (normally with a
@@ -338,7 +339,7 @@ def get_status(task):
             json.dumps(dict(progress=task["progress"])),
             202,  # ACCEPTED
             {
-                "Location": fancy_url_for("routes.get_status", task=task_id),
+                "Location": fancy_url_for("routes.get_task_status", task=task_id),
                 "Content-Type": "application/json; charset=utf-8",
             }
         )
