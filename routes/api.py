@@ -18,7 +18,8 @@
 
 
     API routes
-    Note: All routes ending with .api are configured not to be cached by nginx
+    Note: All routes ending with .api, .task and .process are configured
+    not to be cached by nginx
 
 """
 
