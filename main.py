@@ -304,10 +304,11 @@ else:
         werkzeug_log.setLevel(logging.WARNING)
 
     # Log our startup
+    log_version = sys.version.replace("\n", " ")
     log_str = (
         f"Yfirlestur.is server instance starting "
         f"with db_host={Settings.DB_HOSTNAME}:{Settings.DB_PORT} "
-        f"on Python {sys.version.replace('\n', ' ')}"
+        f"on Python {log_version}"
     )
     logging.info(log_str)
     print(log_str)
