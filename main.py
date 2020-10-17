@@ -305,14 +305,9 @@ else:
 
     # Log our startup
     log_str = (
-        "Yfirlestur.is instance starting with "
-        "host={0}:{1}, db_host={2}:{3} on Python {4}".format(
-            Settings.HOST,
-            Settings.PORT,
-            Settings.DB_HOSTNAME,
-            Settings.DB_PORT,
-            sys.version.replace("\n", " "),
-        )
+        f"Yfirlestur.is server instance starting "
+        f"with db_host={Settings.DB_HOSTNAME}:{Settings.DB_PORT} "
+        f"on Python {sys.version.replace('\n', ' ')}"
     )
     logging.info(log_str)
     print(log_str)
@@ -320,3 +315,5 @@ else:
 
     # Pre-load the correction engine into memory
     reynir_correct.check_single("Þetta er upphitun")
+
+    logging.info("Instance warmed up and ready.")

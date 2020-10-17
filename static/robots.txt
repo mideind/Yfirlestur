@@ -1,5 +1,7 @@
 User-agent: *
 Disallow: /*.api
+Disallow: /*.task
+Disallow: /*.process
 
 Crawl-delay: 120
 
