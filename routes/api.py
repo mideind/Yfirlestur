@@ -56,8 +56,8 @@ MAX_CHILD_TASKS = 250
 _CTX = multiprocessing.get_context("fork")
 
 
-@routes.route("/correct.process", methods=["POST"])
-@routes.route("/correct.process/v<int:version>", methods=["POST"])
+@routes.route("/correct.api", methods=["POST"])
+@routes.route("/correct.api/v<int:version>", methods=["POST"])
 def correct_process(version: int = 1) -> Any:
     """ Correct text provided by the user, i.e. not coming from an article.
         This can be either an uploaded file or a string.
