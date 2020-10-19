@@ -8,6 +8,7 @@ __pycache__/
 
 # User and group for gunicorn process
 gunicorn_user.txt
+gunicorn.pid
 
 # Distribution / packaging
 .Python

@@ -26,7 +26,6 @@
 from typing import Any, Dict, Tuple, Optional
 
 from datetime import datetime, timedelta
-import logging
 from functools import partial
 import multiprocessing
 import multiprocessing.pool
@@ -81,7 +80,7 @@ def correct_process(version: int = 1) -> Any:
             doc = doc_class(file.read())
             text = doc.extract_text()
         except Exception as e:
-            logging.warning("Exception in correct_process(): {0}".format(e))
+            current_app.logger.warning("Exception in correct_process(): {0}".format(e))
             return better_jsonify(valid=False, reason="Error reading file")
 
     else:
@@ -90,7 +89,7 @@ def correct_process(version: int = 1) -> Any:
         try:
             text = text_from_request(request)
         except Exception as e:
-            logging.warning("Exception in correct_process(): {0}".format(e))
+            current_app.logger.warning("Exception in correct_process(): {0}".format(e))
             return better_jsonify(valid=False, reason="Invalid request")
 
     # Launch the correction task within a child process

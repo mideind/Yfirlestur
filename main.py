@@ -298,10 +298,11 @@ if not RUNNING_AS_SERVER:
 else:
     app.config["PRODUCTION"] = True
 
-    # Suppress information log messages from Werkzeug
-    werkzeug_log = logging.getLogger("werkzeug")
-    if werkzeug_log:
-        werkzeug_log.setLevel(logging.WARNING)
+    gunicorn_logger = logging.getLogger('gunicorn.error')
+    if gunicorn_logger is not None:
+        # Running under gunicorn: use gunicorn's logger
+        app.logger.handlers = gunicorn_logger.handlers
+        app.logger.setLevel(gunicorn_logger.level)  # pylint: disable=no-member
 
     # Log our startup
     log_version = sys.version.replace("\n", " ")
@@ -310,11 +311,9 @@ else:
         f"with db_host={Settings.DB_HOSTNAME}:{Settings.DB_PORT} "
         f"on Python {log_version}"
     )
-    logging.info(log_str)
-    print(log_str)
-    sys.stdout.flush()
+    app.logger.info(log_str)  # pylint: disable=no-member
 
     # Pre-load the correction engine into memory
     reynir_correct.check_single("Þetta er upphitun")
 
-    logging.info("Instance warmed up and ready.")
+    app.logger.info("Instance warmed up and ready.")  # pylint: disable=no-member
