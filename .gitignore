@@ -6,6 +6,9 @@ __pycache__/
 # C extensions
 *.so
 
+# User and group for gunicorn process
+gunicorn_user.txt
+
 # Distribution / packaging
 .Python
 build/

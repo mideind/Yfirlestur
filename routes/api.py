@@ -52,6 +52,8 @@ RESULT_AVAILABILITY_WINDOW = timedelta(minutes=2)
 CLEANUP_INTERVAL = 15  # Seconds
 # How may child processes do we allow to be active at any given point in time?
 MAX_CHILD_TASKS = 250
+# Multiprocessing context with a 'fork' start method
+_CTX = multiprocessing.get_context("fork")
 
 
 @routes.route("/correct.process", methods=["POST"])
@@ -102,7 +104,7 @@ class ChildTask:
 
     processes: Dict[str, "ChildTask"] = dict()
     pool: Optional[multiprocessing.pool.Pool] = None
-    manager: Optional[multiprocessing.managers.BaseManager] = None
+    manager: Optional[multiprocessing.managers.SyncManager] = None
     lock = threading.Lock()
     progress: Dict[str, float] = dict()
 
@@ -113,11 +115,12 @@ class ChildTask:
         with cls.lock:
             if cls.pool is None:
                 # Set up a Manager for shared memory messaging
-                cls.manager = multiprocessing.Manager()
+                cls.manager = _CTX.Manager()
                 # Create an inter-process dict object to hold progress info
+                assert cls.manager is not None
                 cls.progress = cls.manager.dict()
                 # By default, use all available CPU cores except one
-                cls.pool = multiprocessing.Pool(multiprocessing.cpu_count() - 1)
+                cls.pool = _CTX.Pool(multiprocessing.cpu_count() - 1)
 
     def __init__(self) -> None:
         # Create the process pool that will be used for correction tasks.
