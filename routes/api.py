@@ -56,7 +56,7 @@ MAX_CHILD_TASKS = 250
 _CTX = multiprocessing.get_context("fork")
 # Number of processes in worker pool
 # By default, use all available CPU cores except one
-POOL_SIZE = int(os.environ["POOL_SIZE"], multiprocessing.cpu_count() - 1)
+POOL_SIZE = int(os.environ.get("POOL_SIZE", multiprocessing.cpu_count() - 1))
 
 
 @routes.route("/correct.api", methods=["POST"])
