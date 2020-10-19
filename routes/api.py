@@ -25,15 +25,16 @@
 
 from typing import Any, Dict, Tuple, Optional
 
+import os
+import time
+import threading
+import json
+import uuid
 from datetime import datetime, timedelta
 from functools import partial
 import multiprocessing
 import multiprocessing.pool
 import multiprocessing.managers
-import uuid
-import json
-import threading
-import time
 
 from flask import request, abort, url_for, current_app
 
@@ -53,6 +54,9 @@ CLEANUP_INTERVAL = 15  # Seconds
 MAX_CHILD_TASKS = 250
 # Multiprocessing context with a 'fork' start method
 _CTX = multiprocessing.get_context("fork")
+# Number of processes in worker pool
+# By default, use all available CPU cores except one
+POOL_SIZE = int(os.environ["POOL_SIZE"], multiprocessing.cpu_count() - 1)
 
 
 @routes.route("/correct.api", methods=["POST"])
@@ -118,8 +122,8 @@ class ChildTask:
                 # Create an inter-process dict object to hold progress info
                 assert cls.manager is not None
                 cls.progress = cls.manager.dict()
-                # By default, use all available CPU cores except one
-                cls.pool = _CTX.Pool(multiprocessing.cpu_count() - 1)
+                # Initialize the worker process pool
+                cls.pool = _CTX.Pool(POOL_SIZE)
 
     def __init__(self) -> None:
         # Create the process pool that will be used for correction tasks.
