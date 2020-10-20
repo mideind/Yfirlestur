@@ -83,6 +83,7 @@ def correct_async(version: int = 1) -> Any:
     assert isinstance(result, str)
     # Launch the correction task within a child process
     # and return an intermediate HTTP 202 result including a status/result URL
+    # that can be queried later to obtain the progress or the final result
     return ChildTask().launch(result)
 
 
@@ -91,7 +92,8 @@ def correct_async(version: int = 1) -> Any:
 def correct_sync(version: int = 1) -> Any:
     """ Correct text provided by the user, i.e. not coming from an article.
         This can be either an uploaded file or a string.
-        This is a lower level API used by the Greynir web front-end. """
+        This is a synchronous HTTP API call that is easy for third party
+        code to work with. """
     valid, result = validate(request, version)
     if not valid:
         return result
@@ -334,6 +336,8 @@ class ChildTask:
 
     @classmethod
     def cleanup(cls) -> None:
+        """ Clean up lapsed child tasks from the processes dict.
+            This is called every 15 seconds from a housecleaner thread. """
         # Only keep tasks that are running or
         # that finished within the result availability window
         keep_results = datetime.utcnow() - RESULT_AVAILABILITY_WINDOW
@@ -382,6 +386,6 @@ def exit_api():
         abort(404)
     shutdown_func = request.environ.get("werkzeug.server.shutdown")
     if shutdown_func is None:
-        raise RuntimeError("Not running with the Werkzeug Server")
+        abort(404)
     shutdown_func()
     return "The server has shut down"
