@@ -4,17 +4,26 @@
 
     Copyright (C) 2020 Miðeind ehf.
 
-       This program is free software: you can redistribute it and/or modify
-       it under the terms of the GNU General Public License as published by
-       the Free Software Foundation, either version 3 of the License, or
-       (at your option) any later version.
-       This program is distributed in the hope that it will be useful,
-       but WITHOUT ANY WARRANTY; without even the implied warranty of
-       MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-       GNU General Public License for more details.
+    This software is licensed under the MIT License:
 
-    You should have received a copy of the GNU General Public License
-    along with this program.  If not, see http://www.gnu.org/licenses/.
+        Permission is hereby granted, free of charge, to any person
+        obtaining a copy of this software and associated documentation
+        files (the "Software"), to deal in the Software without restriction,
+        including without limitation the rights to use, copy, modify, merge,
+        publish, distribute, sublicense, and/or sell copies of the Software,
+        and to permit persons to whom the Software is furnished to do so,
+        subject to the following conditions:
+
+        The above copyright notice and this permission notice shall be
+        included in all copies or substantial portions of the Software.
+
+        THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,
+        EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
+        MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.
+        IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY
+        CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,
+        TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE
+        SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 
     This module contains all routes for the Yfirlestur.is Flask web application.
@@ -35,8 +44,14 @@ from functools import wraps
 from datetime import datetime, timedelta
 
 from flask import (
-    Blueprint, jsonify, make_response, current_app, Response,
-    abort, request, url_for,
+    Blueprint,
+    jsonify,
+    make_response,
+    current_app,
+    Response,
+    abort,
+    request,
+    url_for,
 )
 from flask import _request_ctx_stack  # type: ignore
 from flask.ctx import RequestContext
@@ -58,7 +73,6 @@ def max_age(seconds: int) -> Callable[[Callable], Callable]:
         with a max-age cache header """
 
     def decorator(f):
-
         @wraps(f)
         def decorated_function(*args, **kwargs):
             resp = f(*args, **kwargs)
@@ -169,7 +183,7 @@ def before_first_request():
                 _tasks = {
                     task_id: task
                     for task_id, task in _tasks.items()
-                    if 't' not in task or task['t'] > five_min_ago
+                    if "t" not in task or task["t"] > five_min_ago
                 }
             time.sleep(60)
 
@@ -221,7 +235,7 @@ class _RequestProxy:
         """ Create an instance that walks and quacks sufficiently similarly
             to the Flask Request object in rq """
         self.method = rq.method
-        self.headers = { k: v for k, v in rq.headers }
+        self.headers = {k: v for k, v in rq.headers}
         self.environ = rq.environ
         self.blueprint = rq.blueprint
         self.progress_func = None
@@ -244,7 +258,7 @@ class _RequestProxy:
         # Make a copy of the passed-in files, if any, so that they
         # can be accessed and processed offline (after the original
         # request has been completed and temporary files deleted)
-        self.files = { k: _FileProxy(v) for k, v in rq.files.items() }
+        self.files = {k: _FileProxy(v) for k, v in rq.files.items()}
 
     def set_progress_func(self, progress_func):
         """ Set a function to call during processing of asynchronous requests """
@@ -299,8 +313,7 @@ def async_task(f):
             # intact and available even after the original request has been closed
             rq = _RequestProxy(request)
             new_task = threading.Thread(
-                target=task,
-                args=(current_app._get_current_object(), rq)
+                target=task, args=(current_app._get_current_object(), rq)
             )
 
         new_task.start()
@@ -314,13 +327,13 @@ def async_task(f):
             {
                 "Location": fancy_url_for("routes.get_task_status", task=task_id),
                 "Content-Type": "application/json; charset=utf-8",
-            }
+            },
         )
 
     return wrapped
 
 
-@routes.route('/task_status/<task>', methods=['GET'])
+@routes.route("/task_status/<task>", methods=["GET"])
 def get_task_status(task):
     """ Return the status of an asynchronous task. If this request returns a
         202 ACCEPTED status code, it means that task hasn't finished yet.
@@ -341,7 +354,7 @@ def get_task_status(task):
             {
                 "Location": fancy_url_for("routes.get_task_status", task=task_id),
                 "Content-Type": "application/json; charset=utf-8",
-            }
+            },
         )
 
 
