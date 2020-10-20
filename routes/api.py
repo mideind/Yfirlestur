@@ -36,7 +36,7 @@ import multiprocessing
 import multiprocessing.pool
 import multiprocessing.managers
 
-from flask import request, abort, url_for, current_app
+from flask import request, abort, url_for, current_app, Request
 
 from settings import Settings
 
@@ -50,6 +50,9 @@ from . import routes, better_jsonify, text_from_request
 RESULT_AVAILABILITY_WINDOW = timedelta(minutes=2)
 # How often do we check and clean up old results sitting in memory?
 CLEANUP_INTERVAL = 15  # Seconds
+# How long do we wait for a child task to complete before aborting
+# a synchronous request?
+MAX_SYNCHRONOUS_WAIT = 5 * 60.0  # 5 minutes
 # How may child processes do we allow to be active at any given point in time?
 MAX_CHILD_TASKS = 250
 # Multiprocessing context with a 'fork' start method
@@ -59,14 +62,56 @@ _CTX = multiprocessing.get_context("fork")
 POOL_SIZE = int(os.environ.get("POOL_SIZE", multiprocessing.cpu_count() - 1))
 
 
+@routes.route("/correct.task", methods=["POST"])
+@routes.route("/correct.task/v<int:version>", methods=["POST"])
+def correct_async(version: int = 1) -> Any:
+    """ Correct text provided by the user, i.e. not coming from an article.
+        This can be either an uploaded file or a string. This is a lower level,
+        asynchronous API used by the Greynir web front-end. """
+    valid, result = validate(request, version)
+    if not valid:
+        return result
+    assert isinstance(result, str)
+    # Launch the correction task within a child process
+    # and return an intermediate HTTP 202 result including a status/result URL
+    return ChildTask().launch(result)
+
+
 @routes.route("/correct.api", methods=["POST"])
 @routes.route("/correct.api/v<int:version>", methods=["POST"])
-def correct_process(version: int = 1) -> Any:
+def correct_sync(version: int = 1) -> Any:
     """ Correct text provided by the user, i.e. not coming from an article.
         This can be either an uploaded file or a string.
         This is a lower level API used by the Greynir web front-end. """
+    valid, result = validate(request, version)
+    if not valid:
+        return result
+    assert isinstance(result, str)
+    # Launch the correction task within a child process and wait for its outcome
+    task = ChildTask()
+    task.launch(result)
+    duration = 0.0
+    INCREMENT = 1.5  # Seconds
+    # Wait for the correction task for a maximum of 5 minutes
+    while duration < MAX_SYNCHRONOUS_WAIT:
+        # Check the progress of the child task once every 1.5 seconds
+        time.sleep(INCREMENT)
+        if task.is_complete:
+            # Finished (or an exception occurred): return the result
+            return task.result()
+        duration += INCREMENT
+    return better_jsonify(
+        valid=False,
+        reason=f"Request took too long to process; maximum is "
+        f"{MAX_SYNCHRONOUS_WAIT/60.0:.1f} minutes",
+    )
+
+
+def validate(request: Request, version: int) -> Tuple[bool, Any]:
+    """ Validate an incoming correction request and extract the
+        text to validate from it, if valid """
     if not (1 <= version <= 1):
-        return better_jsonify(valid=False, reason="Unsupported version")
+        return False, better_jsonify(valid=False, reason="Unsupported version")
 
     file = request.files.get("file")
     if file is not None:
@@ -75,7 +120,7 @@ def correct_process(version: int = 1) -> Any:
         # file is a proxy object that emulates a Werkzeug FileStorage object
         mimetype = file.mimetype
         if mimetype not in SUPPORTED_DOC_MIMETYPES:
-            return better_jsonify(valid=False, reason="File type not supported")
+            return False, better_jsonify(valid=False, reason="File type not supported")
 
         # Create document object from an uploaded file and extract its text
         try:
@@ -85,7 +130,7 @@ def correct_process(version: int = 1) -> Any:
             text = doc.extract_text()
         except Exception as e:
             current_app.logger.warning("Exception in correct_process(): {0}".format(e))
-            return better_jsonify(valid=False, reason="Error reading file")
+            return False, better_jsonify(valid=False, reason="Error reading file")
 
     else:
 
@@ -94,10 +139,14 @@ def correct_process(version: int = 1) -> Any:
             text = text_from_request(request)
         except Exception as e:
             current_app.logger.warning("Exception in correct_process(): {0}".format(e))
-            return better_jsonify(valid=False, reason="Invalid request")
+            return False, better_jsonify(valid=False, reason="Invalid request")
 
-    # Launch the correction task within a child process
-    return ChildTask().launch(text)
+    text = text.strip()
+    if not text:
+        return False, better_jsonify(valid=False, reason="Empty request")
+
+    # Request validated, return the text to correct
+    return True, text
 
 
 class ChildTask:
@@ -137,7 +186,7 @@ class ChildTask:
         self.progress[self.identifier] = 0.0
         # Initialize the process status
         self.status: Optional[multiprocessing.pool.ApplyResult] = None
-        self.result: Optional[Tuple] = None
+        self.task_result: Optional[Tuple] = None
         self.exception: Optional[BaseException] = None
         self.text = ""
         self.started = datetime.utcnow()
@@ -153,16 +202,16 @@ class ChildTask:
         """ This is a task that runs in a child process within the pool """
         # We do a bit of functools.partial magic to pass the process_id as the first
         # parameter to the progress_func whenever it is called
-        result = check_grammar(
+        task_result = check_grammar(
             text, progress_func=partial(ChildTask.progress_func, process_id)
         )
         # The result is automatically communicated back to the parent process via IPC
-        return result
+        return task_result
 
-    def complete(self, result: Tuple) -> None:
+    def complete(self, task_result: Tuple) -> None:
         """ This runs in the parent process when the task has completed
             within the child process """
-        self.result = result
+        self.task_result = task_result
 
     def error(self, e: BaseException) -> None:
         """ This runs in the parent process and is called if the
@@ -172,7 +221,7 @@ class ChildTask:
     @property
     def is_complete(self) -> bool:
         """ Return True if the child process has finished this task """
-        return self.result is not None or self.exception is not None
+        return self.task_result is not None or self.exception is not None
 
     @property
     def current_progress(self) -> float:
@@ -188,10 +237,10 @@ class ChildTask:
             # after removing this task from the process dictionary
             self.abort()
             raise self.exception
-        if self.result is None:
+        if self.task_result is None:
             raise ValueError("Child task is not complete")
         assert self.identifier in self.processes
-        pgs, stats = self.result
+        pgs, stats = self.task_result
         text = self.text
         self.abort()
         return pgs, stats, text
@@ -249,21 +298,27 @@ class ChildTask:
         if process is None:
             # This is not an ongoing task
             abort(410)  # Return HTTP 410 GONE
-        if process.exception is not None:
+        return process.result()
+
+    def result(self) -> Any:
+        """ Return a Response object with the current status of this child task """
+        if self.exception is not None:
             # The task raised an exception: remove it herewith,
             # and return an HTTP 200 reply with an error message
-            process.abort()
-            return better_jsonify(valid=False, error=str(process.exception))
-        if process.result is not None:
+            self.abort()
+            return better_jsonify(valid=False, error=str(self.exception))
+        if self.task_result is not None:
             # Task completed: return a HTTP 200 reply with a success result
-            pgs, stats, text = process.finish()
+            pgs, stats, text = self.finish()
             return better_jsonify(valid=True, result=pgs, stats=stats, text=text)
         # Not yet completed: report progress
         return (
-            json.dumps(dict(progress=process.current_progress)),
+            json.dumps(dict(progress=self.current_progress)),
             202,  # ACCEPTED
             {
-                "Location": url_for("routes.get_process_status", process=process_id),
+                "Location": url_for(
+                    "routes.get_process_status", process=self.identifier
+                ),
                 "Content-Type": "application/json; charset=utf-8",
             },
         )
@@ -278,7 +333,7 @@ class ChildTask:
             lapsed = [
                 process.identifier
                 for process in cls.processes.values()
-                if process.started < keep_results and process.result is not None
+                if process.started < keep_results and process.task_result is not None
             ]
             # Delete the lapsed processes from our list
             for process_id in lapsed:

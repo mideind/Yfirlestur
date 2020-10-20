@@ -164,8 +164,8 @@ textarea#txt.with-background {
          this.updateProgress();
          // Note: the following should not be a serverJsonQuery call,
          // this is done via a HTTP form post
-         // Endpoints with .api suffix are not cached
-         serverQuery('/correct.api',
+         // Endpoints with .task or .api suffix are not cached
+         serverQuery('/correct.task',
             {
                text : txt
             },
@@ -180,7 +180,7 @@ textarea#txt.with-background {
          this.updateProgress();
          // Send off ajax request
          $.ajax({
-            url: '/correct.api',
+            url: '/correct.task',
             type: 'POST',
             data: fd,
             success: this.start.bind(this),
