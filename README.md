@@ -173,27 +173,32 @@ is further [documented here](https://yfirlestur.is/doc/).
 
 ## Copyright and licensing
 
-Yfirlestur is copyright © 2020 [Miðeind ehf.](https://mideind.is)
+Yfirlestur is *copyright © 2020 by Miðeind ehf.*
 The original author of this software is *Vilhjálmur Þorsteinsson*.
 
-<img src="static/img/GPLv3.png" align="right" style="margin-left:20px;">
+This software is licensed under the **MIT License**:
 
-This set of programs is free software: you can redistribute it and/or modify it
-under the terms of the GNU General Public License as published by the Free
-Software Foundation, either version 3 of the License, or (at your option) any later
-version.
+*Permission is hereby granted, free of charge, to any person*
+*obtaining a copy of this software and associated documentation*
+*files (the "Software"), to deal in the Software without restriction,*
+*including without limitation the rights to use, copy, modify, merge,*
+*publish, distribute, sublicense, and/or sell copies of the Software,*
+*and to permit persons to whom the Software is furnished to do so,*
+*subject to the following conditions:*
 
-This set of programs is distributed in the hope that it will be useful, but WITHOUT
-ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR
-A PARTICULAR PURPOSE. See the GNU General Public License for more details.
+**The above copyright notice and this permission notice shall be**
+**included in all copies or substantial portions of the Software.**
 
-The full text of the GNU General Public License v3 is
-[included here](https://github.com/mideind/Yfirlestur/blob/master/LICENSE)
-and also available here:
-[https://www.gnu.org/licenses/gpl-3.0.html](https://www.gnu.org/licenses/gpl-3.0.html).
+*THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,*
+*EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF*
+*MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.*
+*IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY*
+*CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,*
+*TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE*
+*SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.*
 
-If you wish to use this set of programs in ways that are not covered under the
-GNU GPLv3 license, please contact us at [mideind@mideind.is](mailto:mideind@mideind.is)
-to negotiate a custom license. This applies for instance if you want to include or use
-this software, in part or in full, in other software that is not licensed under
-GNU GPLv3 or other compatible licenses.
+<img src="https://github.com/mideind/GreynirPackage/blob/master/doc/_static/MideindLogoVert100.png?raw=true" align="right" style="margin-left:20px;" alt="Miðeind ehf.">
+
+If you would like to use this software in ways that are incompatible
+with the standard MIT license, [contact Miðeind ehf.](mailto:mideind@mideind.is)
+to negotiate custom arrangements.
