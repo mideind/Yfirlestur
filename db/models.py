@@ -215,7 +215,7 @@ class Entity(Base):
     def name_lc(self):
         return self.name.lower()
 
-    @name_lc.comparator
+    @name_lc.comparator  # type: ignore
     def name_lc(cls):  # pylint: disable=no-self-argument
         return CaseInsensitiveComparator(cls.name)
 

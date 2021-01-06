@@ -260,8 +260,8 @@ textarea#txt.with-background {
          this.updateProgress();
          if (resp.status == 200) {
             // This is the final and complete response
-            // Show the results after a 0.5-second wait
-            setTimeout(this.populateResult.bind(this), 500, json)
+            // Show the results after a 0.2-second wait
+            setTimeout(this.populateResult.bind(this), 200, json)
          }
          else {
             // Something is wrong
@@ -432,6 +432,7 @@ textarea#txt.with-background {
       var x = "";
       var lastSp;
       w = []; // Token array (declared as a global in page.js)
+      var hoverFuncs = {}; // Hover functions for tokens, indexed by token index
       annSpan = []; // Array of annotation token spans
       var unknownWords = {}; // Dict of already seen unknown words
       $.each(j, function(pix, p) {
@@ -471,20 +472,38 @@ textarea#txt.with-background {
                }
                // Check whether the token occurs inside an annotation
                // This is fairly inefficient but that is not a problem in practice
+               var hoverAnnotations = { a: [] };
+               var clsAnnotation;
                $.each(s.annotations, function(aix, a) {
                   // Annotation a
                   if (tix >= a.start && tix <= a.end) {
                      // The annotation applies to this token:
                      // mark the token
-                     if (isWarning(a.code))
+                     if (isWarning(a.code)) {
                         // Suggestion or taboo word warning
-                        cls.push("warntok");
+                        if (clsAnnotation === undefined)
+                           clsAnnotation = "warntok";
+                     }
                      else
                         // Other error
-                        cls.push("errtok");
-                     return false; // break from $each loop
+                        clsAnnotation = "errtok";
+                     hoverAnnotations.a.push(a);
                   }
                });
+               if (clsAnnotation)
+                  cls.push(clsAnnotation);
+               // Create hover functions for this token
+               if (hoverAnnotations.a.length) {
+                  var hoverInFunc = function() {
+                     for (var i = 0; i < this.a.length; i++)
+                        $("#a" + this.a[i].divId).addClass("highlight");
+                  }.bind(hoverAnnotations);
+                  var hoverOutFunc = function() {
+                     for (var i = 0; i < this.a.length; i++)
+                        $("#a" + this.a[i].divId).removeClass("highlight");
+                  }.bind(hoverAnnotations);
+                  hoverFuncs[w.length] = [ hoverInFunc, hoverOutFunc ];
+               }
                left += "<i id='w" + w.length +
                   "' class='" + cls.join(" ") + "'>" + tx + "</i>";
                // Append to word/token list
@@ -494,6 +513,7 @@ textarea#txt.with-background {
             $.each(s.annotations, function(aix, a) {
                // Annotation a
                // We do not show repeated annotations for unknown words
+               a.divId = undefined;
                if (a.code !== "U001" || unknownWords[a.text] === undefined) {
                   var cls = isWarning(a.code) ? " warning" : "";
                   var detail = "";
@@ -506,13 +526,14 @@ textarea#txt.with-background {
                         "</div>";
                      info = "<span class='ann-info glyphicon glyphicon-info'></span>";
                   }
-                  right += "<div id='a" + annSpan.length + "'>" +
+                  a.divId = annSpan.length;
+                  right += "<div id='a" + a.divId + "'>" +
                      "<div class='ann-text" + cls + "'>" + info + formatAnnotation(a.text) + "</div>" +
                      detail +
                      "</div>\n";
                   // Add a path to the canvas (empty at this point
                   // but will be defined in repositionAnnotations())
-                  canvas += "<path id='p" + annSpan.length + "'" + cls + "></path>\n";
+                  canvas += "<path id='p" + a.divId + "'" + cls + "></path>\n";
                   // Note the token span to which the annotation applies,
                   // within the global token list
                   annSpan.push({start: six + a.start, end: six + a.end});
@@ -537,6 +558,10 @@ textarea#txt.with-background {
       });
       // Show the text and annotation columns
       $("div#pgs").html(x);
+      // Add hover functionality on all annotated tokens
+      for (i = 0; i < w.length; i++)
+         if (hoverFuncs[i] !== undefined)
+            $("#w" + i).hover(hoverFuncs[i][0], hoverFuncs[i][1]);
       if (!annSpan.length) {
          // No annotations: show that fact
          $("#no-annotations").css("display", "inline-block");

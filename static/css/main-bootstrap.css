@@ -1121,6 +1121,11 @@ div.annotation div.ann-text {
    cursor: pointer;
 }
 
+div.annotation div.highlight div.ann-text {
+   color: white;
+   background-color: #ff7c24;
+}
+
 div.annotation div.ann-text:hover {
    background-color: rgba(255, 124, 36, 0.05);
 }
@@ -1128,6 +1133,11 @@ div.annotation div.ann-text:hover {
 div.annotation div.ann-text.warning {
    color: #ffb400;
    border: 1px solid #ffb400;
+}
+
+div.annotation div.highlight div.ann-text.warning {
+   background-color: #ffb400;
+   color: white;
 }
 
 div.annotation div.ann-text.warning:hover {
