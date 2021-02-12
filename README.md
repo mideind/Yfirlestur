@@ -1,6 +1,6 @@
 [![Join the chat at https://gitter.im/Greynir/Lobby](https://badges.gitter.im/Greynir/Lobby.svg)](https://gitter.im/Greynir/Lobby?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)
 
-<img src="static/img/yfirlestur-logo-large.png" alt="Yfirlestur" width="200" height="140"
+<img src="static/img/yfirlestur-logo-large.png" alt="Yfirlestur" width="200" height="200"
   align="right" style="margin-left:20px; margin-bottom: 20px;">
 
 # Yfirlestur
