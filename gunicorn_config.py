@@ -11,7 +11,7 @@ if Y_DEBUGGING:
     DIR = './'
     bind="127.0.0.1:5002"
 else:
-    DIR = '/usr/share/nginx/yfirlestur.is/'
+    DIR = '/usr/share/nginx/yfirlestur.is/'  # type: ignore
     bind = 'unix:' + DIR + 'gunicorn.sock'
 
 # Since Yfirlestur implements its own multiprocessing pool

@@ -4,7 +4,7 @@
 
     High-level wrappers for checking grammar and spelling
 
-    Copyright (C) 2020 Miðeind ehf.
+    Copyright (C) 2021 Miðeind ehf.
 
     This software is licensed under the MIT License:
 
@@ -33,8 +33,14 @@
 
 """
 
+from typing import List, Dict, Tuple, Any, Union, Iterator, Iterable, Optional, Callable, cast
+
+from reynir.bintokenizer import Tok, StringIterable
+from reynir import Sentence, Paragraph
+
 import reynir_correct
 import nertokenizer
+from reynir_correct.annotation import Annotation
 
 
 class RecognitionPipeline(reynir_correct.CorrectionPipeline):
@@ -42,10 +48,10 @@ class RecognitionPipeline(reynir_correct.CorrectionPipeline):
     """ Derived class that adds a named entity recognition pass
         to the GreynirCorrect tokenization pipeline """
 
-    def __init__(self, text):
+    def __init__(self, text: StringIterable) -> None:
         super().__init__(text)
 
-    def recognize_entities(self, stream):
+    def recognize_entities(self, stream: Iterator[Tok]) -> Iterator[Tok]:
         """ Recognize named entities using the nertokenizer module,
             but construct tokens using the Correct_TOK class from
             reynir_correct """
@@ -62,14 +68,14 @@ class NERCorrect(reynir_correct.GreynirCorrect):
     def __init__(self):
         super().__init__()
 
-    def tokenize(self, text):
+    def tokenize(self, text_or_gen: StringIterable) -> Iterator[Tok]:
         """ Use the recognizing & correcting tokenizer instead
             of the normal one """
-        pipeline = RecognitionPipeline(text)
+        pipeline = RecognitionPipeline(text_or_gen)
         return pipeline.tokenize()
 
 
-def check_grammar(text, *, progress_func=None):
+def check_grammar(text: str, *, progress_func: Optional[Callable[[float], None]]=None) -> Tuple[Any, ...]:
     """ Check the grammar and spelling of the given text and return
         a list of annotated paragraphs, containing sentences, containing
         tokens. The progress_func, if given, will be called periodically
@@ -83,9 +89,10 @@ def check_grammar(text, *, progress_func=None):
         progress_func=progress_func
     )
 
-    def encode_sentence(sent):
+    def encode_sentence(sent: Sentence) -> Dict[str, Any]:
         """ Map a reynir._Sentence object to a raw sentence dictionary
             expected by the web UI """
+        tokens: List[Dict[str, Union[int, str]]]
         if sent.tree is None:
             # Not parsed: use the raw token list
             tokens = [dict(k=d.kind, x=d.txt) for d in sent.tokens]
@@ -93,6 +100,7 @@ def check_grammar(text, *, progress_func=None):
             # Successfully parsed: use the text from the terminals (where available)
             # since we have more info there, for instance on em/en dashes.
             # Create a map of token indices to corresponding terminal text
+            assert sent.terminals is not None
             token_map = {t.index : t.text for t in sent.terminals}
             tokens = [
                 dict(
@@ -100,32 +108,35 @@ def check_grammar(text, *, progress_func=None):
                     x=token_map.get(ix, d.txt)
                 ) for ix, d in enumerate(sent.tokens)
             ]
+        a = cast(Iterable[Annotation], getattr(sent, "annotations", []))
+        annotations: List[Dict[str, Any]] = [
+            dict(
+                start=ann.start,
+                end=ann.end,
+                code=ann.code,
+                text=ann.text,
+                detail=ann.detail,
+                suggest=ann.suggest,
+            )
+            for ann in a
+        ]
         return dict(
             tokens=tokens,
-            annotations=[
-                dict(
-                    start=ann.start,
-                    end=ann.end,
-                    code=ann.code,
-                    text=ann.text,
-                    detail=ann.detail,
-                    suggest=ann.suggest,
-                )
-                for ann in sent.annotations
-            ],
+            annotations=annotations,
             corrected=sent.tidy_text,
         )
 
+    pglist = cast(Iterable[Paragraph], result["paragraphs"])
     pgs = [
         [encode_sentence(sent) for sent in pg]
-        for pg in result["paragraphs"]
+        for pg in pglist
     ]
 
-    stats = dict(
+    stats: Dict[str, Any] = dict(
         num_tokens=result["num_tokens"],
         num_sentences=result["num_sentences"],
         num_parsed=result["num_parsed"],
-        ambiguity=result["ambiguity"]
+        ambiguity=result["ambiguity"],
     )
 
     return pgs, stats

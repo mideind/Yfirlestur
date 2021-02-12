@@ -1,7 +1,7 @@
 """
     Greynir: Natural language processing for Icelandic
 
-    Copyright (C) 2020 Miðeind ehf.
+    Copyright (C) 2021 Miðeind ehf.
 
     This software is licensed under the MIT License:
 
@@ -30,13 +30,12 @@
 
 """
 
-from typing import Union, Dict, Type
+from typing import Union, Dict, Type, Any
 
 import abc
 from io import BytesIO
 import re
 from zipfile import ZipFile
-from pathlib import Path
 import html2text
 from striprtf.striprtf import rtf_to_text  # type: ignore
 
@@ -105,7 +104,7 @@ class HTMLDocument(Document):
         h.ignore_images = True
         h.unicode_snob = True
         h.ignore_tables = True
-        h.decode_errors = "ignore"
+        # h.decode_errors = "ignore"
         h.body_width = 0
 
         text = h.handle(html)
@@ -154,11 +153,12 @@ class DocxDocument(Document):
         zipfile.close()
 
         # Parse it
-        tree = ElementTree.fromstring(content)
+        tree: Any = ElementTree.fromstring(content)  # type: ignore
 
         # Extract text elements from all paragraphs
         # (with special handling of line breaks)
         paragraphs = []
+        p: Any
         for p in tree.iter(self.PARAGRAPH_TAG):
             texts = []
             for node in p.iter():

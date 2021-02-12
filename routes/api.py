@@ -2,7 +2,7 @@
 
     Greynir: Natural language processing for Icelandic
 
-    Copyright (C) 2020 Miðeind ehf.
+    Copyright (C) 2021 Miðeind ehf.
 
     This software is licensed under the MIT License:
 
@@ -140,7 +140,7 @@ def validate(request: Request, version: int) -> Tuple[bool, Any]:
             doc = doc_class(file.read())
             text = doc.extract_text()
         except Exception as e:
-            current_app.logger.warning("Exception in correct_process(): {0}".format(e))
+            current_app.logger.warning("Exception in correct_process(): {0}".format(e))  # type: ignore
             return False, better_jsonify(valid=False, reason="Error reading file")
 
     else:
@@ -149,7 +149,7 @@ def validate(request: Request, version: int) -> Tuple[bool, Any]:
         try:
             text = text_from_request(request)
         except Exception as e:
-            current_app.logger.warning("Exception in correct_process(): {0}".format(e))
+            current_app.logger.warning("Exception in correct_process(): {0}".format(e))  # type: ignore
             return False, better_jsonify(valid=False, reason="Invalid request")
 
     text = text.strip()
@@ -196,8 +196,8 @@ class ChildTask:
         # Store the initial progress in the interprocess dict
         self.progress[self.identifier] = 0.0
         # Initialize the process status
-        self.status: Optional[multiprocessing.pool.ApplyResult] = None
-        self.task_result: Optional[Tuple] = None
+        self.status: Optional[multiprocessing.pool.ApplyResult[Tuple[Any, ...]]] = None
+        self.task_result: Optional[Tuple[Any, ...]] = None
         self.exception: Optional[BaseException] = None
         self.text = ""
         self.started = datetime.utcnow()
@@ -209,7 +209,7 @@ class ChildTask:
             ChildTask.progress[process_id] = progress
 
     @staticmethod
-    def task(process_id: str, text: str) -> Tuple:
+    def task(process_id: str, text: str) -> Tuple[Any, ...]:
         """ This is a task that runs in a child process within the pool """
         # We do a bit of functools.partial magic to pass the process_id as the first
         # parameter to the progress_func whenever it is called
@@ -219,7 +219,7 @@ class ChildTask:
         # The result is automatically communicated back to the parent process via IPC
         return task_result
 
-    def complete(self, task_result: Tuple) -> None:
+    def complete(self, task_result: Tuple[Any, ...]) -> None:
         """ This runs in the parent process when the task has completed
             within the child process """
         self.task_result = task_result
@@ -239,7 +239,7 @@ class ChildTask:
         """ Return the current progress of this child task """
         return self.progress.get(self.identifier, 0.0)
 
-    def finish(self) -> Tuple:
+    def finish(self) -> Tuple[Any, Any, str]:
         """ Finish a task that ran within a child process,
             removing it from the dictionary of active tasks
             and returning its results """
@@ -362,7 +362,7 @@ def get_process_status(process: str):
     return ChildTask.get_status(process)
 
 
-@routes.before_app_first_request
+@routes.before_app_first_request  # type: ignore
 def delete_old_child_tasks() -> None:
     """ Start a background thread that cleans up old tasks """
 

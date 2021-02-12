@@ -5,7 +5,7 @@
 
     Yfirlestur.is server main module
 
-    Copyright (C) 2020 Miðeind ehf.
+    Copyright (C) 2021 Miðeind ehf.
 
     This software is licensed under the MIT License:
 
@@ -41,7 +41,16 @@
 
 """
 
-from typing import List, Pattern, Dict, Any, Optional, Union
+from typing import (
+    List,
+    Tuple,
+    Pattern,
+    Dict,
+    Any,
+    Optional,
+    Union,
+    cast,
+)
 
 import sys
 import os
@@ -50,7 +59,7 @@ import re
 import logging
 from datetime import datetime
 
-from flask import Flask, render_template, send_from_directory, jsonify
+from flask import Flask, Response, render_template, send_from_directory, jsonify
 from flask_caching import Cache  # type: ignore
 from flask_cors import CORS  # type: ignore
 
@@ -58,7 +67,6 @@ from werkzeug.middleware.proxy_fix import ProxyFix
 
 import reynir
 from reynir.bindb import BIN_Db
-from reynir.fastparser import Fast_Parser
 
 import reynir_correct
 
@@ -77,7 +85,7 @@ cors = CORS(app)
 app.config["CORS_HEADERS"] = "Content-Type"
 
 # Fix access to client remote_addr when running behind proxy
-setattr(app, "wsgi_app", ProxyFix(app.wsgi_app))
+setattr(app, "wsgi_app", ProxyFix(app.wsgi_app))  # type: ignore
 
 app.config["JSON_AS_ASCII"] = False  # We're fine with using Unicode/UTF-8
 app.config["MAX_CONTENT_LENGTH"] = 1 * 1024 * 1024  # 1 MB, max upload file size
@@ -97,17 +105,19 @@ cache = Cache(app, config={"CACHE_TYPE": cache_type})
 app.config["CACHE"] = cache
 
 # Register blueprint routes
-from routes import routes, max_age
+from routes import routes as routes_blueprint, max_age
 
-app.register_blueprint(routes)
+app.register_blueprint(routes_blueprint)
 
 
 # Utilities for Flask/Jinja2 formatting of numbers using the Icelandic locale
-def make_pattern(rep_dict: Dict[str, Any]) -> Pattern:
+def make_pattern(rep_dict: Dict[str, Any]) -> Pattern[str]:
     return re.compile("|".join([re.escape(k) for k in rep_dict.keys()]), re.M)
 
 
-def multiple_replace(string: str, rep_dict: Dict[str, str], pattern: Optional[Pattern]=None) -> str:
+def multiple_replace(
+    string: str, rep_dict: Dict[str, str], pattern: Optional[Pattern[str]] = None
+) -> str:
     """ Perform multiple simultaneous replacements within string """
     if pattern is None:
         pattern = make_pattern(rep_dict)
@@ -118,22 +128,24 @@ _REP_DICT_IS = {",": ".", ".": ","}
 _PATTERN_IS = make_pattern(_REP_DICT_IS)
 
 
-@app.template_filter("format_is")
-def format_is(r: float, decimals: int=0) -> str:
+@app.template_filter("format_is")  # type: ignore
+def format_is(r: float, decimals: int = 0) -> str:
     """ Flask/Jinja2 template filter to format a number for the Icelandic locale """
     fmt = "{0:,." + str(decimals) + "f}"
     return multiple_replace(fmt.format(float(r)), _REP_DICT_IS, _PATTERN_IS)
 
 
-@app.template_filter("format_ts")
+@app.template_filter("format_ts")  # type: ignore
 def format_ts(ts: datetime) -> str:
     """ Flask/Jinja2 template filter to format a timestamp """
     return str(ts)[0:19]
 
 
 # Flask cache busting for static .css and .js files
-@app.url_defaults
-def hashed_url_for_static_file(endpoint: str, values: Dict[str, Union[int, str]]) -> None:
+@app.url_defaults  # type: ignore
+def hashed_url_for_static_file(
+    endpoint: str, values: Dict[str, Union[int, str]]
+) -> None:
     """ Add a ?h=XXX parameter to URLs for static .js and .css files,
         where XXX is calculated from the file timestamp """
 
@@ -168,22 +180,22 @@ def send_font(path: str):
 
 # Custom 404 error handler
 @app.errorhandler(404)
-def page_not_found(e):
+def page_not_found(e: BaseException) -> str:
     """ Return a custom 404 error """
     return render_template("404.html")
 
 
 # Custom 500 error handler
 @app.errorhandler(500)
-def server_error(e):
+def server_error(e: BaseException) -> str:
     """ Return a custom 500 error """
     return render_template("500.html")
 
 
 @app.errorhandler(410)
-def resource_gone(e):
+def resource_gone(e: BaseException) -> Tuple[Response, int]:
     """ Return a custom 410 GONE error """
-    return jsonify(valid=False, error=str(e)), 410
+    return cast(Response, jsonify(valid=False, error=str(e))), 410
 
 
 # Initialize the main module
@@ -192,7 +204,9 @@ try:
     # Read configuration file
     Settings.read(os.path.join("config", "Yfirlestur.conf"))
 except ConfigError as e:
-    logging.error("Yfirlestur.is did not start due to a configuration error:\n{0}".format(e))
+    logging.error(
+        "Yfirlestur.is did not start due to a configuration error:\n{0}".format(e)
+    )
     sys.exit(1)
 
 if Settings.DEBUG:
@@ -244,9 +258,9 @@ if not RUNNING_AS_SERVER:
         "Names.conf",
     ]
 
-    dirs = list(
-        map(os.path.dirname, [__file__, reynir.__file__, reynir_correct.__file__])
-    )  # type: List[str]
+    dirs: List[str] = list(
+        map(os.path.dirname, [__file__, reynir.__file__, reynir_correct.__file__])  # type: ignore
+    )
     for i, fname in enumerate(extra_files):
         # Look for the extra file in the different package directories
         for directory in dirs:
@@ -307,11 +321,11 @@ if not RUNNING_AS_SERVER:
 else:
     app.config["PRODUCTION"] = True
 
-    gunicorn_logger = logging.getLogger('gunicorn.error')
+    gunicorn_logger = logging.getLogger("gunicorn.error")
     if gunicorn_logger is not None:
         # Running under gunicorn: use gunicorn's logger
-        app.logger.handlers = gunicorn_logger.handlers
-        app.logger.setLevel(gunicorn_logger.level)  # pylint: disable=no-member
+        app.logger.handlers = gunicorn_logger.handlers  # type: ignore
+        app.logger.setLevel(gunicorn_logger.level)  # type: ignore
 
     # Log our startup
     log_version = sys.version.replace("\n", " ")
@@ -320,9 +334,9 @@ else:
         f"with db_host={Settings.DB_HOSTNAME}:{Settings.DB_PORT} "
         f"on Python {log_version}"
     )
-    app.logger.info(log_str)  # pylint: disable=no-member
+    app.logger.info(log_str)  # type: ignore
 
     # Pre-load the correction engine into memory
     reynir_correct.check_single("Þetta er upphitun")
 
-    app.logger.info("Instance warmed up and ready.")  # pylint: disable=no-member
+    app.logger.info("Instance warmed up and ready.")  # type: ignore

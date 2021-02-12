@@ -4,7 +4,7 @@
 
     Scraper database model
 
-    Copyright (C) 2020 Miðeind ehf.
+    Copyright (C) 2021 Miðeind ehf.
 
     This software is licensed under the MIT License:
 
@@ -32,12 +32,12 @@
 
 """
 
-from typing import Optional
-
-import platform
+from typing import Optional, Callable, Any, Type
+from typing_extensions import Literal
 
 from sqlalchemy import create_engine, desc, func as dbfunc  # type: ignore
-from sqlalchemy.orm import sessionmaker  # type: ignore
+from sqlalchemy.orm import sessionmaker, Session  # type: ignore
+from sqlalchemy.engine import ResultProxy  # type: ignore
 from sqlalchemy.exc import (  # type: ignore
     SQLAlchemyError as DatabaseError,
     IntegrityError,
@@ -59,7 +59,6 @@ class Scraper_DB:
 
         # Assemble the right connection string for CPython/psycopg2 vs.
         # PyPy/psycopg2cffi, respectively
-        # is_pypy = platform.python_implementation() == "PyPy"
         conn_str = "postgresql+{0}://reynir:reynir@{1}:{2}/scraper".format(
             "psycopg2cffi",  # if is_pypy else "psycopg2",
             Settings.DB_HOSTNAME,
@@ -68,27 +67,27 @@ class Scraper_DB:
 
         # Create engine and bind session
         self._engine = create_engine(conn_str)
-        self._Session = sessionmaker(bind=self._engine)
+        self._Session: Callable[[], Session] = sessionmaker(bind=self._engine)
 
-    def create_tables(self):
+    def create_tables(self) -> None:
         """ Create all missing tables in the database """
-        Base.metadata.create_all(self._engine)
+        Base.metadata.create_all(self._engine)  # type: ignore
 
-    def execute(self, sql, **kwargs):
+    def execute(self, sql: str, **kwargs: Any) -> ResultProxy:
         """ Execute raw SQL directly on the engine """
-        return self._engine.execute(sql, **kwargs)
+        return self._engine.execute(sql, **kwargs)  # type: ignore
 
     @property
-    def session(self):
+    def session(self) -> Session:
         """ Returns a freshly created Session instance from the sessionmaker """
         return self._Session()
 
 
 class classproperty:
-    def __init__(self, f):
+    def __init__(self, f: Callable[[Any], Any]) -> None:
         self.f = f
 
-    def __get__(self, obj, owner):
+    def __get__(self, obj: Any, owner: Any) -> Any:
         return self.f(owner)
 
 
@@ -97,29 +96,33 @@ class SessionContext:
     """ Context manager for database sessions """
 
     # Singleton instance of Scraper_DB
-    _db = None  # type: Optional[Scraper_DB]
+    _db: Optional[Scraper_DB] = None
 
     # pylint: disable=no-self-argument
     @classproperty
-    def db(cls):
+    def db(cls) -> Scraper_DB:
         if cls._db is None:
             cls._db = Scraper_DB()
         return cls._db
 
     @classmethod
-    def cleanup(cls):
+    def cleanup(cls) -> None:
         """ Clean up the reference to the singleton Scraper_DB instance """
         cls._db = None
 
-    def __init__(self, session=None, commit=False, read_only=False):
+    def __init__(
+        self,
+        session: Optional["SessionContext"] = None,
+        commit: bool = False,
+        read_only: bool = False,
+    ):
 
         if session is None:
             # Create a new session that will be automatically committed
             # (if commit == True) and closed upon exit from the context
             # pylint: disable=no-member
-            self._session = (
-                self.db.session
-            )  # Creates a new Scraper_DB instance if needed
+            # Creates a new Scraper_DB instance if needed
+            self._session = self.db.session
             self._new_session = True
             if read_only:
                 # Set the transaction as read only, which can save resources
@@ -132,21 +135,23 @@ class SessionContext:
             self._session = session
             self._commit = False
 
-    def __enter__(self):
+    def __enter__(self) -> Any:
         """ Python context manager protocol """
         # Return the wrapped database session
         return self._session
 
     # noinspection PyUnusedLocal
-    def __exit__(self, exc_type, exc_value, traceback):
+    def __exit__(
+        self, exc_type: Type[BaseException], exc_value: BaseException, traceback: Any
+    ) -> Literal[False]:
         """ Python context manager protocol """
         if self._new_session:
             if self._commit:
                 if exc_type is None:
                     # No exception: commit if requested
-                    self._session.commit()
+                    self._session.commit()  # type: ignore
                 else:
-                    self._session.rollback()
-            self._session.close()
+                    self._session.rollback()  # type: ignore
+            self._session.close()  # type: ignore
         # Return False to re-throw exception from the context, if any
         return False

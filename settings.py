@@ -3,7 +3,7 @@
 
     Settings module
 
-    Copyright (c) 2020 Miðeind ehf.
+    Copyright (c) 2021 Miðeind ehf.
 
     This software is licensed under the MIT License:
 
@@ -40,14 +40,14 @@
 
 """
 
+from typing import List, Iterator, Optional
+
 import os
 import codecs
 import locale
 import threading
 
-from contextlib import contextmanager, closing
-from collections import defaultdict
-from threading import Lock
+from contextlib import contextmanager
 
 
 # The locale used by default in the changedlocale function
@@ -58,18 +58,18 @@ class ConfigError(Exception):
 
     """ Exception class for configuration errors """
 
-    def __init__(self, s):
-        Exception.__init__(self, s)
-        self.fname = None
-        self.line = 0
+    def __init__(self, s: str) -> None:
+        super().__init__(self, s)
+        self.fname: Optional[str] = None
+        self.line: int = 0
 
-    def set_pos(self, fname, line):
+    def set_pos(self, fname: str, line: int) -> None:
         """ Set file name and line information, if not already set """
         if not self.fname:
             self.fname = fname
             self.line = line
 
-    def __str__(self):
+    def __str__(self) -> str:
         """ Return a string representation of this exception """
         s = Exception.__str__(self)
         if not self.fname:
@@ -81,20 +81,20 @@ class LineReader:
 
     """ Read lines from a text file, recognizing $include directives """
 
-    def __init__(self, fname, outer_fname=None, outer_line=0):
+    def __init__(self, fname: str, outer_fname: Optional[str]=None, outer_line: int=0) -> None:
         self._fname = fname
         self._line = 0
-        self._inner_rdr = None
+        self._inner_rdr: Optional["LineReader"] = None
         self._outer_fname = outer_fname
         self._outer_line = outer_line
 
-    def fname(self):
+    def fname(self) -> str:
         return self._fname if self._inner_rdr is None else self._inner_rdr.fname()
 
-    def line(self):
+    def line(self) -> int:
         return self._line if self._inner_rdr is None else self._inner_rdr.line()
 
-    def lines(self):
+    def lines(self) -> Iterator[str]:
         """ Generator yielding lines from a text file """
         self._line = 0
         try:
@@ -139,7 +139,7 @@ class LineReader:
 
 
 @contextmanager
-def changedlocale(new_locale=None, category='LC_COLLATE'):
+def changedlocale(new_locale: Optional[str]=None, category: str='LC_COLLATE'):
     """ Change locale temporarily within a context (with-statement) """
     # The new locale parameter should be a tuple, e.g. ('is_IS', 'UTF-8')
     # The category should be a string such as 'LC_TIME', 'LC_NUMERIC' etc.
@@ -152,7 +152,7 @@ def changedlocale(new_locale=None, category='LC_COLLATE'):
         locale.setlocale(cat, old_locale)
 
 
-def sort_strings(strings, loc=None):
+def sort_strings(strings: List[str], loc: Optional[str]=None) -> List[str]:
     """ Sort a list of strings using the specified locale's collation order """
     # Change locale temporarily for the sort
     with changedlocale(loc) as strxfrm:
@@ -165,48 +165,40 @@ def sort_strings(strings, loc=None):
 class Settings:
 
     _lock = threading.Lock()
-    loaded = False
+    loaded: bool = False
 
     # Postgres SQL database server hostname and port
-    DB_HOSTNAME = os.environ.get("GREYNIR_DB_HOST", "localhost")
-    db_port_str = os.environ.get("GREYNIR_DB_PORT", "5432")  # Default PostgreSQL port
+    DB_HOSTNAME: str = os.environ.get("GREYNIR_DB_HOST", "localhost")
+    db_port_str: str = os.environ.get("GREYNIR_DB_PORT", "5432")  # Default PostgreSQL port
 
     try:
         DB_PORT = int(db_port_str)
     except ValueError:
         raise ConfigError(
-            "Invalid environment variable value: DB_PORT={0}"
-            .format(DB_PORT)
+            "Invalid environment variable value: DB_PORT"
         )
 
     # Flask server host and port
-    HOST = os.environ.get("GREYNIR_HOST", "localhost")
-    port_str = os.environ.get("GREYNIR_PORT", "5000")
+    HOST: str = os.environ.get("GREYNIR_HOST", "localhost")
+    port_str: str = os.environ.get("GREYNIR_PORT", "5000")
     try:
         PORT = int(port_str)
     except ValueError:
         raise ConfigError(
-            "Invalid environment variable value: GREYNIR_PORT={0}"
-            .format(PORT)
+            "Invalid environment variable value: GREYNIR_PORT"
         )
 
     # Flask debug parameter
-    DEBUG = False
+    DEBUG: bool = False
 
     # Configuration settings from the Yfirlestur.conf file
 
     @staticmethod
-    def _handle_settings(s):
+    def _handle_settings(s: str) -> None:
         """ Handle config parameters in the settings section """
         a = s.lower().split("=", maxsplit=1)
         par = a[0].strip().lower()
         val = a[1].strip()
-        if val.lower() == "none":
-            val = None
-        elif val.lower() == "true":
-            val = True
-        elif val.lower() == "false":
-            val = False
         try:
             if par == "db_hostname":
                 Settings.DB_HOSTNAME = val
@@ -217,14 +209,14 @@ class Settings:
             elif par == "port":
                 Settings.PORT = int(val)
             elif par == "debug":
-                Settings.DEBUG = bool(val)
+                Settings.DEBUG = val.lower() in {"true", "yes", "1"}
             else:
                 raise ConfigError("Unknown configuration parameter '{0}'".format(par))
         except ValueError:
             raise ConfigError("Invalid parameter value: {0}={1}".format(par, val))
 
     @staticmethod
-    def read(fname):
+    def read(fname: str) -> None:
         """ Read configuration file """
 
         with Settings._lock:
@@ -238,6 +230,7 @@ class Settings:
             handler = None  # Current section handler
 
             rdr = None
+            s: str
             try:
                 rdr = LineReader(fname)
                 for s in rdr.lines():

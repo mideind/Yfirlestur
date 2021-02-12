@@ -4,7 +4,7 @@
 
     Scraper database models
 
-    Copyright (C) 2020 Miðeind ehf.
+    Copyright (C) 2021 Miðeind ehf.
 
     This software is licensed under the MIT License:
 
@@ -32,8 +32,6 @@
 
 """
 
-from typing import Type
-
 from sqlalchemy import (  # type: ignore
     Table,
     Column,
@@ -48,14 +46,13 @@ from sqlalchemy import (  # type: ignore
     ForeignKey,
     PrimaryKeyConstraint,
     func,
-    text
+    text,
 )
 from sqlalchemy.orm import relationship, backref  # type: ignore
 from sqlalchemy.ext.declarative import DeclarativeMeta, declarative_base  # type: ignore
 from sqlalchemy.ext.hybrid import Comparator, hybrid_property  # type: ignore
-from sqlalchemy.dialects.postgresql import (  # type: ignore
-    JSONB, INET, UUID as psql_UUID
-)
+from sqlalchemy.dialects.postgresql import JSONB, INET, UUID as psql_UUID  # type: ignore
+from sqlalchemy.orm.relationships import RelationshipProperty  # type: ignore
 
 
 class CaseInsensitiveComparator(Comparator):
@@ -65,8 +62,8 @@ class CaseInsensitiveComparator(Comparator):
 
     # See https://docs.sqlalchemy.org/en/13/orm/extensions/hybrid.html
 
-    def __eq__(self, other):
-        return func.lower(self.__clause_element__()) == func.lower(other)
+    def __eq__(self, other: object) -> bool:
+        return func.lower(self.__clause_element__()) == func.lower(other)  # type: ignore
 
 
 # Create the SQLAlchemy ORM Base class
@@ -179,10 +176,12 @@ class Article(Base):
     topic_vector = Column(String)
 
     # The back-reference to the Root parent of this Article
-    root = relationship(
+    # Modify this to RelationshipProperty[Root] once Pylance, Mypy and Python 3.6
+    # settle their differences
+    root: RelationshipProperty = relationship(
         "Root",
         foreign_keys="Article.root_id",
-        backref=backref("articles", order_by=url),
+        backref=backref("articles", order_by=url),  # type: ignore
     )
 
     def __repr__(self):
@@ -212,7 +211,7 @@ class Entity(Base):
     name = Column(String, index=True)
 
     @hybrid_property
-    def name_lc(self):
+    def name_lc(self) -> str:
         return self.name.lower()
 
     @name_lc.comparator  # type: ignore
@@ -231,10 +230,14 @@ class Entity(Base):
     timestamp = Column(DateTime)
 
     # The back-reference to the Article parent of this Entity
-    article = relationship("Article", backref=backref("entities", order_by=name))
+    # Modify this to RelationshipProperty[Article] once Pylance, Mypy and Python 3.6
+    # settle their differences
+    article: RelationshipProperty = relationship(
+        "Article", backref=backref("entities", order_by=name)  # type: ignore
+    )
 
     # Add an index on the entity name in lower case
-    name_lc_index = Index('ix_entities_name_lc', func.lower(name))
+    name_lc_index = Index("ix_entities_name_lc", func.lower(name))
 
     def __repr__(self):
         return "Entity(id='{0}', name='{1}', verb='{2}', definition='{3}')".format(

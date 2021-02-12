@@ -7,7 +7,7 @@
    Scripts for displaying tokenized and parsed text,
    with pop-up tags on hover, name registry, statistics, etc.
 
-   Copyright (C) 2020 Miðeind ehf.
+   Copyright (C) 2021 Miðeind ehf.
 
    This software is licensed under the MIT License:
 

@@ -2,7 +2,7 @@
 
     Greynir: Natural language processing for Icelandic
 
-    Copyright (C) 2020 Miðeind ehf.
+    Copyright (C) 2021 Miðeind ehf.
 
     This software is licensed under the MIT License:
 
@@ -34,13 +34,13 @@
 import platform
 import sys
 
-from flask import render_template, request, redirect
+from flask import render_template, request
 
 import reynir_correct
 
 from doc import SUPPORTED_DOC_MIMETYPES
 
-from . import routes, max_age, text_from_request
+from . import routes, text_from_request
 
 
 @routes.route("/", methods=["GET"])
@@ -64,7 +64,7 @@ def correct():
 def about():
     """ Handler for the 'About' page """
     try:
-        reynir_correct_version = reynir_correct.__version__
+        reynir_correct_version: str = reynir_correct.__version__  # type: ignore
         python_version = "{0} ({1})".format(
             ".".join(str(n) for n in sys.version_info[:3]),
             platform.python_implementation(),

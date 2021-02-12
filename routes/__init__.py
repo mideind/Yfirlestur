@@ -2,7 +2,7 @@
 
     Greynir: Natural language processing for Icelandic
 
-    Copyright (C) 2020 Miðeind ehf.
+    Copyright (C) 2021 Miðeind ehf.
 
     This software is licensed under the MIT License:
 
@@ -38,7 +38,6 @@ from typing import Tuple, Dict, Any, Callable, Optional
 import threading
 import time
 import uuid
-import io
 import json
 from functools import wraps
 from datetime import datetime, timedelta
@@ -72,17 +71,18 @@ cache = current_app.config["CACHE"]
 routes: Blueprint = Blueprint("routes", __name__)
 
 
-def max_age(seconds: int) -> Callable[[Callable], Callable]:
+def max_age(seconds: int) -> Callable[[Callable[[Any], Any]], Callable[[Any], Response]]:
     """ Caching decorator for Flask - augments response
         with a max-age cache header """
 
-    def decorator(f: Callable) -> Callable:
+    def decorator(f: Callable[[Any], Any]) -> Callable[[Any], Response]:
+
         @wraps(f)
-        def decorated_function(*args, **kwargs) -> Response:
-            resp = f(*args, **kwargs)
+        def decorated_function(*args: Any, **kwargs: Any) -> Response:
+            resp = f(*args, **kwargs)  # type: ignore
             if not isinstance(resp, Response):
                 resp = make_response(resp)
-            resp.cache_control.max_age = seconds
+            resp.cache_control.max_age = seconds  # type: ignore
             return resp
 
         return decorated_function
@@ -90,14 +90,14 @@ def max_age(seconds: int) -> Callable[[Callable], Callable]:
     return decorator
 
 
-def restricted(f: Callable) -> Callable:
+def restricted(f: Callable[[Any], Response]) -> Callable[[Any], Response]:
     """ Decorator to return 403 Forbidden if not running in debug mode """
 
     @wraps(f)
-    def decorated_function(*args, **kwargs):
+    def decorated_function(*args: Any, **kwargs: Any) -> Response:
         if not current_app.config["DEBUG"]:
             return abort(403)
-        return f(*args, **kwargs)
+        return f(*args, **kwargs)  # type: ignore
 
     return decorated_function
 
@@ -113,9 +113,9 @@ def bool_from_request(rq: Request, name: str, default: bool=False) -> bool:
     return isinstance(b, str) and b.lower() in _TRUTHY
 
 
-def better_jsonify(**kwargs) -> Response:
+def better_jsonify(**kwargs: Any) -> Response:
     """ Ensure that the Content-Type header includes 'charset=utf-8' """
-    resp = jsonify(**kwargs)
+    resp: Response = jsonify(**kwargs)
     resp.headers["Content-Type"] = "application/json; charset=utf-8"
     return resp
 
@@ -157,11 +157,11 @@ _tasks: Dict[str, Dict[str, Any]] = dict()
 _tasks_lock = threading.Lock()
 
 
-def fancy_url_for(*args, **kwargs) -> str:
+def fancy_url_for(*args: Any, **kwargs: Any) -> str:
     """ url_for() replacement that works even when there is no request context """
     if "_external" not in kwargs:
         kwargs["_external"] = False
-    reqctx = _request_ctx_stack.top
+    reqctx: Any = _request_ctx_stack.top  # type: ignore
     if reqctx is None:
         if kwargs["_external"]:
             raise RuntimeError(
@@ -239,10 +239,12 @@ class _RequestProxy:
         """ Create an instance that walks and quacks sufficiently similarly
             to the Flask Request object in rq """
         self.method = rq.method
-        self.headers = {k: v for k, v in rq.headers}
+        self.headers: Dict[str, Any] = {k: v for k, v in rq.headers}  # type: ignore
         self.environ = rq.environ
         self.blueprint = rq.blueprint
         self.progress_func: Optional[ProgressFunc] = None
+        self.form: Dict[str, Any]
+        self.data: bytes
         if rq.method == "POST":
             # Copy POSTed data between requests
             if rq.headers.get("Content-Type") == "text/plain":
@@ -252,29 +254,29 @@ class _RequestProxy:
             else:
                 # Form data
                 self.data = b""
-                self.form = rq.form.copy()
+                self.form = rq.form.copy()  # type: ignore
         else:
             # GET request, no data needs to be copied
             self.data = b""
             self.form = dict()
         # Copy URL arguments
-        self.args = rq.args.copy()
+        self.args: Dict[str, Any] = rq.args.copy()  # type: ignore
         # Make a copy of the passed-in files, if any, so that they
         # can be accessed and processed offline (after the original
         # request has been completed and temporary files deleted)
-        self.files = {k: _FileProxy(v) for k, v in rq.files.items()}
+        self.files: Dict[str, _FileProxy] = {k: _FileProxy(v) for k, v in rq.files.items()}  # type: ignore
 
     def set_progress_func(self, progress_func: ProgressFunc) -> None:
         """ Set a function to call during processing of asynchronous requests """
         self.progress_func = progress_func
 
 
-def async_task(f: Callable) -> Callable:
+def async_task(f: Callable[[Any], Response]) -> Callable[[Any], Tuple[Any, ...]]:
     """ This decorator transforms a sync route into an asynchronous one
         by running it in a background thread """
 
     @wraps(f)
-    def wrapped(*args, **kwargs):
+    def wrapped(*args: Any, **kwargs: Any) -> Tuple[Any, ...]:
 
         # Assign a unique id to each asynchronous task
         task_id = uuid.uuid4().hex
@@ -294,10 +296,10 @@ def async_task(f: Callable) -> Callable:
                 try:
                     # Run the original route function and record
                     # the response (return value)
-                    rq.set_progress_func(progress)
-                    this_task["rv"] = f(*args, **kwargs)
+                    rq.set_progress_func(progress)  # type: ignore
+                    this_task["rv"] = f(*args, **kwargs)  # type: ignore
                 except HTTPException as e:
-                    this_task["rv"] = current_app.handle_http_exception(e)
+                    this_task["rv"] = current_app.handle_http_exception(e)  # type: ignore
                 except Exception as e:
                     # The function raised an exception, so we set a 500 error
                     this_task["rv"] = InternalServerError()
@@ -317,7 +319,7 @@ def async_task(f: Callable) -> Callable:
             # intact and available even after the original request has been closed
             rq = _RequestProxy(request)
             new_task = threading.Thread(
-                target=task, args=(current_app._get_current_object(), rq)
+                target=task, args=(current_app._get_current_object(), rq),  # type: ignore
             )
 
         new_task.start()
