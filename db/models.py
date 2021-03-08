@@ -32,8 +32,7 @@
 
 """
 
-from sqlalchemy import (  # type: ignore
-    Table,
+from sqlalchemy import (
     Column,
     Integer,
     String,
@@ -44,15 +43,14 @@ from sqlalchemy import (  # type: ignore
     UniqueConstraint,
     Index,
     ForeignKey,
-    PrimaryKeyConstraint,
     func,
     text,
 )
-from sqlalchemy.orm import relationship, backref  # type: ignore
-from sqlalchemy.ext.declarative import DeclarativeMeta, declarative_base  # type: ignore
-from sqlalchemy.ext.hybrid import Comparator, hybrid_property  # type: ignore
-from sqlalchemy.dialects.postgresql import JSONB, INET, UUID as psql_UUID  # type: ignore
-from sqlalchemy.orm.relationships import RelationshipProperty  # type: ignore
+from sqlalchemy.orm import relationship, backref
+from sqlalchemy.ext.declarative import declarative_base
+from sqlalchemy.ext.hybrid import Comparator, hybrid_property
+from sqlalchemy.dialects.postgresql import UUID as psql_UUID
+from sqlalchemy.orm.relationships import RelationshipProperty
 
 
 class CaseInsensitiveComparator(Comparator):
@@ -67,7 +65,7 @@ class CaseInsensitiveComparator(Comparator):
 
 
 # Create the SQLAlchemy ORM Base class
-Base: DeclarativeMeta = declarative_base()
+Base = declarative_base()
 
 # Add a table() function to the Base class, returning the __table__ member.
 # Note that this hack is necessary because SqlAlchemy doesn't readily allow
@@ -76,6 +74,7 @@ setattr(Base, "table", classmethod(lambda cls: cls.__table__))
 
 
 class Root(Base):
+
     """ Represents a scraper root, i.e. a base domain and root URL """
 
     __tablename__ = "roots"
@@ -113,6 +112,7 @@ class Root(Base):
 
 
 class Article(Base):
+
     """ Represents an article from one of the roots, to be scraped or having already been scraped """
 
     __tablename__ = "articles"
@@ -191,6 +191,7 @@ class Article(Base):
 
 
 class Entity(Base):
+
     """ Represents a named entity """
 
     __tablename__ = "entities"
@@ -211,10 +212,10 @@ class Entity(Base):
     name = Column(String, index=True)
 
     @hybrid_property
-    def name_lc(self) -> str:
+    def name_lc(self) -> str:  # type: ignore
         return self.name.lower()
 
-    @name_lc.comparator  # type: ignore
+    @name_lc.comparator
     def name_lc(cls):  # pylint: disable=no-self-argument
         return CaseInsensitiveComparator(cls.name)
 

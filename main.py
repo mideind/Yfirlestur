@@ -85,7 +85,7 @@ cors = CORS(app)
 app.config["CORS_HEADERS"] = "Content-Type"
 
 # Fix access to client remote_addr when running behind proxy
-setattr(app, "wsgi_app", ProxyFix(app.wsgi_app))  # type: ignore
+setattr(app, "wsgi_app", ProxyFix(app.wsgi_app))
 
 app.config["JSON_AS_ASCII"] = False  # We're fine with using Unicode/UTF-8
 app.config["MAX_CONTENT_LENGTH"] = 1 * 1024 * 1024  # 1 MB, max upload file size
@@ -105,7 +105,7 @@ cache = Cache(app, config={"CACHE_TYPE": cache_type})
 app.config["CACHE"] = cache
 
 # Register blueprint routes
-from routes import routes as routes_blueprint, max_age
+from routes import routes as routes_blueprint, max_age  # type: ignore
 
 app.register_blueprint(routes_blueprint)
 

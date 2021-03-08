@@ -33,7 +33,18 @@
 
 """
 
-from typing import List, Dict, Tuple, Any, Union, Iterator, Iterable, Optional, Callable, cast
+from typing import (
+    List,
+    Dict,
+    Tuple,
+    Any,
+    Union,
+    Iterator,
+    Iterable,
+    Optional,
+    Callable,
+    cast,
+)
 
 from reynir.bintokenizer import Tok, StringIterable
 from reynir import Sentence, Paragraph
@@ -41,6 +52,10 @@ from reynir import Sentence, Paragraph
 import reynir_correct
 import nertokenizer
 from reynir_correct.annotation import Annotation
+
+
+# Type definitions
+StatsDict = Dict[str, Union[int, float]]
 
 
 class RecognitionPipeline(reynir_correct.CorrectionPipeline):
@@ -65,7 +80,7 @@ class NERCorrect(reynir_correct.GreynirCorrect):
     """ Derived class to override the default tokenization of
         GreynirCorrect to perform named entity recognition """
 
-    def __init__(self):
+    def __init__(self) -> None:
         super().__init__()
 
     def tokenize(self, text_or_gen: StringIterable) -> Iterator[Tok]:
@@ -75,7 +90,9 @@ class NERCorrect(reynir_correct.GreynirCorrect):
         return pipeline.tokenize()
 
 
-def check_grammar(text: str, *, progress_func: Optional[Callable[[float], None]]=None) -> Tuple[Any, ...]:
+def check_grammar(
+    text: str, *, progress_func: Optional[Callable[[float], None]] = None
+) -> Tuple[Any, StatsDict]:
     """ Check the grammar and spelling of the given text and return
         a list of annotated paragraphs, containing sentences, containing
         tokens. The progress_func, if given, will be called periodically
@@ -86,7 +103,7 @@ def check_grammar(text: str, *, progress_func: Optional[Callable[[float], None]]
         text,
         split_paragraphs=True,
         parser_class=NERCorrect,
-        progress_func=progress_func
+        progress_func=progress_func,
     )
 
     def encode_sentence(sent: Sentence) -> Dict[str, Any]:
@@ -101,12 +118,10 @@ def check_grammar(text: str, *, progress_func: Optional[Callable[[float], None]]
             # since we have more info there, for instance on em/en dashes.
             # Create a map of token indices to corresponding terminal text
             assert sent.terminals is not None
-            token_map = {t.index : t.text for t in sent.terminals}
+            token_map = {t.index: t.text for t in sent.terminals}
             tokens = [
-                dict(
-                    k=d.kind,
-                    x=token_map.get(ix, d.txt)
-                ) for ix, d in enumerate(sent.tokens)
+                dict(k=d.kind, x=token_map.get(ix, d.txt))
+                for ix, d in enumerate(sent.tokens)
             ]
         a = cast(Iterable[Annotation], getattr(sent, "annotations", []))
         annotations: List[Dict[str, Any]] = [
@@ -120,23 +135,16 @@ def check_grammar(text: str, *, progress_func: Optional[Callable[[float], None]]
             )
             for ann in a
         ]
-        return dict(
-            tokens=tokens,
-            annotations=annotations,
-            corrected=sent.tidy_text,
-        )
+        return dict(tokens=tokens, annotations=annotations, corrected=sent.tidy_text,)
 
     pglist = cast(Iterable[Paragraph], result["paragraphs"])
-    pgs = [
-        [encode_sentence(sent) for sent in pg]
-        for pg in pglist
-    ]
+    pgs = [[encode_sentence(sent) for sent in pg] for pg in pglist]
 
-    stats: Dict[str, Any] = dict(
-        num_tokens=result["num_tokens"],
-        num_sentences=result["num_sentences"],
-        num_parsed=result["num_parsed"],
-        ambiguity=result["ambiguity"],
+    stats: StatsDict = dict(
+        num_tokens=cast(int, result["num_tokens"]),
+        num_sentences=cast(int, result["num_sentences"]),
+        num_parsed=cast(int, result["num_parsed"]),
+        ambiguity=cast(float, result["ambiguity"]),
     )
 
     return pgs, stats
