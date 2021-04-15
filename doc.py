@@ -30,7 +30,7 @@
 
 """
 
-from typing import Union, Dict, Type, Any
+from typing import List, Union, Dict, Type, Any
 
 import abc
 from io import BytesIO
@@ -157,10 +157,10 @@ class DocxDocument(Document):
 
         # Extract text elements from all paragraphs
         # (with special handling of line breaks)
-        paragraphs = []
+        paragraphs: List[str] = []
         p: Any
         for p in tree.iter(self.PARAGRAPH_TAG):
-            texts = []
+            texts: List[str] = []
             for node in p.iter():
                 if node.tag.endswith(self.TEXT_TAG) and node.text:
                     texts.append(node.text)

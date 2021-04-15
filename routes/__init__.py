@@ -33,7 +33,7 @@
 
 """
 
-from typing import Tuple, Dict, Any, Callable, Optional
+from typing import Tuple, Dict, Any, Callable, Optional, cast
 
 import threading
 import time
@@ -71,12 +71,13 @@ cache = current_app.config["CACHE"]
 routes: Blueprint = Blueprint("routes", __name__)
 
 
-def max_age(seconds: int) -> Callable[[Callable[[Any], Any]], Callable[[Any], Response]]:
+def max_age(
+    seconds: int,
+) -> Callable[[Callable[[Any], Any]], Callable[[Any], Response]]:
     """ Caching decorator for Flask - augments response
         with a max-age cache header """
 
     def decorator(f: Callable[[Any], Any]) -> Callable[[Any], Response]:
-
         @wraps(f)
         def decorated_function(*args: Any, **kwargs: Any) -> Response:
             resp = f(*args, **kwargs)  # type: ignore
@@ -102,7 +103,7 @@ def restricted(f: Callable[[Any], Response]) -> Callable[[Any], Response]:
     return decorated_function
 
 
-def bool_from_request(rq: Request, name: str, default: bool=False) -> bool:
+def bool_from_request(rq: Request, name: str, default: bool = False) -> bool:
     """ Get a boolean from JSON encoded in a request form """
     b = rq.form.get(name)
     if b is None:
@@ -120,7 +121,9 @@ def better_jsonify(**kwargs: Any) -> Response:
     return resp
 
 
-def text_from_request(rq: Request, *, post_field: Optional[str]=None, get_field: Optional[str]=None) -> str:
+def text_from_request(
+    rq: Request, *, post_field: Optional[str] = None, get_field: Optional[str] = None
+) -> str:
     """ Return text passed in a HTTP request, either using GET or POST.
         When using GET, the default parameter name is 't'. This can
         be overridden using the get_field parameter.
@@ -172,7 +175,15 @@ def fancy_url_for(*args: Any, **kwargs: Any) -> str:
     return url_for(*args, **kwargs)
 
 
-@routes.before_app_first_request
+# Mypy/Pylance shenanigans for type checking of @routes.before_app_first_request
+FirstRequestFunc = Callable[[], None]
+before_app_first_request = cast(
+    Callable[[FirstRequestFunc], FirstRequestFunc],
+    cast(Any, routes).before_app_first_request,
+)
+
+
+@before_app_first_request
 def before_first_request() -> None:
     """ Start a background thread that cleans up old tasks """
 

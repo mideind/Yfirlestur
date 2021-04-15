@@ -32,6 +32,10 @@
 
 """
 
+from datetime import datetime
+from typing import Optional, cast
+
+from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy import (
     Column,
     Integer,
@@ -47,7 +51,6 @@ from sqlalchemy import (
     text,
 )
 from sqlalchemy.orm import relationship, backref
-from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.ext.hybrid import Comparator, hybrid_property
 from sqlalchemy.dialects.postgresql import UUID as psql_UUID
 from sqlalchemy.orm.relationships import RelationshipProperty
@@ -130,11 +133,11 @@ class Article(Base):
     )
 
     # Foreign key to a root
-    root_id = Column(
+    root_id = cast(Optional[int], Column(
         Integer,
         # We don't delete associated articles if the root is deleted
         ForeignKey("roots.id", onupdate="CASCADE", ondelete="SET NULL"),
-    )
+    ))
 
     # Article heading, if known
     heading = Column(String)
@@ -181,7 +184,7 @@ class Article(Base):
     root: RelationshipProperty = relationship(
         "Root",
         foreign_keys="Article.root_id",
-        backref=backref("articles", order_by=url),  # type: ignore
+        backref=backref("articles", order_by=url),
     )
 
     def __repr__(self):
@@ -209,7 +212,7 @@ class Entity(Base):
     )
 
     # Name
-    name = Column(String, index=True)
+    name = cast(str, Column(String, index=True))
 
     @hybrid_property
     def name_lc(self) -> str:  # type: ignore
@@ -220,21 +223,21 @@ class Entity(Base):
         return CaseInsensitiveComparator(cls.name)
 
     # Verb ('er', 'var', 'sé')
-    verb = Column(String, index=True)
+    verb = cast(str, Column(String, index=True))
     # Entity definition
-    definition = Column(String, index=True)
+    definition = cast(str, Column(String, index=True))
 
     # Authority of this fact, 1.0 = most authoritative, 0.0 = least authoritative
-    authority = Column(Float)
+    authority = cast(float, Column(Float))
 
     # Timestamp of this entry
-    timestamp = Column(DateTime)
+    timestamp = cast(datetime, Column(DateTime))
 
     # The back-reference to the Article parent of this Entity
     # Modify this to RelationshipProperty[Article] once Pylance, Mypy and Python 3.6
     # settle their differences
     article: RelationshipProperty = relationship(
-        "Article", backref=backref("entities", order_by=name)  # type: ignore
+        "Article", backref=backref("entities", order_by=name)
     )
 
     # Add an index on the entity name in lower case

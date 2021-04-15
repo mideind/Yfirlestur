@@ -32,13 +32,13 @@
 
 """
 
-from typing import Optional, Callable, Any, Type
+from typing import Optional, Callable, Any, Type, cast
 from typing_extensions import Literal
 
-from sqlalchemy import create_engine, desc, func as dbfunc  # type: ignore
-from sqlalchemy.orm import sessionmaker, Session  # type: ignore
-from sqlalchemy.engine import ResultProxy  # type: ignore
-from sqlalchemy.exc import (  # type: ignore
+from sqlalchemy import create_engine, desc, func as dbfunc
+from sqlalchemy.orm import sessionmaker, Session
+from sqlalchemy.engine.cursor import CursorResult
+from sqlalchemy.exc import (
     SQLAlchemyError as DatabaseError,
     IntegrityError,
     DataError,
@@ -67,13 +67,13 @@ class Scraper_DB:
 
         # Create engine and bind session
         self._engine = create_engine(conn_str)
-        self._Session: Callable[[], Session] = sessionmaker(bind=self._engine)
+        self._Session: Type[Session] = cast(Type[Session], sessionmaker(bind=self._engine))
 
     def create_tables(self) -> None:
         """ Create all missing tables in the database """
         Base.metadata.create_all(self._engine)  # type: ignore
 
-    def execute(self, sql: str, **kwargs: Any) -> ResultProxy:
+    def execute(self, sql: str, **kwargs: Any) -> CursorResult:
         """ Execute raw SQL directly on the engine """
         return self._engine.execute(sql, **kwargs)  # type: ignore
 
@@ -84,7 +84,7 @@ class Scraper_DB:
 
 
 class classproperty:
-    def __init__(self, f: Callable[[Any], Any]) -> None:
+    def __init__(self, f: Callable[..., Any]) -> None:
         self.f = f
 
     def __get__(self, obj: Any, owner: Any) -> Any:
@@ -112,10 +112,10 @@ class SessionContext:
 
     def __init__(
         self,
-        session: Optional["SessionContext"] = None,
+        session: Optional[Session] = None,
         commit: bool = False,
         read_only: bool = False,
-    ):
+    ) -> None:
 
         if session is None:
             # Create a new session that will be automatically committed
@@ -135,7 +135,7 @@ class SessionContext:
             self._session = session
             self._commit = False
 
-    def __enter__(self) -> Any:
+    def __enter__(self) -> Session:
         """ Python context manager protocol """
         # Return the wrapped database session
         return self._session
@@ -155,3 +155,21 @@ class SessionContext:
             self._session.close()  # type: ignore
         # Return False to re-throw exception from the context, if any
         return False
+
+__all__ = (
+    "create_engine",
+    "desc",
+    "dbfunc",
+    "sessionmaker",
+    "Session",
+    "ResultProxy",
+    "DatabaseError",
+    "IntegrityError",
+    "DataError",
+    "OperationalError",
+    "Settings",
+    "ConfigError",
+    "ScraperDB",
+    "classproperty",
+    "SessionContext",
+)

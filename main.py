@@ -43,6 +43,7 @@
 
 from typing import (
     List,
+    TYPE_CHECKING,
     Tuple,
     Pattern,
     Dict,
@@ -66,7 +67,7 @@ from flask_cors import CORS  # type: ignore
 from werkzeug.middleware.proxy_fix import ProxyFix
 
 import reynir
-from reynir.bindb import BIN_Db
+from reynir.bindb import GreynirBin
 
 import reynir_correct
 
@@ -85,7 +86,7 @@ cors = CORS(app)
 app.config["CORS_HEADERS"] = "Content-Type"
 
 # Fix access to client remote_addr when running behind proxy
-setattr(app, "wsgi_app", ProxyFix(app.wsgi_app))
+setattr(app, "wsgi_app", ProxyFix(cast(Any, app).wsgi_app))
 
 app.config["JSON_AS_ASCII"] = False  # We're fine with using Unicode/UTF-8
 app.config["MAX_CONTENT_LENGTH"] = 1 * 1024 * 1024  # 1 MB, max upload file size
@@ -105,7 +106,10 @@ cache = Cache(app, config={"CACHE_TYPE": cache_type})
 app.config["CACHE"] = cache
 
 # Register blueprint routes
-from routes import routes as routes_blueprint, max_age  # type: ignore
+if TYPE_CHECKING:
+    from .routes import routes as routes_blueprint, max_age
+else:
+    from routes import routes as routes_blueprint, max_age
 
 app.register_blueprint(routes_blueprint)
 
@@ -316,7 +320,7 @@ if not RUNNING_AS_SERVER:
             raise
 
     finally:
-        BIN_Db.cleanup()
+        GreynirBin.cleanup()
 
 else:
     app.config["PRODUCTION"] = True

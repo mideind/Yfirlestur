@@ -31,6 +31,8 @@
 
 """
 
+from typing import Any, cast
+
 import platform
 import sys
 
@@ -64,7 +66,7 @@ def correct():
 def about():
     """ Handler for the 'About' page """
     try:
-        reynir_correct_version: str = reynir_correct.__version__  # type: ignore
+        reynir_correct_version: str = cast(Any, reynir_correct).__version__
         python_version = "{0} ({1})".format(
             ".".join(str(n) for n in sys.version_info[:3]),
             platform.python_implementation(),

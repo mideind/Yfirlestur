@@ -83,10 +83,10 @@ class NERCorrect(reynir_correct.GreynirCorrect):
     def __init__(self) -> None:
         super().__init__()
 
-    def tokenize(self, text_or_gen: StringIterable) -> Iterator[Tok]:
+    def tokenize(self, text: StringIterable) -> Iterator[Tok]:
         """ Use the recognizing & correcting tokenizer instead
             of the normal one """
-        pipeline = RecognitionPipeline(text_or_gen)
+        pipeline = RecognitionPipeline(text)
         return pipeline.tokenize()
 
 
