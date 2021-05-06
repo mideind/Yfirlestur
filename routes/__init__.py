@@ -33,7 +33,7 @@
 
 """
 
-from typing import Tuple, Dict, Any, Callable, Optional, cast
+from typing import TYPE_CHECKING, Tuple, Dict, Any, Callable, Optional, cast
 
 import threading
 import time
@@ -376,5 +376,6 @@ def get_task_status(task: str) -> Tuple[str, int, Dict[str, Any]]:
 
 
 # Import routes from other files
-from .api import *
-from .main import *
+if not TYPE_CHECKING:
+    from .api import *
+    from .main import *

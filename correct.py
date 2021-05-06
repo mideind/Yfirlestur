@@ -45,6 +45,7 @@ from typing import (
     Callable,
     cast,
 )
+from typing_extensions import TypedDict
 
 from reynir.bintokenizer import Tok, StringIterable
 from reynir import Sentence, Paragraph
@@ -56,6 +57,20 @@ from reynir_correct.annotation import Annotation
 
 # Type definitions
 StatsDict = Dict[str, Union[int, float]]
+
+
+class AnnTokenDict(TypedDict, total=False):
+
+    """ Type of the token dictionaries returned from check_grammar() """
+
+    # Token kind
+    k: int
+    # Token text
+    x: str
+    # Original text of token
+    o: str
+    # Character offset of token, indexed from the start of the checked text
+    i: int
 
 
 class RecognitionPipeline(reynir_correct.CorrectionPipeline):
@@ -91,7 +106,9 @@ class NERCorrect(reynir_correct.GreynirCorrect):
 
 
 def check_grammar(
-    text: str, *, progress_func: Optional[Callable[[float], None]] = None
+    text: str, *,
+    progress_func: Optional[Callable[[float], None]] = None,
+    split_paragraphs: bool = True,
 ) -> Tuple[Any, StatsDict]:
     """ Check the grammar and spelling of the given text and return
         a list of annotated paragraphs, containing sentences, containing
@@ -101,18 +118,25 @@ def check_grammar(
 
     result = reynir_correct.check_with_custom_parser(
         text,
-        split_paragraphs=True,
+        split_paragraphs=split_paragraphs,
         parser_class=NERCorrect,
         progress_func=progress_func,
     )
 
+    # Character index of each token within the submitted text,
+    # counting from its beginning
+    offset = 0
+
     def encode_sentence(sent: Sentence) -> Dict[str, Any]:
         """ Map a reynir._Sentence object to a raw sentence dictionary
             expected by the web UI """
-        tokens: List[Dict[str, Union[int, str]]]
+        tokens: List[AnnTokenDict]
         if sent.tree is None:
             # Not parsed: use the raw token list
-            tokens = [dict(k=d.kind, x=d.txt) for d in sent.tokens]
+            tokens = [
+                AnnTokenDict(k=d.kind, x=d.txt, o=d.original or d.txt)
+                for d in sent.tokens
+            ]
         else:
             # Successfully parsed: use the text from the terminals (where available)
             # since we have more info there, for instance on em/en dashes.
@@ -120,14 +144,31 @@ def check_grammar(
             assert sent.terminals is not None
             token_map = {t.index: t.text for t in sent.terminals}
             tokens = [
-                dict(k=d.kind, x=token_map.get(ix, d.txt))
+                AnnTokenDict(
+                    k=d.kind, x=token_map.get(ix, d.txt), o=d.original or d.txt
+                )
                 for ix, d in enumerate(sent.tokens)
             ]
+        # Add token character offsets to the annotation tokens
+        nonlocal offset
+        for ix, t in enumerate(sent.tokens):
+            tokens[ix]["i"] = offset
+            offset += len(t.original or "")
         a = cast(Iterable[Annotation], getattr(sent, "annotations", []))
+        len_tokens = len(tokens)
         annotations: List[Dict[str, Any]] = [
             dict(
+                # Start token index of this annotation
                 start=ann.start,
+                # End token index (inclusive)
                 end=ann.end,
+                # Character offset of the start of the annotation in the original text
+                start_char=tokens[ann.start].get("i", 0),
+                # Character offset of the end of the annotation in the original text
+                # (inclusive, i.e. the offset of the last character)
+                end_char=(
+                    tokens[ann.end + 1].get("i", 0) if ann.end < len_tokens else offset
+                ) - 1,
                 code=ann.code,
                 text=ann.text,
                 detail=ann.detail,
@@ -144,6 +185,7 @@ def check_grammar(
         num_tokens=cast(int, result["num_tokens"]),
         num_sentences=cast(int, result["num_sentences"]),
         num_parsed=cast(int, result["num_parsed"]),
+        num_chars=offset,
         ambiguity=cast(float, result["ambiguity"]),
     )
 

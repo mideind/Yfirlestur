@@ -214,7 +214,9 @@ class ChildTask:
         # We do a bit of functools.partial magic to pass the process_id as the first
         # parameter to the progress_func whenever it is called
         task_result = check_grammar(
-            text, progress_func=partial(ChildTask.progress_func, process_id)
+            text,
+            progress_func=partial(ChildTask.progress_func, process_id),
+            split_paragraphs=False,
         )
         # The result is automatically communicated back to the parent process via IPC
         return task_result
