@@ -1,5 +1,5 @@
 
-name: PyEmbla CI tests
+name: Yfirlestur CI tests
 
 on:
   push:
