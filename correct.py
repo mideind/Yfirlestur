@@ -167,7 +167,7 @@ def check_grammar(
                 # Character offset of the end of the annotation in the original text
                 # (inclusive, i.e. the offset of the last character)
                 end_char=(
-                    tokens[ann.end + 1].get("i", 0) if ann.end < len_tokens else offset
+                    tokens[ann.end + 1].get("i", 0) if ann.end + 1 < len_tokens else offset
                 ) - 1,
                 code=ann.code,
                 text=ann.text,
