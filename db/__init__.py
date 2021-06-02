@@ -37,7 +37,7 @@ from typing_extensions import Literal
 
 from sqlalchemy import create_engine, desc, func as dbfunc
 from sqlalchemy.orm import sessionmaker, Session
-from sqlalchemy.engine.cursor import CursorResult
+from sqlalchemy.engine.cursor import CursorResult  # type: ignore
 from sqlalchemy.exc import (
     SQLAlchemyError as DatabaseError,
     IntegrityError,

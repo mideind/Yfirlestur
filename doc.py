@@ -40,16 +40,16 @@ from html2text import HTML2Text
 
 from striprtf.striprtf import rtf_to_text  # type: ignore
 
-from odf import teletype
-from odf import text as odf_text
-from odf.opendocument import load as load_odf
+from odf import teletype  # type: ignore
+from odf import text as odf_text  # type: ignore
+from odf.opendocument import load as load_odf  # type: ignore
 
-from pdfminer.converter import TextConverter
-from pdfminer.layout import LAParams
-from pdfminer.pdfdocument import PDFDocument as PDFMinerDocument
-from pdfminer.pdfinterp import PDFResourceManager, PDFPageInterpreter
-from pdfminer.pdfpage import PDFPage
-from pdfminer.pdfparser import PDFParser
+from pdfminer.converter import TextConverter  # type: ignore
+from pdfminer.layout import LAParams  # type: ignore
+from pdfminer.pdfdocument import PDFDocument as PDFMinerDocument  # type: ignore
+from pdfminer.pdfinterp import PDFResourceManager, PDFPageInterpreter  # type: ignore
+from pdfminer.pdfpage import PDFPage  # type: ignore
+from pdfminer.pdfparser import PDFParser  # type: ignore
 
 # Use defusedxml module to prevent parsing of malicious XML
 from defusedxml import ElementTree  # type: ignore
@@ -158,8 +158,8 @@ class PDFDocument(Document):
         device = TextConverter(rsrcmgr, output_string, laparams=LAParams())
         interpreter = PDFPageInterpreter(rsrcmgr, device)
 
-        for page in PDFPage.create_pages(doc):
-            interpreter.process_page(page)
+        for page in PDFPage.create_pages(doc):  # type: ignore
+            interpreter.process_page(page)  # type: ignore
 
         # Postprocessing
         txt = output_string.getvalue()
@@ -213,8 +213,9 @@ class ODTDocument(Document):
 
     def extract_text(self) -> str:
         textdoc = load_odf(BytesIO(self.data))
-        paragraphs = textdoc.getElementsByType(odf_text.P)  # Find all paragraphs
-        ptexts = [teletype.extractText(p) for p in paragraphs]
+        # Find all paragraphs
+        paragraphs = textdoc.getElementsByType(odf_text.P)  # type: ignore
+        ptexts = [teletype.extractText(p) for p in paragraphs]  # type: ignore
         return "\n\n".join(ptexts)
 
 

@@ -175,32 +175,32 @@ class ChildTask:
     def init_pool(cls) -> None:
         """ If needed, create the multiprocessing pool we'll use
             for concurrent processing of correction tasks """
-        with cls.lock:
-            if cls.pool is None:
-                # Set up a Manager for shared memory messaging
-                cls.manager = _CTX.Manager()
-                # Create an inter-process dict object to hold progress info
-                assert cls.manager is not None
-                cls.progress = cls.manager.dict()
-                # Initialize the worker process pool
-                cls.pool = _CTX.Pool(POOL_SIZE)
+        if cls.pool is None:
+            # Set up a Manager for shared memory messaging
+            cls.manager = _CTX.Manager()
+            # Create an inter-process dict object to hold progress info
+            assert cls.manager is not None
+            cls.progress = cls.manager.dict()
+            # Initialize the worker process pool
+            cls.pool = _CTX.Pool(POOL_SIZE)
 
     def __init__(self) -> None:
-        # Create the process pool that will be used for correction tasks.
-        # We do this as late as possible, upon invocation of the first ChildTask.
-        # Note that ChildTask instances are never created in child processes.
-        self.init_pool()
         # Create a new, unique (random) process identifier
-        self.identifier = uuid.uuid4().hex
-        self.processes[self.identifier] = self
-        # Store the initial progress in the interprocess dict
-        self.progress[self.identifier] = 0.0
-        # Initialize the process status
-        self.status: Optional[multiprocessing.pool.ApplyResult[Tuple[Any, ...]]] = None
-        self.task_result: Optional[Tuple[Any, ...]] = None
-        self.exception: Optional[BaseException] = None
-        self.text = ""
-        self.started = datetime.utcnow()
+        with self.__class__.lock:
+            self.identifier = uuid.uuid4().hex
+            self.processes[self.identifier] = self
+            # Store the initial progress in the interprocess dict
+            self.progress[self.identifier] = 0.0
+            # Initialize the process status
+            self.status: Optional[multiprocessing.pool.ApplyResult[Tuple[Any, ...]]] = None
+            self.task_result: Optional[Tuple[Any, ...]] = None
+            self.exception: Optional[BaseException] = None
+            self.text = ""
+            self.started = datetime.utcnow()
+            # Create the process pool that will be used for correction tasks.
+            # We do this as late as possible, upon invocation of the first ChildTask.
+            # Note that ChildTask instances are never created in child processes.
+            self.init_pool()
 
     @staticmethod
     def progress_func(process_id: str, progress: float) -> None:
@@ -216,7 +216,7 @@ class ChildTask:
         task_result = check_grammar(
             text,
             progress_func=partial(ChildTask.progress_func, process_id),
-            split_paragraphs=False,
+            split_paragraphs=True,
         )
         # The result is automatically communicated back to the parent process via IPC
         return task_result
