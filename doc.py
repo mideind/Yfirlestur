@@ -5,39 +5,51 @@
 
     This software is licensed under the MIT License:
 
-        Permission is hereby granted, free of charge, to any person
-        obtaining a copy of this software and associated documentation
-        files (the "Software"), to deal in the Software without restriction,
-        including without limitation the rights to use, copy, modify, merge,
-        publish, distribute, sublicense, and/or sell copies of the Software,
-        and to permit persons to whom the Software is furnished to do so,
-        subject to the following conditions:
+    Permission is hereby granted, free of charge, to any person
+    obtaining a copy of this software and associated documentation
+    files (the "Software"), to deal in the Software without restriction,
+    including without limitation the rights to use, copy, modify, merge,
+    publish, distribute, sublicense, and/or sell copies of the Software,
+    and to permit persons to whom the Software is furnished to do so,
+    subject to the following conditions:
 
-        The above copyright notice and this permission notice shall be
-        included in all copies or substantial portions of the Software.
+    The above copyright notice and this permission notice shall be
+    included in all copies or substantial portions of the Software.
 
-        THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,
-        EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
-        MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.
-        IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY
-        CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,
-        TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE
-        SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+    THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,
+    EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
+    MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.
+    IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY
+    CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,
+    TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE
+    SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
-
-    This module contains code to extract text from documents 
-    such as plain text, html, rtf and docx files.
+    This module contains code to extract text from documents
+    such as plain text, html, rtf, pdf, odt, and docx files.
 
 """
 
-from typing import List, Union, Dict, Type, Any
+from typing import List, Union, Dict, Type, Mapping, Any
 
-import abc
-from io import BytesIO
 import re
+import abc
+from io import BytesIO, StringIO
 from zipfile import ZipFile
-import html2text
+
+from html2text import HTML2Text
+
 from striprtf.striprtf import rtf_to_text  # type: ignore
+
+from odf import teletype
+from odf import text as odf_text
+from odf.opendocument import load as load_odf
+
+from pdfminer.converter import TextConverter
+from pdfminer.layout import LAParams
+from pdfminer.pdfdocument import PDFDocument as PDFMinerDocument
+from pdfminer.pdfinterp import PDFResourceManager, PDFPageInterpreter
+from pdfminer.pdfpage import PDFPage
+from pdfminer.pdfparser import PDFParser
 
 # Use defusedxml module to prevent parsing of malicious XML
 from defusedxml import ElementTree  # type: ignore
@@ -46,13 +58,15 @@ from defusedxml import ElementTree  # type: ignore
 DEFAULT_TEXT_ENCODING = "UTF-8"
 
 
+DocumentType = Type["Document"]
+
+
 class MalformedDocumentError(Exception):
     pass
 
 
 class Document(abc.ABC):
-
-    """ Abstract base class for documents """
+    """ Abstract base class for documents. """
 
     def __init__(self, path_or_bytes: Union[str, bytes]) -> None:
         """ Accepts either a file path or bytes object """
@@ -63,6 +77,14 @@ class Document(abc.ABC):
         else:
             # It's a byte stream
             self.data = path_or_bytes
+
+    @staticmethod
+    def for_mimetype(mime_type: str) -> DocumentType:
+        return doc_class_for_mime_type(mime_type)
+
+    @staticmethod
+    def for_suffix(suffix: str) -> DocumentType:
+        return doc_class_for_suffix(suffix)
 
     @abc.abstractmethod
     def extract_text(self) -> str:
@@ -85,9 +107,9 @@ class HTMLDocument(Document):
     """ HTML document """
 
     @staticmethod
-    def remove_header_prefixes(text: str) -> str:
-        """ Removes all line starting with '#'. Annoyingly, html2text 
-            adds markdown-style headers for <h*> tags """
+    def _remove_header_prefixes(text: str) -> str:
+        """Removes '#' in all lines starting with '#'. Annoyingly,
+        html2text adds markdown-style headers for <h*> tags."""
         lines = text.split("\n")
         for i, line in enumerate(lines):
             if line.startswith("#"):
@@ -97,19 +119,19 @@ class HTMLDocument(Document):
     def extract_text(self) -> str:
         html = self.data.decode(DEFAULT_TEXT_ENCODING)
 
-        h = html2text.HTML2Text()
+        h = HTML2Text()
         # See https://github.com/Alir3z4/html2text/blob/master/html2text/cli.py
         h.ignore_links = True
         h.ignore_emphasis = True
         h.ignore_images = True
         h.unicode_snob = True
         h.ignore_tables = True
-        # h.decode_errors = "ignore"
+        h.decode_errors = "ignore"  # type: ignore
         h.body_width = 0
 
-        text = h.handle(html)
+        txt = h.handle(html)
 
-        return self.remove_header_prefixes(text)
+        return self._remove_header_prefixes(txt)
 
 
 class RTFDocument(Document):
@@ -128,7 +150,21 @@ class PDFDocument(Document):
     """ Adobe PDF document """
 
     def extract_text(self) -> str:
-        raise NotImplementedError
+        output_string = StringIO()
+
+        parser = PDFParser(BytesIO(self.data))
+        doc = PDFMinerDocument(parser)
+        rsrcmgr = PDFResourceManager()
+        device = TextConverter(rsrcmgr, output_string, laparams=LAParams())
+        interpreter = PDFPageInterpreter(rsrcmgr, device)
+
+        for page in PDFPage.create_pages(doc):
+            interpreter.process_page(page)
+
+        # Postprocessing
+        txt = output_string.getvalue()
+        txt = txt.replace("\n", " ")
+        return txt
 
 
 class DocxDocument(Document):
@@ -172,15 +208,49 @@ class DocxDocument(Document):
         return "\n\n".join(paragraphs)
 
 
+class ODTDocument(Document):
+    """ OpenDocument format. """
+
+    def extract_text(self) -> str:
+        textdoc = load_odf(BytesIO(self.data))
+        paragraphs = textdoc.getElementsByType(odf_text.P)  # Find all paragraphs
+        ptexts = [teletype.extractText(p) for p in paragraphs]
+        return "\n\n".join(ptexts)
+
+
 # Map file mime type to document class
-MIMETYPE_TO_DOC_CLASS: Dict[str, Type[Document]] = {
+MIMETYPE_TO_DOC_CLASS: Dict[str, DocumentType] = {
     "text/plain": PlainTextDocument,
     "text/html": HTMLDocument,
     "text/rtf": RTFDocument,
+    "application/pdf": PDFDocument,
+    "application/x-pdf": PDFDocument,
     "application/rtf": RTFDocument,
-    # "application/pdf": PDFDocument,
-    # "application/x-pdf": PDFDocument,
+    "application/vnd.oasis.opendocument.text": ODTDocument,
+    # Yes, really!
     "application/vnd.openxmlformats-officedocument.wordprocessingml.document": DocxDocument,
 }
 
 SUPPORTED_DOC_MIMETYPES = frozenset(MIMETYPE_TO_DOC_CLASS.keys())
+
+
+def doc_class_for_mime_type(mime_type: str) -> DocumentType:
+    assert mime_type in SUPPORTED_DOC_MIMETYPES
+    return MIMETYPE_TO_DOC_CLASS[mime_type]
+
+
+SUFFIX_TO_DOC_CLASS: Mapping[str, DocumentType] = {
+    "txt": PlainTextDocument,
+    "html": HTMLDocument,
+    "rtf": RTFDocument,
+    "pdf": PDFDocument,
+    "odt": ODTDocument,
+    "docx": DocxDocument,
+}
+
+SUPPORTED_DOC_SUFFIXES = frozenset(SUFFIX_TO_DOC_CLASS.keys())
+
+
+def doc_class_for_suffix(suffix: str) -> Type[Document]:
+    assert suffix in SUPPORTED_DOC_SUFFIXES
+    return SUFFIX_TO_DOC_CLASS[suffix]

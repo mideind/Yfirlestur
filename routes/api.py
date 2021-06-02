@@ -50,7 +50,7 @@ from flask import request, abort, url_for, current_app, Request
 from settings import Settings
 
 from correct import check_grammar
-from doc import SUPPORTED_DOC_MIMETYPES, MIMETYPE_TO_DOC_CLASS
+from doc import SUPPORTED_DOC_MIMETYPES, doc_class_for_mime_type
 
 from . import routes, better_jsonify, text_from_request
 
@@ -136,7 +136,7 @@ def validate(request: Request, version: int) -> Tuple[bool, Any]:
         # Create document object from an uploaded file and extract its text
         try:
             # Instantiate an appropriate class for the MIME type of the file
-            doc_class = MIMETYPE_TO_DOC_CLASS[mimetype]
+            doc_class = doc_class_for_mime_type(mimetype)
             doc = doc_class(file.read())
             text = doc.extract_text()
         except Exception as e:

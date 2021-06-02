@@ -1,4 +1,7 @@
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
+[![Python 3.6](https://img.shields.io/badge/python-3.6-blue.svg)](https://www.python.org/downloads/release/python-360/)
 [![Join the chat at https://gitter.im/Greynir/Lobby](https://badges.gitter.im/Greynir/Lobby.svg)](https://gitter.im/Greynir/Lobby?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)
+[![Build](https://github.com/mideind/Yfirlestur/actions/workflows/python-app.yml/badge.svg)]()
 
 <img src="static/img/yfirlestur-logo-large.png" alt="Yfirlestur" width="200" height="200"
   align="right" style="margin-left:20px; margin-bottom: 20px;">
@@ -176,6 +179,9 @@ is further [documented here](https://yfirlestur.is/doc/).
 Yfirlestur is *copyright © 2021 by Miðeind ehf.*
 The original author of this software is *Vilhjálmur Þorsteinsson*.
 
+<a href="https://mideind.is"><img src="static/img/mideind-horizontal-small.png" alt="Miðeind ehf." 
+    width="214" height="66" align="right" style="margin-left:20px; margin-bottom: 20px;"></a>
+
 This software is licensed under the **MIT License**:
 
 *Permission is hereby granted, free of charge, to any person*
@@ -196,8 +202,6 @@ This software is licensed under the **MIT License**:
 *CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,*
 *TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE*
 *SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.*
-
-<img src="https://github.com/mideind/GreynirPackage/blob/master/doc/_static/MideindLogoVert100.png?raw=true" align="right" style="margin-left:20px;" alt="Miðeind ehf.">
 
 If you would like to use this software in ways that are incompatible
 with the standard MIT license, [contact Miðeind ehf.](mailto:mideind@mideind.is)
