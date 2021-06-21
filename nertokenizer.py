@@ -93,6 +93,7 @@ def recognize_entities(
                     q = q.filter(Entity.name.like(w + " %") | (Entity.name == w))
                 else:
                     q = q.filter(Entity.name == w)
+
                 return q.all()
             except OperationalError as e:
                 logging.warning("SQL error in fetch_entities(): {0}".format(e))
@@ -122,13 +123,15 @@ def recognize_entities(
             """ Flush a match that has been accumulated in the token queue """
             if len(tq) == 1 and lookup_lastname(tq[0].txt) is not None:
                 # If single token, it may be the last name of a
-                # previously seen entity or person
+                # previously seen entity or mmmwmwperson
                 return token_or_entity(tq[0])
             # Reconstruct original text behind phrase
-            ename = " ".join([t.txt for t in tq])
+            new_ent = token_ctor.Entity("")
+            for item in tq:
+                new_ent = new_ent.concatenate(item)
             # We don't include the definitions in the token - they should be looked up
             # on the fly when processing or displaying the parsed article
-            return token_ctor.Entity(ename)
+            return new_ent
 
         def token_or_entity(token: Tok) -> Tok:
             """ Return a token as-is or, if it is a last name of a person
@@ -143,16 +146,18 @@ def recognize_entities(
                 # Return an entity token with no definitions
                 # (this will eventually need to be looked up by full name when
                 # displaying or processing the article)
-                return token_ctor.Entity(token.txt)
+                new_ent = token_ctor.Entity("")
+                new_ent = new_ent.concatenate(token)
+                return new_ent
             # Return the full name meanings
-            return token_ctor.Person(token.txt, tfull.person_names)
-
+            new_ent = token_ctor.Person("", tfull.person_names)
+            new_ent = new_ent.concatenate(token)
+            return new_ent
         try:
 
             while True:
 
                 token = next(token_stream)
-
                 if not token.txt:  # token.kind != TOK.WORD:
                     if state:
                         if None in state:
@@ -163,7 +168,6 @@ def recognize_entities(
                         state = defaultdict(list)
                     yield token
                     continue
-
                 # Look for matches in the current state and build a new state
                 newstate: StateDict = defaultdict(list)
                 w = token.txt  # Original word
@@ -181,8 +185,10 @@ def recognize_entities(
                     for sl, entity in state[w]:
                         add_to_state(sl, entity)
                     # Update the lastnames mapping
-                    fullname = " ".join([t.txt for t in tq])
-                    parts = fullname.split()
+                    new_ent = token_ctor.Entity("")
+                    for item in tq:
+                        new_ent = new_ent.concatenate(item)
+                    parts = new_ent.txt.split()
                     # If we now have 'Hillary Rodham Clinton',
                     # make sure we delete the previous 'Rodham' entry
                     for p in parts[1:-1]:
@@ -190,7 +196,7 @@ def recognize_entities(
                             del lastnames[p]
                     if parts[-1][0].isupper():
                         # 'Clinton' -> 'Hillary Rodham Clinton'
-                        lastnames[parts[-1]] = token_ctor.Entity(fullname)
+                        lastnames[parts[-1]] = new_ent
                 else:
                     # Not a match for an expected token
                     if state:
@@ -245,6 +251,7 @@ def recognize_entities(
                             # No BÍN meaning for this token, or the meanings
                             # were constructed by concatenation (indicated by a hyphen
                             # in the stem)
+                            print(token)
                             weak = False  # Accept single-word entity references
                         # elist is a list of Entity instances
                         elist = query_entities(w)
