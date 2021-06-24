@@ -38,7 +38,7 @@
 
 """
 
-from typing import List, Iterator, Dict, Union, Tuple, Optional, Type
+from typing import Any, List, Iterator, Dict, Union, Tuple, Optional, Type, cast
 
 from collections import defaultdict
 import logging
@@ -88,11 +88,13 @@ def recognize_entities(
             """ Return a list of entities matching the word(s) given,
                 exactly if fuzzy = False, otherwise also as a starting word(s) """
             try:
-                q: SqlQuery[Entity] = session.query(Entity.name, Entity.verb, Entity.definition)
+                q: SqlQuery[Entity] = cast(Any, session).query(
+                    Entity.name, Entity.verb, Entity.definition
+                )
                 if fuzzy:
-                    q = q.filter(Entity.name.like(w + " %") | (Entity.name == w))
+                    q = cast(Any, q).filter(Entity.name.like(w + " %") | (Entity.name == w))  # type: ignore
                 else:
-                    q = q.filter(Entity.name == w)
+                    q = cast(Any, q).filter(Entity.name == w)
                 return q.all()
             except OperationalError as e:
                 logging.warning("SQL error in fetch_entities(): {0}".format(e))
