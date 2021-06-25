@@ -37,7 +37,6 @@ from typing import (
     List,
     Dict,
     Tuple,
-    Any,
     Union,
     Iterator,
     Iterable,
@@ -48,7 +47,7 @@ from typing import (
 from typing_extensions import TypedDict
 
 from reynir.bintokenizer import Tok, StringIterable
-from reynir import Sentence, Paragraph
+from reynir import Sentence
 
 import reynir_correct
 import nertokenizer
@@ -57,6 +56,20 @@ from reynir_correct.annotation import Annotation
 
 # Type definitions
 StatsDict = Dict[str, Union[int, float]]
+
+
+class AnnDict(TypedDict):
+
+    """ A single annotation, as returned by the API """
+
+    start: int
+    end: int
+    start_char: int
+    end_char: int
+    code: str
+    text: str
+    detail: Optional[str]
+    suggest: Optional[str]
 
 
 class AnnTokenDict(TypedDict, total=False):
@@ -71,6 +84,20 @@ class AnnTokenDict(TypedDict, total=False):
     o: str
     # Character offset of token, indexed from the start of the checked text
     i: int
+
+
+class AnnResultDict(TypedDict):
+
+    """ The annotation result for a sentence """
+
+    original: str
+    tokens: List[AnnTokenDict]
+    annotations: List[AnnDict]
+    corrected: str
+
+
+# List of sentences, each having an associated list of AnnResultDict instances
+CheckResult = Tuple[List[List[AnnResultDict]], StatsDict]
 
 
 class RecognitionPipeline(reynir_correct.CorrectionPipeline):
@@ -110,7 +137,7 @@ def check_grammar(
     *,
     progress_func: Optional[Callable[[float], None]] = None,
     split_paragraphs: bool = True,
-) -> Tuple[Any, StatsDict]:
+) -> CheckResult:
     """ Check the grammar and spelling of the given text and return
         a list of annotated paragraphs, containing sentences, containing
         tokens. The progress_func, if given, will be called periodically
@@ -128,7 +155,7 @@ def check_grammar(
     # counting from its beginning
     offset = 0
 
-    def encode_sentence(sent: Sentence) -> Dict[str, Any]:
+    def encode_sentence(sent: Sentence) -> AnnResultDict:
         """ Map a reynir._Sentence object to a raw sentence dictionary
             expected by the web UI """
         tokens: List[AnnTokenDict]
@@ -159,8 +186,12 @@ def check_grammar(
             sent, "annotations", cast(List[Annotation], [])
         )
         len_tokens = len(tokens)
-        annotations: List[Dict[str, Any]] = [
-            dict(
+        # Reassemble the original sentence text, as the tokenizer saw it
+        original = "".join((t.original or "") for t in sent.tokens)
+        # !!! TODO: Create a unique token and attach it to the annotation,
+        # to be checked in /feedback.api to validate incoming feedback
+        annotations: List[AnnDict] = [
+            AnnDict(
                 # Start token index of this annotation
                 start=ann.start,
                 # End token index (inclusive)
@@ -182,17 +213,22 @@ def check_grammar(
             )
             for ann in a
         ]
-        return dict(tokens=tokens, annotations=annotations, corrected=sent.tidy_text,)
+        return AnnResultDict(
+            original=original,
+            tokens=tokens,
+            annotations=annotations,
+            corrected=sent.tidy_text,
+        )
 
-    pglist = cast(Iterable[Paragraph], result["paragraphs"])
+    pglist = result["paragraphs"]
     pgs = [[encode_sentence(sent) for sent in pg] for pg in pglist]
 
-    stats: StatsDict = dict(
-        num_tokens=cast(int, result["num_tokens"]),
-        num_sentences=cast(int, result["num_sentences"]),
-        num_parsed=cast(int, result["num_parsed"]),
+    stats = StatsDict(
+        num_tokens=result["num_tokens"],
+        num_sentences=result["num_sentences"],
+        num_parsed=result["num_parsed"],
         num_chars=offset,
-        ambiguity=cast(float, result["ambiguity"]),
+        ambiguity=result["ambiguity"],
     )
 
     return pgs, stats
