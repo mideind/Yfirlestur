@@ -54,6 +54,7 @@ import reynir_correct
 import nertokenizer
 from reynir_correct.annotation import Annotation
 
+from pprint import pprint
 
 # Type definitions
 StatsDict = Dict[str, Union[int, float]]
@@ -190,3 +191,9 @@ def check_grammar(
     )
 
     return pgs, stats
+
+if __name__ == "__main__":
+    text = "Charles Parkton."
+    #text = "Á Clinton."
+    resp = check_grammar(text)
+    pprint(resp)

@@ -45,11 +45,14 @@ import logging
 
 from reynir import Abbreviations, TOK, Tok
 from reynir.bindb import GreynirBin
+from reynir_correct.checker import check_single
 from sqlalchemy.orm.query import Query as SqlQuery
 
 from db import Session, SessionContext, OperationalError
 from db.models import Entity
 
+import correct
+from pprint import pprint
 
 EntityNameList = List[Tuple[List[str], Entity]]
 StateDict = Dict[Union[str, None], EntityNameList]
@@ -61,11 +64,11 @@ def recognize_entities(
     token_ctor: Type[TOK] = TOK,
 ) -> Iterator[Tok]:
 
-    """ Parse a stream of tokens looking for (capitalized) entity names
-        The algorithm implements N-token lookahead where N is the
-        length of the longest entity name having a particular initial word.
-        Adds a named entity recognition layer on top of the
-        reynir.bintokenizer.tokenize() function.
+    """Parse a stream of tokens looking for (capitalized) entity names
+    The algorithm implements N-token lookahead where N is the
+    length of the longest entity name having a particular initial word.
+    Adds a named entity recognition layer on top of the
+    reynir.bintokenizer.tokenize() function.
 
     """
 
@@ -75,7 +78,7 @@ def recognize_entities(
     # indicates that the accumulated phrase so far is a complete
     # and valid known entity name.
     state: StateDict = defaultdict(list)
-    # Entitiy definition cache
+    # Entity definition cache
     ecache: Dict[str, List[Entity]] = dict()
     # Last name to full name mapping ('Clinton' -> 'Hillary Clinton')
     lastnames: Dict[str, Tok] = dict()
@@ -85,10 +88,12 @@ def recognize_entities(
     ) as session:
 
         def fetch_entities(w: str, fuzzy: bool = True) -> List[Entity]:
-            """ Return a list of entities matching the word(s) given,
-                exactly if fuzzy = False, otherwise also as a starting word(s) """
+            """Return a list of entities matching the word(s) given,
+            exactly if fuzzy = False, otherwise also as a starting word(s)"""
             try:
-                q: SqlQuery[Entity] = session.query(Entity.name, Entity.verb, Entity.definition)
+                q: SqlQuery[Entity] = session.query(
+                    Entity.name, Entity.verb, Entity.definition
+                )
                 if fuzzy:
                     q = q.filter(Entity.name.like(w + " %") | (Entity.name == w))
                 else:
@@ -100,15 +105,15 @@ def recognize_entities(
                 return []
 
         def query_entities(w: str) -> List[Entity]:
-            """ Return a list of entities matching the initial word given """
+            """Return a list of entities matching the initial word given"""
             e = ecache.get(w)
             if e is None:
                 ecache[w] = e = fetch_entities(w)
             return e
 
         def lookup_lastname(lastname: str) -> Optional[Tok]:
-            """ Look up a last name in the lastnames registry,
-                eventually without a possessive 's' at the end, if present """
+            """Look up a last name in the lastnames registry,
+            eventually without a possessive 's' at the end, if present"""
             fullname = lastnames.get(lastname)
             if fullname is not None:
                 # Found it
@@ -120,10 +125,10 @@ def recognize_entities(
             return None
 
         def flush_match() -> Tok:
-            """ Flush a match that has been accumulated in the token queue """
+            """Flush a match that has been accumulated in the token queue"""
             if len(tq) == 1 and lookup_lastname(tq[0].txt) is not None:
                 # If single token, it may be the last name of a
-                # previously seen entity or mmmwmwperson
+                # previously seen entity or person
                 return token_or_entity(tq[0])
             # Reconstruct original text behind phrase
             new_ent = token_ctor.Entity("")
@@ -134,9 +139,9 @@ def recognize_entities(
             return new_ent
 
         def token_or_entity(token: Tok) -> Tok:
-            """ Return a token as-is or, if it is a last name of a person
-                that has already been mentioned in the token stream by full name,
-                refer to the full name """
+            """Return a token as-is or, if it is a last name of a person
+            that has already been mentioned in the token stream by full name,
+            refer to the full name"""
             assert token.txt[0].isupper()
             tfull = lookup_lastname(token.txt)
             if tfull is None:
@@ -153,6 +158,7 @@ def recognize_entities(
             new_ent = token_ctor.Person("", tfull.person_names)
             new_ent = new_ent.concatenate(token)
             return new_ent
+
         try:
 
             while True:
@@ -173,7 +179,7 @@ def recognize_entities(
                 w = token.txt  # Original word
 
                 def add_to_state(slist: List[str], entity: Entity) -> None:
-                    """ Add the list of subsequent words to the new parser state """
+                    """Add the list of subsequent words to the new parser state"""
                     wrd = slist[0] if slist else None
                     rest = slist[1:]
                     newstate[wrd].append((rest, entity))
@@ -251,7 +257,6 @@ def recognize_entities(
                             # No BÍN meaning for this token, or the meanings
                             # were constructed by concatenation (indicated by a hyphen
                             # in the stem)
-                            print(token)
                             weak = False  # Accept single-word entity references
                         # elist is a list of Entity instances
                         elist = query_entities(w)
@@ -308,3 +313,9 @@ def recognize_entities(
     # print("\nLast names:\n{0}".format("\n".join("{0}: {1}".format(k, v) for k, v in lastnames.items())))
 
     assert not tq
+
+
+if __name__ == "__main__":
+    text = "Á Clinton."
+    resp = correct.check_grammar(text)
+    pprint(resp)

@@ -128,7 +128,7 @@ def text_from_request(
         When using GET, the default parameter name is 't'. This can
         be overridden using the get_field parameter.
         When using POST, the default form field name is 'text'. This can
-        be overridden using the post_field paramter.
+        be overridden using the post_field parameter.
     """
     if rq.method == "POST":
         if rq.headers.get("Content-Type") == "text/plain":
