@@ -192,8 +192,20 @@ def check_grammar(
 
     return pgs, stats
 
+
 if __name__ == "__main__":
     text = "Charles Parkton."
-    #text = "Á Clinton."
+    resp = check_grammar(text)
+    pprint(resp)
+    
+    text = "Á Clinton."
+    resp = check_grammar(text)
+    pprint(resp)
+    
+    text = "Hér er Nanna."
+    resp = check_grammar(text)
+    pprint(resp)
+
+    text = "Hér er Ásgrímur Angantýsson."
     resp = check_grammar(text)
     pprint(resp)
