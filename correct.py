@@ -154,7 +154,7 @@ def check_grammar(
         nonlocal offset
         for ix, t in enumerate(sent.tokens):
             tokens[ix]["i"] = offset
-            offset += len(t.original or "")
+            offset += len(t.origin_spans or "")
         a = cast(Iterable[Annotation], getattr(sent, "annotations", []))
         len_tokens = len(tokens)
         annotations: List[Dict[str, Any]] = [
@@ -194,18 +194,23 @@ def check_grammar(
 
 
 if __name__ == "__main__":
-    text = "Charles Parkton."
+
+    text = "Á Clinton."
+    print(text)
     resp = check_grammar(text)
     pprint(resp)
-    
-    text = "Á Clinton."
+
+    text = "Charles Parkton."
+    print(text)
     resp = check_grammar(text)
     pprint(resp)
     
     text = "Hér er Nanna."
+    print(text)
     resp = check_grammar(text)
     pprint(resp)
 
-    text = "Hér er Ásgrímur Angantýsson."
+    text = "Hér er Maríanna Gvendardóttir."
+    print(text)
     resp = check_grammar(text)
     pprint(resp)
