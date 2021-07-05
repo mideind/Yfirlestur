@@ -33,6 +33,7 @@
 
 """
 
+import re
 from typing import (
     List,
     Dict,
@@ -53,8 +54,6 @@ from reynir import Sentence, Paragraph
 import reynir_correct
 import nertokenizer
 from reynir_correct.annotation import Annotation
-
-from pprint import pprint
 
 # Type definitions
 StatsDict = Dict[str, Union[int, float]]
@@ -191,26 +190,3 @@ def check_grammar(
     )
 
     return pgs, stats
-
-
-if __name__ == "__main__":
-
-    text = "Á Clinton."
-    print(text)
-    resp = check_grammar(text)
-    pprint(resp)
-
-    text = "Charles Parkton."
-    print(text)
-    resp = check_grammar(text)
-    pprint(resp)
-    
-    text = "Hér er Nanna."
-    print(text)
-    resp = check_grammar(text)
-    pprint(resp)
-
-    text = "Hér er Maríanna Gvendardóttir."
-    print(text)
-    resp = check_grammar(text)
-    pprint(resp)
