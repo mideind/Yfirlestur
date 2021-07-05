@@ -35,9 +35,7 @@
 
 from typing import (
     List,
-    Dict,
     Tuple,
-    Union,
     Iterator,
     Iterable,
     Optional,
@@ -45,6 +43,9 @@ from typing import (
     cast,
 )
 from typing_extensions import TypedDict
+
+import hashlib
+import random
 
 from reynir.bintokenizer import Tok, StringIterable
 from reynir import Sentence
@@ -54,8 +55,22 @@ import nertokenizer
 from reynir_correct.annotation import Annotation
 
 
+# Salt that is used during generation of a hashed token
+# to be returned when giving feedback on an annotation
+START_SALT = "*[GC start]*"
+END_SALT = "*[GC end]*"
+
 # Type definitions
-StatsDict = Dict[str, Union[int, float]]
+
+class StatsDict(TypedDict):
+
+    """ Statistics returned from an annotation task """
+
+    num_tokens: int
+    num_sentences: int
+    num_parsed: int
+    num_chars: int
+    ambiguity: float
 
 
 class AnnDict(TypedDict):
@@ -92,6 +107,8 @@ class AnnResultDict(TypedDict):
 
     original: str
     tokens: List[AnnTokenDict]
+    token: str
+    nonce: str
     annotations: List[AnnDict]
     corrected: str
 
@@ -130,6 +147,25 @@ class NERCorrect(reynir_correct.GreynirCorrect):
             of the normal one """
         pipeline = RecognitionPipeline(text)
         return pipeline.tokenize()
+
+
+def generate_nonce() -> str:
+    """ Generate a random nonce, consisting of 8 digits """
+    return "{0:08}".format(random.randint(0, 10 ** 8 - 1))
+
+
+def generate_token(original: str, nonce: str) -> str:
+    """ Generate a 64-character token string using the original
+        sentence string and the given nonce """
+    return hashlib.sha256(
+        (START_SALT + nonce + original + END_SALT).encode("utf-8")
+    ).hexdigest()[:64]
+
+
+def validate_token_and_nonce(original: str, token: str, nonce: str) -> bool:
+    """ Check whether a given token/nonce combination corresponds to
+        the original sentence given """
+    return generate_token(original, nonce) == token
 
 
 def check_grammar(
@@ -188,8 +224,10 @@ def check_grammar(
         len_tokens = len(tokens)
         # Reassemble the original sentence text, as the tokenizer saw it
         original = "".join((t.original or "") for t in sent.tokens)
-        # !!! TODO: Create a unique token and attach it to the annotation,
-        # to be checked in /feedback.api to validate incoming feedback
+        # Create a nonce and a token that the user must return correctly
+        # to give feedback on this annotation via the /feedback endpoint
+        nonce = generate_nonce()
+        token = generate_token(original, nonce)
         annotations: List[AnnDict] = [
             AnnDict(
                 # Start token index of this annotation
@@ -216,6 +254,8 @@ def check_grammar(
         return AnnResultDict(
             original=original,
             tokens=tokens,
+            token=token,
+            nonce=nonce,
             annotations=annotations,
             corrected=sent.tidy_text,
         )

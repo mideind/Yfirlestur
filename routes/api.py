@@ -50,7 +50,7 @@ from flask import request, abort, url_for, current_app, Request
 
 from settings import Settings
 
-from correct import check_grammar
+from correct import check_grammar, validate_token_and_nonce
 from doc import SUPPORTED_DOC_MIMETYPES, doc_class_for_mime_type
 
 from db import SessionContext
@@ -173,6 +173,16 @@ def feedback(version: int = 1) -> Any:
         # The original sentence being annotated
         sentence: str = rq.get("sentence", "")[0:1024]
 
+        # Token
+        token: str = rq.get("token", "")[0:64]
+
+        # Nonce
+        nonce: str = rq.get("nonce", "")[0:8]
+
+        # Validate that the token and the nonce are correct
+        if not validate_token_and_nonce(sentence, token, nonce):
+            raise ValueError("Token and nonce do not correspond to sentence")
+
         # Annotation code
         code: str = rq.get("code", "")[0:32]
 
@@ -184,7 +194,7 @@ def feedback(version: int = 1) -> Any:
         end = rq.get_int("end")
 
         if not(0 <= start <= end):
-            raise ValueError()
+            raise ValueError(f"Invalid annotation span: {start}-{end}")
 
         # Correction
         correction: str = rq.get("correction")[0:1024]
@@ -196,7 +206,7 @@ def feedback(version: int = 1) -> Any:
         reason = rq.get("reason", "")[0:32]
 
         if not all((sentence, code, annotation, correction, feedback)):
-            raise ValueError()
+            raise ValueError("One or more required data fields missing")
 
         c = Correction()
         c.timestamp = datetime.utcnow()

@@ -38,8 +38,10 @@ cp *.py $DEST/
 cp requirements.txt $DEST/
 
 # Put a version identifier (date and time) into the about.html template
-# TODO: Put Git commit hash / revision count here as well as date and time
 sed -i "s/\[Þróunarútgáfa\]/Útgáfa `date "+%Y-%m-%d %H:%M"`/g" $DEST/templates/about.html
+GITVERS=$(git rev-parse HEAD) # Get git commit ID
+GITVERS=${GITVERS:0:7} # Truncate it
+sed -i "s/\[Git-útgáfa\]/${GITVERS}/g" $DEST/templates/about.html
 
 echo "Deployment done"
 echo "Starting gunicorn server..."
