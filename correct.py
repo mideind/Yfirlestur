@@ -153,7 +153,7 @@ def check_grammar(
         nonlocal offset
         for ix, t in enumerate(sent.tokens):
             tokens[ix]["i"] = offset
-            offset += len(t.origin_spans or "")
+            offset += len(t.original or "")
         a = cast(Iterable[Annotation], getattr(sent, "annotations", []))
         len_tokens = len(tokens)
         annotations: List[Dict[str, Any]] = [

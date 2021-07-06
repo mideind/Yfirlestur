@@ -51,8 +51,6 @@ from sqlalchemy.orm.query import Query as SqlQuery
 from db import Session, SessionContext, OperationalError
 from db.models import Entity
 
-import correct
-from pprint import pprint
 
 EntityNameList = List[Tuple[List[str], Entity]]
 StateDict = Dict[Union[str, None], EntityNameList]
@@ -151,12 +149,10 @@ def recognize_entities(
                 # Return an entity token with no definitions
                 # (this will eventually need to be looked up by full name when
                 # displaying or processing the article)
-                new_ent = token_ctor.Entity("")
-                new_ent = new_ent.concatenate(token)
+                new_ent = token_ctor.Entity("").concatenate(token)
                 return new_ent
             # Return the full name meanings
-            new_ent = token_ctor.Person("", tfull.person_names)
-            new_ent = new_ent.concatenate(token)
+            new_ent = token_ctor.Person("", tfull.person_names).concatenate(token)
             return new_ent
 
         try:
@@ -309,13 +305,4 @@ def recognize_entities(
                 yield from tq
             tq = []
 
-    # print("\nEntity cache:\n{0}".format("\n".join("'{0}': {1}".format(k, v) for k, v in ecache.items())))
-    # print("\nLast names:\n{0}".format("\n".join("{0}: {1}".format(k, v) for k, v in lastnames.items())))
-
     assert not tq
-
-
-if __name__ == "__main__":
-    text = "Á Clinton."
-    resp = correct.check_grammar(text)
-    pprint(resp)
