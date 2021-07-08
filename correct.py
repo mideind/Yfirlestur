@@ -57,7 +57,7 @@ from reynir_correct.annotation import Annotation
 
 
 # True if running in a continuous integration (CI) test environment
-CI_RUN = (os.environ.get("CI") or "") > ""
+CI_RUN = os.environ.get("CI", "") > ""
 
 # Salt that is used during generation of a hashed token
 # to be returned when giving feedback on an annotation

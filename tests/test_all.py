@@ -46,7 +46,7 @@ from settings import *  # noqa
 
 def checking(text: str, real: List[int]) -> None:
     resp = check_grammar(text)
-    i = [ i["i"] for i in resp[0][0][0]['tokens'] ] # t.original is in i["o"]
+    i = [ i.get("i", 0) for i in resp[0][0][0]['tokens'] ] # t.original is in i["o"]
     #if real != i:
     #    print(text)
     #    print(f"Result: {i}")
