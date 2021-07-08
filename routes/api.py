@@ -32,7 +32,8 @@
 
 """
 
-from typing import Any, Dict, Tuple, Optional
+from typing import Any, Dict, List, Tuple, Optional, TypeVar, Union, cast, overload
+from typing_extensions import Literal
 
 import os
 import time
@@ -49,11 +50,16 @@ from flask import request, abort, url_for, current_app, Request
 
 from settings import Settings
 
-from correct import check_grammar
+from correct import check_grammar, validate_token_and_nonce
 from doc import SUPPORTED_DOC_MIMETYPES, doc_class_for_mime_type
+
+from db import SessionContext
+from db.models import Correction
 
 from . import routes, better_jsonify, text_from_request
 
+
+T = TypeVar("T")
 
 # For how long do we keep correction task results around?
 RESULT_AVAILABILITY_WINDOW = timedelta(minutes=2)
@@ -69,6 +75,158 @@ _CTX = multiprocessing.get_context("fork")
 # Number of processes in worker pool
 # By default, use all available CPU cores except one
 POOL_SIZE = int(os.environ.get("POOL_SIZE", multiprocessing.cpu_count() - 1))
+
+
+class RequestData:
+
+    """Wraps the Flask request object to allow error-checked retrieval of query
+    parameters either from JSON or from form-encoded POST data"""
+
+    _TRUE_SET = frozenset(("true", "True", "1", 1, True))
+    _FALSE_SET = frozenset(("false", "False", "0", 0, False))
+
+    def __init__(self, rq: Request, *, use_args: bool = False) -> None:
+        # If JSON data is present, assume this is a JSON request
+        self.q: Dict[str, Any] = cast(Any, rq).get_json(silent=True)
+        self.using_json = True
+        if not self.q:
+            # No JSON data: assume this is a form-encoded request
+            self.q = rq.form
+            self.using_json = False
+            if not self.q:
+                # As a last resort, and if permitted, fall back to URL arguments
+                if use_args:
+                    self.q = rq.args
+                else:
+                    self.q = dict()
+
+    @overload
+    def get(self, key: str) -> Any: ...
+
+    @overload
+    def get(self, key: str, default: Literal[None]) -> Any: ...
+
+    @overload
+    def get(self, key: str, default: T) -> T: ...
+
+    def get(self, key: str, default: Any = None) -> Any:
+        """ Obtain an arbitrary data item from the request """
+        return self.q.get(key, default)
+
+    def get_int(self, key: str, default: int = 0) -> int:
+        """ Obtain an integer data item from the request """
+        try:
+            return int(self.q.get(key, default))
+        except (TypeError, ValueError):
+            return default
+
+    @overload
+    def get_bool(self, key: str) -> bool:
+        ...
+
+    @overload
+    def get_bool(self, key: str, default: bool) -> bool:
+        ...
+
+    @overload
+    def get_bool(self, key: str, default: Literal[None]) -> Union[bool, None]:
+        ...
+
+    def get_bool(self, key: str, default: Optional[bool] = None) -> Union[bool, None]:
+        """ Obtain a boolean data item from the request """
+        try:
+            val = self.q.get(key, default)
+            if val in self._TRUE_SET:
+                # This is a truthy value
+                return True
+            if val in self._FALSE_SET:
+                # This is a falsy value
+                return False
+        except (TypeError, ValueError):
+            pass
+        # Something else, i.e. neither truthy nor falsy: return the default
+        return default
+
+    def get_list(self, key: str) -> List[Any]:
+        """ Obtain a list data item from the request """
+        if self.using_json:
+            # Normal get from a JSON dictionary
+            r = self.q.get(key, [])
+        else:
+            # Use special getlist() call on request.form object
+            r = cast(Any, self.q).getlist(key + "[]")
+        return r if isinstance(r, list) else []
+
+    def __getitem__(self, key: str) -> Any:
+        """ Shortcut: allow indexing syntax with an empty string default """
+        return self.q.get(key, "")
+
+
+@routes.route("/feedback.api", methods=["POST"])
+@routes.route("/feedback.api/v<int:version>", methods=["POST"])
+def feedback(version: int = 1) -> Any:
+    """ Post feedback about a correction to a database table """
+
+    try:
+        rq = RequestData(request)
+
+        # The original sentence being annotated
+        sentence: str = rq.get("sentence", "")[0:1024]
+
+        # Token
+        token: str = rq.get("token", "")[0:64]
+
+        # Nonce
+        nonce: str = rq.get("nonce", "")[0:8]
+
+        # Validate that the token and the nonce are correct
+        if not validate_token_and_nonce(sentence, token, nonce):
+            raise ValueError("Token and nonce do not correspond to sentence")
+
+        # Annotation code
+        code: str = rq.get("code", "")[0:32]
+
+        # Annotation text
+        annotation = rq.get("annotation", "")[0:512]
+
+        # Annotation span
+        start = rq.get_int("start")
+        end = rq.get_int("end")
+
+        if not(0 <= start <= end):
+            raise ValueError(f"Invalid annotation span: {start}-{end}")
+
+        # Correction
+        correction: str = rq.get("correction")[0:1024]
+
+        # User feedback; usually 'accept' or 'reject'
+        feedback: str = rq.get("feedback")[0:32]
+
+        # Reason text - can be omitted
+        reason = rq.get("reason", "")[0:32]
+
+        if not all((sentence, code, annotation, correction, feedback)):
+            raise ValueError("One or more required data fields missing")
+
+        c = Correction()
+        c.timestamp = datetime.utcnow()
+        c.sentence = sentence
+        c.code = code
+        c.annotation = annotation
+        c.start = start
+        c.end = end
+        c.correction = correction
+        c.feedback = feedback
+        c.reason = reason
+
+        with SessionContext(commit=True) as session:
+            session.add(c)  # type: ignore
+            session.flush()
+
+    except Exception as e:
+        return f"Invalid request or missing data: {e}", 400
+
+    return better_jsonify(ok=True)
 
 
 @routes.route("/correct.task", methods=["POST"])

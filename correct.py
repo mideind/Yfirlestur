@@ -35,10 +35,7 @@
 
 from typing import (
     List,
-    Dict,
     Tuple,
-    Any,
-    Union,
     Iterator,
     Iterable,
     Optional,
@@ -47,15 +44,46 @@ from typing import (
 )
 from typing_extensions import TypedDict
 
+import hashlib
+import random
+
 from reynir.bintokenizer import Tok, StringIterable
-from reynir import Sentence, Paragraph
+from reynir import Sentence
 
 import reynir_correct
 import nertokenizer
 from reynir_correct.annotation import Annotation
 
+# Salt that is used during generation of a hashed token
+# to be returned when giving feedback on an annotation
+START_SALT = "*[GC start]*"
+END_SALT = "*[GC end]*"
+
 # Type definitions
-StatsDict = Dict[str, Union[int, float]]
+
+class StatsDict(TypedDict):
+
+    """ Statistics returned from an annotation task """
+
+    num_tokens: int
+    num_sentences: int
+    num_parsed: int
+    num_chars: int
+    ambiguity: float
+
+
+class AnnDict(TypedDict):
+
+    """ A single annotation, as returned by the API """
+
+    start: int
+    end: int
+    start_char: int
+    end_char: int
+    code: str
+    text: str
+    detail: Optional[str]
+    suggest: Optional[str]
 
 
 class AnnTokenDict(TypedDict, total=False):
@@ -70,6 +98,22 @@ class AnnTokenDict(TypedDict, total=False):
     o: str
     # Character offset of token, indexed from the start of the checked text
     i: int
+
+
+class AnnResultDict(TypedDict):
+
+    """ The annotation result for a sentence """
+
+    original: str
+    tokens: List[AnnTokenDict]
+    token: str
+    nonce: str
+    annotations: List[AnnDict]
+    corrected: str
+
+
+# List of sentences, each having an associated list of AnnResultDict instances
+CheckResult = Tuple[List[List[AnnResultDict]], StatsDict]
 
 
 class RecognitionPipeline(reynir_correct.CorrectionPipeline):
@@ -104,12 +148,31 @@ class NERCorrect(reynir_correct.GreynirCorrect):
         return pipeline.tokenize()
 
 
+def generate_nonce() -> str:
+    """ Generate a random nonce, consisting of 8 digits """
+    return "{0:08}".format(random.randint(0, 10 ** 8 - 1))
+
+
+def generate_token(original: str, nonce: str) -> str:
+    """ Generate a 64-character token string using the original
+        sentence string and the given nonce """
+    return hashlib.sha256(
+        (START_SALT + nonce + original + END_SALT).encode("utf-8")
+    ).hexdigest()[:64]
+
+
+def validate_token_and_nonce(original: str, token: str, nonce: str) -> bool:
+    """ Check whether a given token/nonce combination corresponds to
+        the original sentence given """
+    return generate_token(original, nonce) == token
+
+
 def check_grammar(
     text: str,
     *,
     progress_func: Optional[Callable[[float], None]] = None,
     split_paragraphs: bool = True,
-) -> Tuple[Any, StatsDict]:
+) -> CheckResult:
     """ Check the grammar and spelling of the given text and return
         a list of annotated paragraphs, containing sentences, containing
         tokens. The progress_func, if given, will be called periodically
@@ -127,7 +190,7 @@ def check_grammar(
     # counting from its beginning
     offset = 0
 
-    def encode_sentence(sent: Sentence) -> Dict[str, Any]:
+    def encode_sentence(sent: Sentence) -> AnnResultDict:
         """ Map a reynir._Sentence object to a raw sentence dictionary
             expected by the web UI """
         tokens: List[AnnTokenDict]
@@ -155,11 +218,17 @@ def check_grammar(
             tokens[ix]["i"] = offset
             offset += len(t.original or "")
         a: Iterable[Annotation] = getattr(
-            sent, "annotations", cast(Iterable[Annotation], [])
+            sent, "annotations", cast(List[Annotation], [])
         )
         len_tokens = len(tokens)
-        annotations: List[Dict[str, Any]] = [
-            dict(
+        # Reassemble the original sentence text, as the tokenizer saw it
+        original = "".join((t.original or "") for t in sent.tokens)
+        # Create a nonce and a token that the user must return correctly
+        # to give feedback on this annotation via the /feedback endpoint
+        nonce = generate_nonce()
+        token = generate_token(original, nonce)
+        annotations: List[AnnDict] = [
+            AnnDict(
                 # Start token index of this annotation
                 start=ann.start,
                 # End token index (inclusive)
@@ -180,12 +249,19 @@ def check_grammar(
             )
             for ann in a
         ]
-        return dict(tokens=tokens, annotations=annotations, corrected=sent.tidy_text)
+        return AnnResultDict(
+            original=original,
+            tokens=tokens,
+            token=token,
+            nonce=nonce,
+            annotations=annotations,
+            corrected=sent.tidy_text,
+        )
 
-    pglist = cast(Iterable[Paragraph], result["paragraphs"])
+    pglist = result["paragraphs"]
     pgs = [[encode_sentence(sent) for sent in pg] for pg in pglist]
 
-    stats: StatsDict = dict(
+    stats = StatsDict(
         num_tokens=result["num_tokens"],
         num_sentences=result["num_sentences"],
         num_parsed=result["num_parsed"],

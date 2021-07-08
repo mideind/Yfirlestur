@@ -32,8 +32,9 @@
 
 """
 
+from typing import Any, Optional, cast
+
 from datetime import datetime
-from typing import Optional, cast
 
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy import (
@@ -68,7 +69,7 @@ class CaseInsensitiveComparator(Comparator):
 
 
 # Create the SQLAlchemy ORM Base class
-Base = declarative_base()
+Base: Any = declarative_base()
 
 # Add a table() function to the Base class, returning the __table__ member.
 # Note that this hack is necessary because SqlAlchemy doesn't readily allow
@@ -181,10 +182,10 @@ class Article(Base):
     # The back-reference to the Root parent of this Article
     # Modify this to RelationshipProperty[Root] once Pylance, Mypy and Python 3.6
     # settle their differences
-    root: RelationshipProperty = relationship(
+    root: RelationshipProperty = relationship(  # type: ignore
         "Root",
         foreign_keys="Article.root_id",
-        backref=backref("articles", order_by=url),
+        backref=backref("articles", order_by=url),  # type: ignore
     )
 
     def __repr__(self):
@@ -218,7 +219,7 @@ class Entity(Base):
     def name_lc(self) -> str:  # type: ignore
         return self.name.lower()
 
-    @name_lc.comparator
+    @name_lc.comparator  # type: ignore
     def name_lc(cls):  # pylint: disable=no-self-argument
         return CaseInsensitiveComparator(cls.name)
 
@@ -236,8 +237,8 @@ class Entity(Base):
     # The back-reference to the Article parent of this Entity
     # Modify this to RelationshipProperty[Article] once Pylance, Mypy and Python 3.6
     # settle their differences
-    article: RelationshipProperty = relationship(
-        "Article", backref=backref("entities", order_by=name)
+    article: RelationshipProperty = relationship(  # type: ignore
+        "Article", backref=backref("entities", order_by=name)  # type: ignore
     )
 
     # Add an index on the entity name in lower case
@@ -248,3 +249,46 @@ class Entity(Base):
             self.id, self.name, self.verb, self.definition
         )
 
+
+class Correction(Base):
+
+    """ Represents correction feedback """
+
+    __tablename__ = "corrections"
+
+    # Primary key (UUID)
+    id = Column(
+        psql_UUID(as_uuid=False),
+        server_default=text("uuid_generate_v1()"),
+        primary_key=True
+    )
+
+    # Timestamp of this entry
+    timestamp = cast(datetime, Column(DateTime, nullable=False, index=True))
+
+    # The original sentence being annotated
+    sentence = cast(str, Column(String, nullable=False))
+
+    # Annotation code
+    code = cast(str, Column(String(32), nullable=False, index=True))
+
+    # Annotation text
+    annotation = cast(str, Column(String, nullable=False))
+
+    # Annotation span
+    start = cast(int, Column(Integer, nullable=False))
+    end = cast(int, Column(Integer, nullable=False))
+
+    # Correction
+    correction = cast(str, Column(String, nullable=False))
+
+    # User feedback
+    feedback = cast(str, Column(String(32), nullable=False, index=True))
+
+    # Reason text
+    reason = cast(str, Column(String(32), index=True))
+
+    def __repr__(self) -> str:
+        return "Correction(id='{0}', sent='{1}', code='{2}', annotation='{3}', feedback='{4}')".format(
+            self.id, self.sentence, self.code, self.annotation, self.feedback
+        )
