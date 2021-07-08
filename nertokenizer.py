@@ -147,11 +147,9 @@ def recognize_entities(
                 # Return an entity token with no definitions
                 # (this will eventually need to be looked up by full name when
                 # displaying or processing the article)
-                new_ent = token_ctor.Entity("").concatenate(token)
-                return new_ent
+                return token_ctor.Entity("").concatenate(token)
             # Return the full name meanings
-            new_ent = token_ctor.Person("", tfull.person_names).concatenate(token)
-            return new_ent
+            return token_ctor.Person("", tfull.person_names).concatenate(token)
 
         try:
 
