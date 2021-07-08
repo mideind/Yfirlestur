@@ -36,7 +36,6 @@ mainpath = os.path.join(basepath, "..")
 if mainpath not in sys.path:
     sys.path.insert(0, mainpath)
 
-
 from correct import *  # noqa
 from doc import *  # noqa
 from main import *  # noqa

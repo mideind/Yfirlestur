@@ -222,7 +222,7 @@ def recognize_entities(
                     weak = True
                     cnt = 1
                     upper = w and w[0].isupper()
-                    parts = []
+                    parts: List[str] = []
 
                     if upper and " " in w:
                         # For all uppercase phrases (words, entities, persons),
@@ -240,6 +240,7 @@ def recognize_entities(
                             else:
                                 lastnames[lastname] = token
 
+                    elist: List[Entity] = []
                     if token.kind == TOK.WORD and upper and w not in Abbreviations.DICT:
                         if " " in w:
                             # w may be a person name with more than one embedded word
@@ -252,8 +253,6 @@ def recognize_entities(
                             weak = False  # Accept single-word entity references
                         # elist is a list of Entity instances
                         elist = query_entities(w)
-                    else:
-                        elist = []
 
                     if elist:
                         # This word might be a candidate to start an entity reference
