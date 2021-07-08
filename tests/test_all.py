@@ -43,22 +43,22 @@ from main import *  # noqa
 from nertokenizer import *  # noqa
 from settings import *  # noqa
 
-from pprint import pprint
+# from pprint import pprint
 
-def checking(text: str, real: List[int]):
+def checking(text: str, real: List[int]) -> None:
     resp = check_grammar(text)
     i = [ i["i"] for i in resp[0][0][0]['tokens'] ] # t.original is in i["o"]
-    if real != i:
-        print(text)
-        print(f"Result: {i}")
-        print(f"Real:   {real}")
-        pprint(resp)
-    else:
-        pprint(resp)
+    #if real != i:
+    #    print(text)
+    #    print(f"Result: {i}")
+    #    print(f"Real:   {real}")
+    #    pprint(resp)
+    #else:
+    #    pprint(resp)
     assert real == i
 
 
-def test_character_spans():
+def test_character_spans() -> None:
 
     # Only 'normal' tokens
     text = "Ég á hest."
@@ -137,8 +137,10 @@ def test_character_spans():
     checking(text, real)
 
     # Wrong compounds
+    # af hverju -> 'af' retains the original token text,
+    # 'hverju' has original set to empty
     text = "Ég veit afhverju fuglinn galar."
-    real = [0, 2, 7, 10, 16, 24, 30]
+    real = [0, 2, 7, 16, 16, 24, 30]
     checking(text, real)
 
     # Wrong formers
