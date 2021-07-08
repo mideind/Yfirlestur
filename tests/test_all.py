@@ -45,9 +45,9 @@ from settings import *  # noqa
 
 from pprint import pprint
 
-def checking(text, real):
+def checking(text: str, real: List[int]):
     resp = check_grammar(text)
-    i = [ i["i"] for i in resp[0][0][0]['tokens'] ]       # t.original is in i["o"]
+    i = [ i["i"] for i in resp[0][0][0]['tokens'] ] # t.original is in i["o"]
     if real != i:
         print(text)
         print(f"Result: {i}")
@@ -169,6 +169,6 @@ def test_character_spans():
     text = "Ég varð afar stór."
     real = [0, 2, 7, 12, 17]
     checking(text, real)
-    
+
 
 

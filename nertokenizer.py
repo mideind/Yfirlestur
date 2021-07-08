@@ -45,7 +45,6 @@ import logging
 
 from reynir import Abbreviations, TOK, Tok
 from reynir.bindb import GreynirBin
-from reynir_correct.checker import check_single
 from sqlalchemy.orm.query import Query as SqlQuery
 
 from db import Session, SessionContext, OperationalError

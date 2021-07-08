@@ -33,7 +33,6 @@
 
 """
 
-import re
 from typing import (
     List,
     Dict,
@@ -106,7 +105,8 @@ class NERCorrect(reynir_correct.GreynirCorrect):
 
 
 def check_grammar(
-    text: str, *,
+    text: str,
+    *,
     progress_func: Optional[Callable[[float], None]] = None,
     split_paragraphs: bool = True,
 ) -> Tuple[Any, StatsDict]:
@@ -154,7 +154,9 @@ def check_grammar(
         for ix, t in enumerate(sent.tokens):
             tokens[ix]["i"] = offset
             offset += len(t.original or "")
-        a = cast(Iterable[Annotation], getattr(sent, "annotations", []))
+        a: Iterable[Annotation] = getattr(
+            sent, "annotations", cast(Iterable[Annotation], [])
+        )
         len_tokens = len(tokens)
         annotations: List[Dict[str, Any]] = [
             dict(
@@ -167,7 +169,9 @@ def check_grammar(
                 # Character offset of the end of the annotation in the original text
                 # (inclusive, i.e. the offset of the last character)
                 end_char=(
-                    tokens[ann.end + 1].get("i", 0) if ann.end + 1 < len_tokens else offset
+                    tokens[ann.end + 1].get("i", 0)
+                    if ann.end + 1 < len_tokens
+                    else offset
                 ) - 1,
                 code=ann.code,
                 text=ann.text,
@@ -176,17 +180,17 @@ def check_grammar(
             )
             for ann in a
         ]
-        return dict(tokens=tokens, annotations=annotations, corrected=sent.tidy_text,)
+        return dict(tokens=tokens, annotations=annotations, corrected=sent.tidy_text)
 
     pglist = cast(Iterable[Paragraph], result["paragraphs"])
     pgs = [[encode_sentence(sent) for sent in pg] for pg in pglist]
 
     stats: StatsDict = dict(
-        num_tokens=cast(int, result["num_tokens"]),
-        num_sentences=cast(int, result["num_sentences"]),
-        num_parsed=cast(int, result["num_parsed"]),
+        num_tokens=result["num_tokens"],
+        num_sentences=result["num_sentences"],
+        num_parsed=result["num_parsed"],
         num_chars=offset,
-        ambiguity=cast(float, result["ambiguity"]),
+        ambiguity=result["ambiguity"],
     )
 
     return pgs, stats
