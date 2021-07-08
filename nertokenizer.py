@@ -61,11 +61,11 @@ def recognize_entities(
     token_ctor: Type[TOK] = TOK,
 ) -> Iterator[Tok]:
 
-    """ Parse a stream of tokens looking for (capitalized) entity names
-        The algorithm implements N-token lookahead where N is the
-        length of the longest entity name having a particular initial word.
-        Adds a named entity recognition layer on top of the
-        reynir.bintokenizer.tokenize() function.
+    """Parse a stream of tokens looking for (capitalized) entity names
+    The algorithm implements N-token lookahead where N is the
+    length of the longest entity name having a particular initial word.
+    Adds a named entity recognition layer on top of the
+    reynir.bintokenizer.tokenize() function.
 
     """
 
@@ -75,7 +75,7 @@ def recognize_entities(
     # indicates that the accumulated phrase so far is a complete
     # and valid known entity name.
     state: StateDict = defaultdict(list)
-    # Entitiy definition cache
+    # Entity definition cache
     ecache: Dict[str, List[Entity]] = dict()
     # Last name to full name mapping ('Clinton' -> 'Hillary Clinton')
     lastnames: Dict[str, Tok] = dict()
@@ -85,8 +85,8 @@ def recognize_entities(
     ) as session:
 
         def fetch_entities(w: str, fuzzy: bool = True) -> List[Entity]:
-            """ Return a list of entities matching the word(s) given,
-                exactly if fuzzy = False, otherwise also as a starting word(s) """
+            """Return a list of entities matching the word(s) given,
+            exactly if fuzzy = False, otherwise also as a starting word(s)"""
             try:
                 q: SqlQuery[Entity] = cast(Any, session).query(
                     Entity.name, Entity.verb, Entity.definition
@@ -101,15 +101,15 @@ def recognize_entities(
                 return []
 
         def query_entities(w: str) -> List[Entity]:
-            """ Return a list of entities matching the initial word given """
+            """Return a list of entities matching the initial word given"""
             e = ecache.get(w)
             if e is None:
                 ecache[w] = e = fetch_entities(w)
             return e
 
         def lookup_lastname(lastname: str) -> Optional[Tok]:
-            """ Look up a last name in the lastnames registry,
-                eventually without a possessive 's' at the end, if present """
+            """Look up a last name in the lastnames registry,
+            eventually without a possessive 's' at the end, if present"""
             fullname = lastnames.get(lastname)
             if fullname is not None:
                 # Found it
@@ -121,21 +121,23 @@ def recognize_entities(
             return None
 
         def flush_match() -> Tok:
-            """ Flush a match that has been accumulated in the token queue """
+            """Flush a match that has been accumulated in the token queue"""
             if len(tq) == 1 and lookup_lastname(tq[0].txt) is not None:
                 # If single token, it may be the last name of a
                 # previously seen entity or person
                 return token_or_entity(tq[0])
             # Reconstruct original text behind phrase
-            ename = " ".join([t.txt for t in tq])
+            new_ent = token_ctor.Entity("")
+            for item in tq:
+                new_ent = new_ent.concatenate(item)
             # We don't include the definitions in the token - they should be looked up
             # on the fly when processing or displaying the parsed article
-            return token_ctor.Entity(ename)
+            return new_ent
 
         def token_or_entity(token: Tok) -> Tok:
-            """ Return a token as-is or, if it is a last name of a person
-                that has already been mentioned in the token stream by full name,
-                refer to the full name """
+            """Return a token as-is or, if it is a last name of a person
+            that has already been mentioned in the token stream by full name,
+            refer to the full name"""
             assert token.txt[0].isupper()
             tfull = lookup_lastname(token.txt)
             if tfull is None:
@@ -145,16 +147,15 @@ def recognize_entities(
                 # Return an entity token with no definitions
                 # (this will eventually need to be looked up by full name when
                 # displaying or processing the article)
-                return token_ctor.Entity(token.txt)
+                return token_ctor.Entity("").concatenate(token)
             # Return the full name meanings
-            return token_ctor.Person(token.txt, tfull.person_names)
+            return token_ctor.Person("", tfull.person_names).concatenate(token)
 
         try:
 
             while True:
 
                 token = next(token_stream)
-
                 if not token.txt:  # token.kind != TOK.WORD:
                     if state:
                         if None in state:
@@ -165,13 +166,12 @@ def recognize_entities(
                         state = defaultdict(list)
                     yield token
                     continue
-
                 # Look for matches in the current state and build a new state
                 newstate: StateDict = defaultdict(list)
                 w = token.txt  # Original word
 
                 def add_to_state(slist: List[str], entity: Entity) -> None:
-                    """ Add the list of subsequent words to the new parser state """
+                    """Add the list of subsequent words to the new parser state"""
                     wrd = slist[0] if slist else None
                     rest = slist[1:]
                     newstate[wrd].append((rest, entity))
@@ -183,8 +183,10 @@ def recognize_entities(
                     for sl, entity in state[w]:
                         add_to_state(sl, entity)
                     # Update the lastnames mapping
-                    fullname = " ".join([t.txt for t in tq])
-                    parts = fullname.split()
+                    new_ent = token_ctor.Entity("")
+                    for item in tq:
+                        new_ent = new_ent.concatenate(item)
+                    parts = new_ent.txt.split()
                     # If we now have 'Hillary Rodham Clinton',
                     # make sure we delete the previous 'Rodham' entry
                     for p in parts[1:-1]:
@@ -192,7 +194,7 @@ def recognize_entities(
                             del lastnames[p]
                     if parts[-1][0].isupper():
                         # 'Clinton' -> 'Hillary Rodham Clinton'
-                        lastnames[parts[-1]] = token_ctor.Entity(fullname)
+                        lastnames[parts[-1]] = new_ent
                 else:
                     # Not a match for an expected token
                     if state:
@@ -220,7 +222,7 @@ def recognize_entities(
                     weak = True
                     cnt = 1
                     upper = w and w[0].isupper()
-                    parts = []
+                    parts: List[str] = []
 
                     if upper and " " in w:
                         # For all uppercase phrases (words, entities, persons),
@@ -238,6 +240,7 @@ def recognize_entities(
                             else:
                                 lastnames[lastname] = token
 
+                    elist: List[Entity] = []
                     if token.kind == TOK.WORD and upper and w not in Abbreviations.DICT:
                         if " " in w:
                             # w may be a person name with more than one embedded word
@@ -250,8 +253,6 @@ def recognize_entities(
                             weak = False  # Accept single-word entity references
                         # elist is a list of Entity instances
                         elist = query_entities(w)
-                    else:
-                        elist = []
 
                     if elist:
                         # This word might be a candidate to start an entity reference
@@ -298,8 +299,5 @@ def recognize_entities(
             else:
                 yield from tq
             tq = []
-
-    # print("\nEntity cache:\n{0}".format("\n".join("'{0}': {1}".format(k, v) for k, v in ecache.items())))
-    # print("\nLast names:\n{0}".format("\n".join("{0}: {1}".format(k, v) for k, v in lastnames.items())))
 
     assert not tq

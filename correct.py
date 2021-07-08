@@ -44,6 +44,7 @@ from typing import (
 )
 from typing_extensions import TypedDict
 
+import os
 import hashlib
 import random
 
@@ -54,6 +55,9 @@ import reynir_correct
 import nertokenizer
 from reynir_correct.annotation import Annotation
 
+
+# True if running in a continuous integration (CI) test environment
+CI_RUN = os.environ.get("CI", "") > ""
 
 # Salt that is used during generation of a hashed token
 # to be returned when giving feedback on an annotation
@@ -129,9 +133,14 @@ class RecognitionPipeline(reynir_correct.CorrectionPipeline):
         """ Recognize named entities using the nertokenizer module,
             but construct tokens using the Correct_TOK class from
             reynir_correct """
-        return nertokenizer.recognize_entities(
-            stream, token_ctor=reynir_correct.Correct_TOK
-        )
+        if CI_RUN:
+            # Skip the recognize_entities pass if we are running in a
+            # continuous integration environment, where we have no database
+            return stream
+        else:
+            return nertokenizer.recognize_entities(
+                stream, token_ctor=reynir_correct.Correct_TOK
+            )
 
 
 class NERCorrect(reynir_correct.GreynirCorrect):
@@ -242,8 +251,7 @@ def check_grammar(
                     tokens[ann.end + 1].get("i", 0)
                     if ann.end + 1 < len_tokens
                     else offset
-                )
-                - 1,
+                ) - 1,
                 code=ann.code,
                 text=ann.text,
                 detail=ann.detail,
