@@ -84,6 +84,9 @@ class Scraper_DB:
 
 
 class classproperty:
+
+    """ Shim to create a property on a class """
+
     def __init__(self, f: Callable[..., Any]) -> None:
         self.f = f
 
@@ -162,14 +165,13 @@ __all__ = (
     "dbfunc",
     "sessionmaker",
     "Session",
-    "ResultProxy",
     "DatabaseError",
     "IntegrityError",
     "DataError",
     "OperationalError",
     "Settings",
     "ConfigError",
-    "ScraperDB",
+    "Scraper_DB",
     "classproperty",
     "SessionContext",
 )

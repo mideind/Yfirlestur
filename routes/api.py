@@ -101,13 +101,16 @@ class RequestData:
                     self.q = dict()
 
     @overload
-    def get(self, key: str) -> Any: ...
+    def get(self, key: str) -> Any:
+        ...
 
     @overload
-    def get(self, key: str, default: Literal[None]) -> Any: ...
+    def get(self, key: str, default: Literal[None]) -> Any:
+        ...
 
     @overload
-    def get(self, key: str, default: T) -> T: ...
+    def get(self, key: str, default: T) -> T:
+        ...
 
     def get(self, key: str, default: Any = None) -> Any:
         """ Obtain an arbitrary data item from the request """
@@ -193,7 +196,7 @@ def feedback(version: int = 1) -> Any:
         start = rq.get_int("start")
         end = rq.get_int("end")
 
-        if not(0 <= start <= end):
+        if not (0 <= start <= end):
             raise ValueError(f"Invalid annotation span: {start}-{end}")
 
         # Correction
@@ -350,7 +353,9 @@ class ChildTask:
             # Store the initial progress in the interprocess dict
             self.progress[self.identifier] = 0.0
             # Initialize the process status
-            self.status: Optional[multiprocessing.pool.ApplyResult[Tuple[Any, ...]]] = None
+            self.status: Optional[
+                multiprocessing.pool.ApplyResult[Tuple[Any, ...]]
+            ] = None
             self.task_result: Optional[Tuple[Any, ...]] = None
             self.exception: Optional[BaseException] = None
             self.text = ""
@@ -477,7 +482,10 @@ class ChildTask:
             # The task raised an exception: remove it herewith,
             # and return an HTTP 200 reply with an error message
             self.abort()
-            return better_jsonify(valid=False, error=str(self.exception))
+            return better_jsonify(
+                valid=False,
+                error=f"Exception {type(self.exception).__qualname__}: {self.exception}",
+            )
         if self.task_result is not None:
             # Task completed: return a HTTP 200 reply with a success result
             pgs, stats, text = self.finish()
