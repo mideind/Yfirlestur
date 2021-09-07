@@ -25,8 +25,8 @@ Try Yfirlestur (in Icelandic) at [https://yfirlestur.is](https://yfirlestur.is)!
 
 The core spelling and grammar checking functionality of Yfirlestur.is is provided by the
 [GreynirCorrect](https://github.com/mideind/GreynirCorrect) engine, by the same authors.
-The engine is currently in early release and user feedback is greatly appreciated,
-either through GitHub Issues or by e-mail to [mideind@mideind.is](mailto:mideind@mideind.is).
+User feedback is greatly appreciated, either through GitHub Issues
+or by e-mail to [mideind@mideind.is](mailto:mideind@mideind.is).
 
 ## HTTPS API
 
