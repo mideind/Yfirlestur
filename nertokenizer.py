@@ -128,8 +128,8 @@ def recognize_entities(
                 return token_or_entity(tq[0])
             # Reconstruct original text behind phrase
             new_ent = token_ctor.Entity("")
-            for item in tq:
-                new_ent = new_ent.concatenate(item)
+            for ix, item in enumerate(tq):
+                new_ent = new_ent.concatenate(item, separator=" " if ix > 0 else "")
             # We don't include the definitions in the token - they should be looked up
             # on the fly when processing or displaying the parsed article
             return new_ent
@@ -184,8 +184,8 @@ def recognize_entities(
                         add_to_state(sl, entity)
                     # Update the lastnames mapping
                     new_ent = token_ctor.Entity("")
-                    for item in tq:
-                        new_ent = new_ent.concatenate(item)
+                    for ix, item in enumerate(tq):
+                        new_ent = new_ent.concatenate(item, separator=" " if ix > 0 else "")
                     parts = new_ent.txt.split()
                     # If we now have 'Hillary Rodham Clinton',
                     # make sure we delete the previous 'Rodham' entry
