@@ -11,7 +11,7 @@ SRC=~/github/Yfirlestur
 DEST=/usr/share/nginx/yfirlestur.is
 SERVICE=yfirlestur
 
-read -p "This will deploy Yfirlestur to **PRODUCTION**. Confirm? (y/n): " CONFIRMED
+read -rp "This will deploy Yfirlestur to **PRODUCTION**. Confirm? (y/n): " CONFIRMED
 
 if [ "$CONFIRMED" != "y" ]; then
     echo "Deployment aborted"
@@ -20,11 +20,17 @@ fi
 
 echo "Deploying $SRC to $DEST..."
 
-echo "Stopping gunicorn server"
+cd $SRC || exit 1
 
-sudo systemctl stop $SERVICE
+cp requirements.txt $DEST/requirements.txt
 
-cd $SRC
+cd $DEST || exit 1
+
+source "venv/bin/activate"
+pip install --upgrade -r requirements.txt
+deactivate
+
+cd $SRC || exit 1
 
 echo "Copying files"
 
@@ -35,7 +41,6 @@ rsync -av --delete templates/ $DEST/templates/
 rsync -av --delete static/ $DEST/static/
 
 cp *.py $DEST/
-cp requirements.txt $DEST/
 
 # Put a version identifier (date and time) into the about.html template
 sed -i "s/\[Þróunarútgáfa\]/Útgáfa `date "+%Y-%m-%d %H:%M"`/g" $DEST/templates/about.html
@@ -43,7 +48,8 @@ GITVERS=$(git rev-parse HEAD) # Get git commit ID
 GITVERS=${GITVERS:0:7} # Truncate it
 sed -i "s/\[Git-útgáfa\]/${GITVERS}/g" $DEST/templates/about.html
 
-echo "Deployment done"
-echo "Starting gunicorn server..."
+echo "Reloading gunicorn server..."
 
-sudo systemctl start $SERVICE
+sudo systemctl reload $SERVICE
+
+echo "Deployment done"
