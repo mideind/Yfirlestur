@@ -137,10 +137,9 @@ class RecognitionPipeline(reynir_correct.CorrectionPipeline):
             # Skip the recognize_entities pass if we are running in a
             # continuous integration environment, where we have no database
             return stream
-        else:
-            return nertokenizer.recognize_entities(
-                stream, token_ctor=reynir_correct.Correct_TOK
-            )
+        return nertokenizer.recognize_entities(
+            stream, token_ctor=reynir_correct.Correct_TOK
+        )
 
 
 class NERCorrect(reynir_correct.GreynirCorrect):
@@ -192,7 +191,8 @@ def check_grammar(
     result = reynir_correct.check_with_custom_parser(
         text,
         split_paragraphs=split_paragraphs,
-        parser_class=NERCorrect,
+        # parser_class=NERCorrect,
+        parser_class=reynir_correct.GreynirCorrect,
         progress_func=progress_func,
     )
 
