@@ -43,7 +43,7 @@ from typing import Any, List, Iterator, Dict, Union, Tuple, Optional, Type, cast
 from collections import defaultdict
 import logging
 
-from reynir import Abbreviations, TOK, Tok
+from tokenizer import TOK, Tok, Abbreviations
 from reynir.bindb import GreynirBin
 from sqlalchemy.orm.query import Query as SqlQuery
 

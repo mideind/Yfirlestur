@@ -60,6 +60,8 @@ The example returns the following JSON (shown indented, for ease of reading):
             "detail":"Sögnin 'að vanta' er ópersónuleg. Frumlag hennar á að vera í þolfalli í stað þágufalls.",
             "end":2,
             "start":0,
+            "start_char":0,
+            "end_char":21,
             "suggest":"Manninn á verkstæðinu",
             "text":"Á líklega að vera 'Manninn á verkstæðinu'"
           }
@@ -92,14 +94,26 @@ each containing a list of sentences, each containing a list of annotations (unde
 the `annotations` field). Of course, if a sentence is correct and has no annotations,
 its annotation list will be empty.
 
-Each sentence has a field containing a `corrected` version of it, where all
-likely errors have been corrected, as well as a list of `tokens`. The tokens
+Each sentence entry has a field containing a `corrected` version of it, where
+likely errors have been corrected. The `corrected` string includes corrections
+of most spelling errors but only a subset of suspected grammar errors;
+the system is intentionally less aggressive about automatically applying those
+(as can be seen in the example above).
+
+Sentence entries also contain a list of `tokens`. The tokens
 originate in the [Tokenizer package](https://github.com/mideind/Tokenizer)
 and their format is documented there.
 
-Each annotation applies to a span of sentence tokens, starting with the index
-given in `start` and ending with the index in `end`. Both indices are 0-based
-and inclusive. An annotation has a `code` which uniquely determines the type
+Each annotation applies to a span of sentence tokens, starting
+at the token whose index is
+given in `start` and ending with the token whose index is
+in `end`. Both indices are 0-based
+and inclusive. Also, a starting character index is found
+in `start_char` and an ending index in `end_char`. Again,
+both are 0-based and inclusive. Note that these are character
+indices within the original source string, not byte indices.
+
+An annotation has a `code` which uniquely determines the type
 of error or warning. If the code ends with `/w`, it is a warning, otherwise
 it is an error.
 
@@ -124,6 +138,7 @@ a short demo program which submits two paragraphs of text to the
 spelling and grammar checker:
 
 ```python
+# $ pip install requests
 import requests
 import json
 
@@ -173,6 +188,14 @@ $ python test.py
 
 The open source *GreynirCorrect* engine that powers Yfirlestur.is
 is further [documented here](https://yfirlestur.is/doc/).
+
+## Acknowledgements
+
+Parts of this software are developed under the auspices of the
+Icelandic Government's 5-year Language Technology Programme for Icelandic,
+managed by Almannarómur. The LT Programme is described
+[here](https://www.stjornarradid.is/lisalib/getfile.aspx?itemid=56f6368e-54f0-11e7-941a-005056bc530c)
+(English version [here](https://clarin.is/media/uploads/mlt-en.pdf)).
 
 ## Copyright and licensing
 

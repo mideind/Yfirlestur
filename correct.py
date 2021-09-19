@@ -48,7 +48,8 @@ import os
 import hashlib
 import random
 
-from reynir.bintokenizer import Tok, StringIterable
+from tokenizer import Tok
+from reynir.bintokenizer import StringIterable
 from reynir import Sentence
 
 import reynir_correct
