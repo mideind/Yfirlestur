@@ -58,8 +58,8 @@ The example returns the following JSON (shown indented, for ease of reading):
           {
             "code":"P_WRONG_CASE_þgf_þf",
             "detail":"Sögnin 'að vanta' er ópersónuleg. Frumlag hennar á að vera í þolfalli í stað þágufalls.",
-            "end":2,
             "start":0,
+            "end":2,
             "start_char":0,
             "end_char":21,
             "suggest":"Manninn á verkstæðinu",
