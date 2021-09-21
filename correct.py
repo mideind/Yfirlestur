@@ -55,6 +55,7 @@ from reynir import Sentence
 import reynir_correct
 import nertokenizer
 from reynir_correct.annotation import Annotation
+from reynir_correct import CorrectionPipeline
 
 
 # True if running in a continuous integration (CI) test environment
@@ -122,7 +123,7 @@ class AnnResultDict(TypedDict):
 CheckResult = Tuple[List[List[AnnResultDict]], StatsDict]
 
 
-class RecognitionPipeline(reynir_correct.CorrectionPipeline):
+class RecognitionPipeline(CorrectionPipeline):
 
     """ Derived class that adds a named entity recognition pass
         to the GreynirCorrect tokenization pipeline """

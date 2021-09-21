@@ -42,9 +42,12 @@ import json
 import uuid
 from datetime import datetime, timedelta
 from functools import partial
+
 import multiprocessing
-import multiprocessing.pool
-import multiprocessing.managers
+from multiprocessing.pool import Pool as MultiprocessingPool
+from multiprocessing.pool import ApplyResult
+from multiprocessing.managers import SyncManager
+from multiprocessing import get_context
 
 from flask import request, abort, url_for, current_app, Request
 
@@ -71,7 +74,7 @@ MAX_SYNCHRONOUS_WAIT = 5 * 60.0  # 5 minutes
 # How may child processes do we allow to be active at any given point in time?
 MAX_CHILD_TASKS = 250
 # Multiprocessing context with a 'fork' start method
-_CTX = multiprocessing.get_context("fork")
+_CTX = get_context("fork")
 # Number of processes in worker pool
 # By default, use all available CPU cores except one
 POOL_SIZE = int(os.environ.get("POOL_SIZE", multiprocessing.cpu_count() - 1))
@@ -109,10 +112,10 @@ class RequestData:
         ...
 
     @overload
-    def get(self, key: str, default: T) -> T:
+    def get(self, key: str, default: T) -> T:  # type: ignore  # !!! Pylance bug
         ...
 
-    def get(self, key: str, default: Any = None) -> Any:
+    def get(self, key: str, default: Optional[Any] = None) -> Any:
         """ Obtain an arbitrary data item from the request """
         return self.q.get(key, default)
 
@@ -327,8 +330,8 @@ class ChildTask:
         to distribute correction workloads between CPU cores """
 
     processes: Dict[str, "ChildTask"] = dict()
-    pool: Optional[multiprocessing.pool.Pool] = None
-    manager: Optional[multiprocessing.managers.SyncManager] = None
+    pool: Optional[MultiprocessingPool] = None
+    manager: Optional[SyncManager] = None
     lock = threading.Lock()
     progress: Dict[str, float] = dict()
 
@@ -343,7 +346,7 @@ class ChildTask:
             assert cls.manager is not None
             cls.progress = cls.manager.dict()
             # Initialize the worker process pool
-            cls.pool = _CTX.Pool(POOL_SIZE)
+            cls.pool = cast(Any, _CTX).Pool(POOL_SIZE)
 
     def __init__(self) -> None:
         # Create a new, unique (random) process identifier
@@ -354,7 +357,7 @@ class ChildTask:
             self.progress[self.identifier] = 0.0
             # Initialize the process status
             self.status: Optional[
-                multiprocessing.pool.ApplyResult[Tuple[Any, ...]]
+                ApplyResult[Tuple[Any, ...]]
             ] = None
             self.task_result: Optional[Tuple[Any, ...]] = None
             self.exception: Optional[BaseException] = None
