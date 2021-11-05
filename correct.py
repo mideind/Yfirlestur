@@ -183,6 +183,7 @@ def check_grammar(
     *,
     progress_func: Optional[Callable[[float], None]] = None,
     split_paragraphs: bool = True,
+    annotate_unparsed_sentences: bool = True,
 ) -> CheckResult:
     """ Check the grammar and spelling of the given text and return
         a list of annotated paragraphs, containing sentences, containing
@@ -190,12 +191,11 @@ def check_grammar(
         during processing to indicate progress, with a ratio parameter
         which is a float in the range 0.0..1.0. """
 
-    result = reynir_correct.check_with_custom_parser(
+    result = reynir_correct.check_with_stats(
         text,
         split_paragraphs=split_paragraphs,
-        # parser_class=NERCorrect,
-        parser_class=reynir_correct.GreynirCorrect,
         progress_func=progress_func,
+        annotate_unparsed_sentences=annotate_unparsed_sentences,
     )
 
     # Character index of each token within the submitted text,

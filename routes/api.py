@@ -245,10 +245,15 @@ def correct_async(version: int = 1) -> Any:
     if not valid:
         return result
     assert isinstance(result, str)
+    # Retrieve the annotate_unparsed_sentences flag from the request URL
+    annotate_unparsed_sentences = (
+        request.args.get("annotate_unparsed_sentences", "true") == "true"
+    )
     # Launch the correction task within a child process
     # and return an intermediate HTTP 202 result including a status/result URL
     # that can be queried later to obtain the progress or the final result
-    return ChildTask().launch(result)
+    task = ChildTask(annotate_unparsed_sentences=annotate_unparsed_sentences)
+    return task.launch(result)
 
 
 @routes.route("/correct.api", methods=["POST"])
@@ -262,8 +267,12 @@ def correct_sync(version: int = 1) -> Any:
     if not valid:
         return result
     assert isinstance(result, str)
+    # Retrieve the annotate_unparsed_sentences flag from the request URL
+    annotate_unparsed_sentences = (
+        request.args.get("annotate_unparsed_sentences", "true") == "true"
+    )
     # Launch the correction task within a child process and wait for its outcome
-    task = ChildTask()
+    task = ChildTask(annotate_unparsed_sentences=annotate_unparsed_sentences)
     task.launch(result)
     duration = 0.0
     INCREMENT = 1.5  # Seconds
@@ -348,7 +357,7 @@ class ChildTask:
             # Initialize the worker process pool
             cls.pool = cast(Any, _CTX).Pool(POOL_SIZE)
 
-    def __init__(self) -> None:
+    def __init__(self, **options: Any) -> None:
         # Create a new, unique (random) process identifier
         with self.__class__.lock:
             self.identifier = uuid.uuid4().hex
@@ -356,13 +365,12 @@ class ChildTask:
             # Store the initial progress in the interprocess dict
             self.progress[self.identifier] = 0.0
             # Initialize the process status
-            self.status: Optional[
-                ApplyResult[Tuple[Any, ...]]
-            ] = None
+            self.status: Optional[ApplyResult[Tuple[Any, ...]]] = None
             self.task_result: Optional[Tuple[Any, ...]] = None
             self.exception: Optional[BaseException] = None
             self.text = ""
             self.started = datetime.utcnow()
+            self.options = options
             # Create the process pool that will be used for correction tasks.
             # We do this as late as possible, upon invocation of the first ChildTask.
             # Note that ChildTask instances are never created in child processes.
@@ -375,7 +383,7 @@ class ChildTask:
             ChildTask.progress[process_id] = progress
 
     @staticmethod
-    def task(process_id: str, text: str) -> Tuple[Any, ...]:
+    def task(process_id: str, text: str, options: Dict[str, Any]) -> Tuple[Any, ...]:
         """ This is a task that runs in a child process within the pool """
         # We do a bit of functools.partial magic to pass the process_id as the first
         # parameter to the progress_func whenever it is called
@@ -383,6 +391,7 @@ class ChildTask:
             text,
             progress_func=partial(ChildTask.progress_func, process_id),
             split_paragraphs=True,
+            **options,
         )
         # The result is automatically communicated back to the parent process via IPC
         return task_result
@@ -454,7 +463,7 @@ class ChildTask:
         # processes via pickling and interprocess communication
         self.status = self.pool.apply_async(
             ChildTask.task,
-            args=(self.identifier, text,),
+            args=(self.identifier, text, self.options),
             callback=self.complete,
             error_callback=self.error,
         )
