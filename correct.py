@@ -194,8 +194,8 @@ def check_grammar(
 
     result = check_with_stats(
         text,
-        split_paragraphs=split_paragraphs,
         progress_func=progress_func,
+        split_paragraphs=split_paragraphs,
         annotate_unparsed_sentences=annotate_unparsed_sentences,
     )
 
