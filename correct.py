@@ -56,7 +56,7 @@ from reynir import Sentence
 import reynir_correct
 import nertokenizer
 from reynir_correct.annotation import Annotation
-from reynir_correct import CorrectionPipeline
+from reynir_correct import CorrectionPipeline, check_with_stats
 
 
 # True if running in a continuous integration (CI) test environment
@@ -192,7 +192,7 @@ def check_grammar(
         during processing to indicate progress, with a ratio parameter
         which is a float in the range 0.0..1.0. """
 
-    result = reynir_correct.check_with_stats(
+    result = check_with_stats(
         text,
         split_paragraphs=split_paragraphs,
         progress_func=progress_func,
