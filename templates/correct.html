@@ -456,8 +456,9 @@
          var canvas = "";
          $.each(p, function (sentence_index, s) {
             // Sentence s
+            const parsed = !s.annotations || !s.annotations.some((a) => a.code === "E001");
             lastSp = TP_NONE;
-            left += "<span class='sent'>";
+            left += parsed ? "<span class='sent'>" : "<span class='sent not-parsed'>";
             // Note where the sentence starts in the token array
             var six = w.length;
             $.each(s.tokens, function (tix, t) {

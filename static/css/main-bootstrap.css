@@ -969,7 +969,18 @@ div.result i.errtok {
    color: #ff7c24;
 }
 
+/* Error tokens in a sentence that could not be parsed */
+div.result span.sent.not-parsed i.errtok {
+   color: #9999aa;
+}
+
 div.result i:hover {
+   color: white;
+   background-color: #777777;
+   border-color: #777777;
+}
+
+div.result span.sent.not-parsed i.errtok:hover {
    color: white;
    background-color: #777777;
    border-color: #777777;
