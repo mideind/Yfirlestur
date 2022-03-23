@@ -177,6 +177,13 @@
 .glyphicon-world:before {
    content: "\E372";
 }
+.glyphicon-book-open:before {
+   content: "\E352";
+   margin-left: 5px;
+   margin-right: 5px;
+   color: #ff7c24;
+   font-size: 1.5em;
+   }
 .glyphicon-spin {
     -webkit-animation: spin 2000ms infinite linear;
     animation: spin 2000ms infinite linear;

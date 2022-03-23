@@ -23,6 +23,7 @@
       background-repeat: no-repeat;
       background-size: auto 50%;
    }
+
 </style>
 
 {% endblock %}
@@ -351,12 +352,11 @@
 
    function getReferences(references) {
       // Add links to references if available
-      var combo = " ";
+      var combo = "  ";
+      if (!references) return "";
       $.each(references, function (rix, r) {
          // reference r
-         // A few possible symbols:
-         // 👻🧚🦄🛎🌈⚡🎱👛🔔💎🔍🔎💡📖🔗🔬❓❔ℹ🇮🇸
-         combo += '<a href="' + r + '" target="_blank">🧚</a>';
+         combo += '<a href="' + r + '" target="_blank"><span class="glyphicon glyphicon-book-open"></span></a> ';
       });
 
       return combo;
