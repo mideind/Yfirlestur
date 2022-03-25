@@ -56,18 +56,18 @@ var TP_WORD = 5;
 // Token spacing
 
 var TP_SPACE = [
-    // Next token is:
-    // LEFT    CENTER  RIGHT   NONE    WORD
-    // Last token was TP_LEFT:
-    [ false,  true,   false,  false,  false],
-    // Last token was TP_CENTER:
-    [ true,   true,   true,   true,   true],
-    // Last token was TP_RIGHT:
-    [ true,   true,   false,  false,  true],
-    // Last token was TP_NONE:
-    [ false,  true,   false,  false,  false],
-    // Last token was TP_WORD:
-    [ true,   true,   false,  false,  true]
+   // Next token is:
+   // LEFT    CENTER  RIGHT   NONE    WORD
+   // Last token was TP_LEFT:
+   [false, true, false, false, false],
+   // Last token was TP_CENTER:
+   [true, true, true, true, true],
+   // Last token was TP_RIGHT:
+   [true, true, false, false, true],
+   // Last token was TP_NONE:
+   [false, true, false, false, false],
+   // Last token was TP_WORD:
+   [true, true, false, false, true]
 ];
 
 var LEFT_PUNCTUATION = "([„«#$€<";
@@ -94,7 +94,7 @@ var FL_TO_LOC_KIND = {
 var w = [];
 
 // Name dictionary
-var nameDict = { };
+var nameDict = {};
 
 function debugMode() {
    return false;
@@ -208,7 +208,7 @@ function hoverIn() {
 
    // If foreign currency amount, show rough equivalent in ISK
    if (t.k == TOK_AMOUNT && t.v[1] !== "ISK") {
-      getCurrencyValue(t.v[1], function(val) {
+      getCurrencyValue(t.v[1], function (val) {
          if (val !== undefined) {
             var desc = friendlyISKDescription(t.v[0] * val);
             $("#details").html($("#details").text() + "<br>" + desc);
@@ -218,7 +218,7 @@ function hoverIn() {
 
    // Try to fetch image if person (and at least two names)
    if (t.k == TOK_PERSON && t.v.split(' ').length > 1) {
-      getPersonImage(r.lemma, function(img) {
+      getPersonImage(r.lemma, function (img) {
          $("#info-image").html(
             $("<img>").attr('src', img[0])
          ).show();
@@ -228,7 +228,7 @@ function hoverIn() {
    if (t["m"]) {
       var fl = t["m"][2];
 
-       // It's a location. Display loc info.
+      // It's a location. Display loc info.
       if (LOC_FL.includes(fl)) {
          $('#grammar').hide();
          $('#details').html(FL_TO_LOC_DESC[fl]);
@@ -237,8 +237,8 @@ function hoverIn() {
          var name = r.lemma;
          var kind = FL_TO_LOC_KIND[fl];
 
-          // Query server for more information about location
-         getLocationInfo(name, kind, function(info) {
+         // Query server for more information about location
+         getLocationInfo(name, kind, function (info) {
             // We know which country, show flag image
             if (info['country']) {
                $('#lemma').append(
@@ -291,7 +291,7 @@ function getLocationInfo(name, kind, successFunc) {
    }
    // Ask server for location info
    var data = { name: name, kind: kind };
-   getLocationInfo.request = $.getJSON("/locinfo", data, function(r) {
+   getLocationInfo.request = $.getJSON("/locinfo", data, function (r) {
       cache[ckey] = null;
       if (r['found']) {
          cache[ckey] = r;
@@ -319,7 +319,7 @@ function getPersonImage(name, successFunc) {
    }
    // Ask server for thumbnail image
    var enc = encodeURIComponent(name);
-   getPersonImage.request = $.getJSON("/image?thumb=1&name=" + enc, function(r) {
+   getPersonImage.request = $.getJSON("/image?thumb=1&name=" + enc, function (r) {
       cache[name] = null;
       if (r['found']) {
          cache[name] = r['image'];
@@ -354,15 +354,15 @@ function displayTokens(j) {
    var lastSp;
    w = [];
    if (j !== null)
-      $.each(j, function(pix, p) {
+      $.each(j, function (pix, p) {
          // Paragraph p
          x += "<p>\n";
-         $.each(p, function(six, s) {
+         $.each(p, function (six, s) {
             // Sentence s
             var err = false;
             lastSp = TP_NONE;
             // Check whether the sentence has an error or was fully parsed
-            $.each(s, function(tix, t) {
+            $.each(s, function (tix, t) {
                if (t.err == 1) {
                   err = true;
                   return false; // Break the iteration
@@ -372,7 +372,7 @@ function displayTokens(j) {
                x += "<span class='sent err'>";
             else
                x += "<span class='sent parsed'>";
-            $.each(s, function(tix, t) {
+            $.each(s, function (tix, t) {
                // Token t
                var thisSp = spacing(t);
                // Insert a space in front of this word if required
@@ -384,7 +384,7 @@ function displayTokens(j) {
                   // Mark an error token
                   x += "<span class='errtok'>";
                if (t.k == TOK_PUNCTUATION)
-                   // Add space around em-dash
+                  // Add space around em-dash
                   x += "<i class='p'>" + ((t.x == "—") ? " — " : t.x) + "</i>";
                else {
                   var cls;
@@ -395,33 +395,33 @@ function displayTokens(j) {
                      cls = " class='sequence'";
                   }
                   else
-                  if (!t.k) {
-                     // TOK_WORD
-                     if (err)
-                        // If the sentence was not parsed successfully,
-                        // we don't have an unambiguous interpretation of
-                        // the token (PoS tag or terminal name)
-                        cls = "";
-                     else
-                     if (t.m) {
-                        // Word class (noun, verb, adjective...)
-                        cls = " class='" + t.m[1] + ' ' + t.m[2] + "'";
+                     if (!t.k) {
+                        // TOK_WORD
+                        if (err)
+                           // If the sentence was not parsed successfully,
+                           // we don't have an unambiguous interpretation of
+                           // the token (PoS tag or terminal name)
+                           cls = "";
+                        else
+                           if (t.m) {
+                              // Word class (noun, verb, adjective...)
+                              cls = " class='" + t.m[1] + ' ' + t.m[2] + "'";
+                           }
+                           else
+                              if (first == "sérnafn") {
+                                 // Special case to display 'sérnafn' as 'entity'
+                                 cls = " class='entity'";
+                                 tx = tx.replace(" - ", "-"); // Tight hyphen, no whitespace
+                              }
+                              else
+                                 // Not found
+                                 cls = " class='nf'";
                      }
-                     else
-                     if (first == "sérnafn") {
-                        // Special case to display 'sérnafn' as 'entity'
-                        cls = " class='entity'";
-                        tx = tx.replace(" - ", "-"); // Tight hyphen, no whitespace
+                     else {
+                        cls = " class='" + tokClass[t.k] + "'";
+                        if (t.k == TOK_ENTITY)
+                           tx = tx.replace(" - ", "-"); // Tight hyphen, no whitespace
                      }
-                     else
-                        // Not found
-                        cls = " class='nf'";
-                  }
-                  else {
-                     cls = " class='" + tokClass[t.k] + "'";
-                     if (t.k == TOK_ENTITY)
-                        tx = tx.replace(" - ", "-"); // Tight hyphen, no whitespace
-                  }
                   x += "<i id='w" + w.length + "'" + cls + ">" + tx + "</i>";
                }
                if (t.err)
@@ -470,7 +470,7 @@ function populateRegister() {
    var i, item, name, title;
    var register = [];
    $("#namelist").html("");
-   $.each(nameDict, function(name, desc) {
+   $.each(nameDict, function (name, desc) {
       // kind is 'ref', 'name' or 'entity'
       if (desc.kind != "ref")
          // We don't display references to full names
@@ -483,7 +483,7 @@ function populateRegister() {
             }
          );
    });
-   register.sort(function(a, b) {
+   register.sort(function (a, b) {
       return a.name.localeCompare(b.name);
    });
    for (i = 0; i < register.length; i++) {
@@ -500,11 +500,11 @@ function populateRegister() {
    // Display the register
    if (register.length) {
       $("#register").css("display", "block");
-      $("#namelist span.name").click(function(ev) {
+      $("#namelist span.name").click(function (ev) {
          // Send a person query to the server
          queryPerson($(this).text(), ev);
       });
-      $("#namelist span.entity").click(function(ev) {
+      $("#namelist span.entity").click(function (ev) {
          // Send an entity query to the server
          queryEntity($(this).text(), ev);
       });

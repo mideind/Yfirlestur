@@ -69,9 +69,10 @@ END_SALT = "*[GC end]*"
 
 # Type definitions
 
+
 class StatsDict(TypedDict):
 
-    """ Statistics returned from an annotation task """
+    """Statistics returned from an annotation task"""
 
     num_tokens: int
     num_sentences: int
@@ -82,21 +83,23 @@ class StatsDict(TypedDict):
 
 class AnnDict(TypedDict):
 
-    """ A single annotation, as returned by the API """
+    """A single annotation, as returned by the API"""
 
     start: int
     end: int
     start_char: int
     end_char: int
+    references: Optional[List[str]]
     code: str
     text: str
     detail: Optional[str]
     suggest: Optional[str]
+    suggestlist: Optional[List[str]]
 
 
 class AnnTokenDict(TypedDict, total=False):
 
-    """ Type of the token dictionaries returned from check_grammar() """
+    """Type of the token dictionaries returned from check_grammar()"""
 
     # Token kind
     k: int
@@ -110,7 +113,7 @@ class AnnTokenDict(TypedDict, total=False):
 
 class AnnResultDict(TypedDict):
 
-    """ The annotation result for a sentence """
+    """The annotation result for a sentence"""
 
     original: str
     tokens: List[AnnTokenDict]
@@ -126,16 +129,16 @@ CheckResult = Tuple[List[List[AnnResultDict]], StatsDict]
 
 class RecognitionPipeline(CorrectionPipeline):
 
-    """ Derived class that adds a named entity recognition pass
-        to the GreynirCorrect tokenization pipeline """
+    """Derived class that adds a named entity recognition pass
+    to the GreynirCorrect tokenization pipeline"""
 
     def __init__(self, text: StringIterable) -> None:
         super().__init__(text)
 
     def recognize_entities(self, stream: Iterator[Tok]) -> Iterator[Tok]:
-        """ Recognize named entities using the nertokenizer module,
-            but construct tokens using the Correct_TOK class from
-            reynir_correct """
+        """Recognize named entities using the nertokenizer module,
+        but construct tokens using the Correct_TOK class from
+        reynir_correct"""
         if CI_RUN:
             # Skip the recognize_entities pass if we are running in a
             # continuous integration environment, where we have no database
@@ -147,35 +150,35 @@ class RecognitionPipeline(CorrectionPipeline):
 
 class NERCorrect(reynir_correct.GreynirCorrect):
 
-    """ Derived class to override the default tokenization of
-        GreynirCorrect to perform named entity recognition """
+    """Derived class to override the default tokenization of
+    GreynirCorrect to perform named entity recognition"""
 
     def __init__(self, **options: Any) -> None:
         super().__init__(**options)
 
     def tokenize(self, text: StringIterable) -> Iterator[Tok]:
-        """ Use the recognizing & correcting tokenizer instead
-            of the normal one """
+        """Use the recognizing & correcting tokenizer instead
+        of the normal one"""
         pipeline = RecognitionPipeline(text)
         return pipeline.tokenize()
 
 
 def generate_nonce() -> str:
-    """ Generate a random nonce, consisting of 8 digits """
+    """Generate a random nonce, consisting of 8 digits"""
     return "{0:08}".format(random.randint(0, 10 ** 8 - 1))
 
 
 def generate_token(original: str, nonce: str) -> str:
-    """ Generate a 64-character token string using the original
-        sentence string and the given nonce """
+    """Generate a 64-character token string using the original
+    sentence string and the given nonce"""
     return hashlib.sha256(
         (START_SALT + nonce + original + END_SALT).encode("utf-8")
     ).hexdigest()[:64]
 
 
 def validate_token_and_nonce(original: str, token: str, nonce: str) -> bool:
-    """ Check whether a given token/nonce combination corresponds to
-        the original sentence given """
+    """Check whether a given token/nonce combination corresponds to
+    the original sentence given"""
     return generate_token(original, nonce) == token
 
 
@@ -186,11 +189,11 @@ def check_grammar(
     split_paragraphs: bool = True,
     annotate_unparsed_sentences: bool = True,
 ) -> CheckResult:
-    """ Check the grammar and spelling of the given text and return
-        a list of annotated paragraphs, containing sentences, containing
-        tokens. The progress_func, if given, will be called periodically
-        during processing to indicate progress, with a ratio parameter
-        which is a float in the range 0.0..1.0. """
+    """Check the grammar and spelling of the given text and return
+    a list of annotated paragraphs, containing sentences, containing
+    tokens. The progress_func, if given, will be called periodically
+    during processing to indicate progress, with a ratio parameter
+    which is a float in the range 0.0..1.0."""
 
     result = check_with_stats(
         text,
@@ -204,8 +207,8 @@ def check_grammar(
     offset = 0
 
     def encode_sentence(sent: Sentence) -> AnnResultDict:
-        """ Map a reynir._Sentence object to a raw sentence dictionary
-            expected by the web UI """
+        """Map a reynir._Sentence object to a raw sentence dictionary
+        expected by the web UI"""
         tokens: List[AnnTokenDict]
         if sent.tree is None:
             # Not parsed: use the raw token list
@@ -254,11 +257,14 @@ def check_grammar(
                     tokens[ann.end + 1].get("i", 0)
                     if ann.end + 1 < len_tokens
                     else offset
-                ) - 1,
+                )
+                - 1,
+                references=ann.references,
                 code=ann.code,
                 text=ann.text,
                 detail=ann.detail,
                 suggest=ann.suggest,
+                suggestlist=ann.suggestlist,
             )
             for ann in a
         ]

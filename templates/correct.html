@@ -1,4 +1,3 @@
-
 {% extends "container-normal.html" %}
 
 {% block styles %}
@@ -6,25 +5,24 @@
 <link href="{{ url_for('static', filename='css/main-bootstrap.css') }}" rel='stylesheet' type='text/css'>
 
 <style>
+   button#txt-ok {
+      background-color: #ff7c24;
+   }
 
-button#txt-ok {
-   background-color: #ff7c24;
-}
+   div.input-correct {
+      margin-top: 24px;
+   }
 
-div.input-correct {
-   margin-top: 24px;
-}
+   textarea#txt {
+      margin-bottom: 2em;
+   }
 
-textarea#txt {
-   margin-bottom: 2em;
-}
-
-textarea#txt.with-background {
-   background-image: url('/static/img/yfirlestur_opengraph.png');
-   background-position: -24px center;
-   background-repeat: no-repeat;
-   background-size: auto 50%;
-}
+   textarea#txt.with-background {
+      background-image: url('/static/img/yfirlestur_opengraph.png');
+      background-position: -24px center;
+      background-repeat: no-repeat;
+      background-size: auto 50%;
+   }
 
 </style>
 
@@ -38,8 +36,7 @@ textarea#txt.with-background {
 
       <div class="col-xs-12" id="txt-div">
 
-         <textarea rows="15" class="form-control input-lg"
-            id="txt" tabindex="1" maxlength="16384" autofocus required
+         <textarea rows="15" class="form-control input-lg" id="txt" tabindex="1" maxlength="16384" autofocus required
             placeholder="Sláðu inn texta eða veldu skjal til að lesa yfir...">
             {{- default_text -}}
          </textarea>
@@ -50,8 +47,7 @@ textarea#txt.with-background {
 
    <div id="correct-buttons" class="row buttons">
       <div class="col-xs-4 col-sm-3 col-md-2 pull-right">
-         <button class="btn btn-warning btn-lg btn-block"
-            id="txt-ok" title="Lesa yfir texta" tabindex="3"
+         <button class="btn btn-warning btn-lg btn-block" id="txt-ok" title="Lesa yfir texta" tabindex="3"
             onclick="correct()">
             <span class='glyphicon glyphicon-restart glyphicon-spin-white' style="display:none;"></span>
             <span class="glyphicon glyphicon-eye-open normal"></span> Lesa yfir
@@ -63,9 +59,9 @@ textarea#txt.with-background {
       </form>
 
       <div class="col-xs-4 col-sm-3 col-md-2 pull-right">
-         <button class="btn btn-warning btn-lg btn-block" id="file-ok" 
-            title="Hlaða upp skjali til yfirlestrar (styður TXT, RTF, HTML, DOCX, PDF og ODT snið)" 
-            tabindex="3" onclick="selectFile()">
+         <button class="btn btn-warning btn-lg btn-block" id="file-ok"
+            title="Hlaða upp skjali til yfirlestrar (styður TXT, RTF, HTML, DOCX, PDF og ODT snið)" tabindex="3"
+            onclick="selectFile()">
             <span class='glyphicon glyphicon-restart glyphicon-spin-white' style="display:none;"></span>
             <span class="glyphicon glyphicon-upload normal"></span> Skjal
          </button>
@@ -79,11 +75,10 @@ textarea#txt.with-background {
       </div>
       <div class="col-xs-12">
          <div class="progress">
-            <div id="correct-progress-value"
-               class="progress-bar progress-bar-warning progress-bar-striped active"
+            <div id="correct-progress-value" class="progress-bar progress-bar-warning progress-bar-striped active"
                role="progressbar" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100"
                style="min-width: 2em; width: 0%">
-            0%
+               0%
             </div>
          </div>
       </div>
@@ -120,10 +115,12 @@ textarea#txt.with-background {
             <h3>Tölfræði</h3>
             <ul>
                <li>Textinn inniheldur <span id="tok-num">0</span> eindir í
-                  <span id="num-sent">0</span> málsgreinum.</li>
+                  <span id="num-sent">0</span> málsgreinum.
+               </li>
                <li>Það tókst að trjágreina <span id="num-parsed-sent">0</span>
                   <span id="paragraphs">málsgreinar</span> eða
-                  <span id="num-parsed-ratio">0,0</span>%.</li>
+                  <span id="num-parsed-ratio">0,0</span>%.
+               </li>
             </ul>
          </div>
 
@@ -146,7 +143,7 @@ textarea#txt.with-background {
    // Global array linking annotations to token span indices
    var annSpan = [];
 
-   var CorrectionTask = (function() {
+   var CorrectionTask = (function () {
 
       "use strict";
 
@@ -159,7 +156,7 @@ textarea#txt.with-background {
          this.ival = null;
       }
 
-      CorrectionTask.prototype.submitText = function(txt) {
+      CorrectionTask.prototype.submitText = function (txt) {
          this.clearResult();
          this.updateProgress();
          // Note: the following should not be a serverJsonQuery call,
@@ -167,7 +164,7 @@ textarea#txt.with-background {
          // Endpoints with .task or .api suffix are not cached
          serverQuery('/correct.task',
             {
-               text : txt
+               text: txt
             },
             this.start.bind(this),
             null,
@@ -175,7 +172,7 @@ textarea#txt.with-background {
          );
       };
 
-      CorrectionTask.prototype.submitFile = function(fd) {
+      CorrectionTask.prototype.submitFile = function (fd) {
          this.clearResult();
          this.updateProgress();
          // Send off ajax request
@@ -191,7 +188,7 @@ textarea#txt.with-background {
          });
       };
 
-      CorrectionTask.prototype.clearResult = function() {
+      CorrectionTask.prototype.clearResult = function () {
          // Clear previous result
          $("div#pgs").html("");
          $("#no-annotations").hide();
@@ -201,7 +198,7 @@ textarea#txt.with-background {
          this.wait(true);
       };
 
-      CorrectionTask.prototype.start = function(json, status, resp) {
+      CorrectionTask.prototype.start = function (json, status, resp) {
          // Called when the task has been started and we're being informed
          // of the status (polling) URL to use
          if (resp.status == 202) {
@@ -220,7 +217,7 @@ textarea#txt.with-background {
          }
       };
 
-      CorrectionTask.prototype.handleError = function(resp) {
+      CorrectionTask.prototype.handleError = function (resp) {
          // An error occurred: stop polling and update the UI
          this.stop();
          // Progress complete
@@ -237,7 +234,7 @@ textarea#txt.with-background {
          showError(msg);
       };
 
-      CorrectionTask.prototype.poll = function() {
+      CorrectionTask.prototype.poll = function () {
          // Called every few seconds to query the server about its progress
          serverGet(this.url,
             this.checkProgress.bind(this),
@@ -245,7 +242,7 @@ textarea#txt.with-background {
          );
       };
 
-      CorrectionTask.prototype.checkProgress = function(json, status, resp) {
+      CorrectionTask.prototype.checkProgress = function (json, status, resp) {
          // Response from the server to a progress check
          if (resp.status == 202) {
             // Still in progress
@@ -270,7 +267,7 @@ textarea#txt.with-background {
          }
       };
 
-      CorrectionTask.prototype.updateProgress = function() {
+      CorrectionTask.prototype.updateProgress = function () {
          // Update the UI with the current progress
          var percent = "" + Math.round(this.progress * 100.0);
          $("#correct-progress-value")
@@ -287,7 +284,7 @@ textarea#txt.with-background {
          }
       };
 
-      CorrectionTask.prototype.wait = function(state) {
+      CorrectionTask.prototype.wait = function (state) {
          // Update UI when waiting for result vs. showing it
          if (state) {
             // Waiting for result: disable textarea and buttons
@@ -309,7 +306,7 @@ textarea#txt.with-background {
          }
       };
 
-      CorrectionTask.prototype.populateResult = function(json) {
+      CorrectionTask.prototype.populateResult = function (json) {
          // Processing completed: display the result
          this.wait(false);
          if (!json.valid || json.result === undefined || json.result === null) {
@@ -329,7 +326,7 @@ textarea#txt.with-background {
 
       return CorrectionTask;
 
-   } ());
+   }());
 
    function showError(errStr) {
       // Hide any current results and show error message
@@ -352,6 +349,19 @@ textarea#txt.with-background {
       // Replace the dummy markers with HTML tags
       return fmt.replace(/\[bold\]/g, "<b>").replace(/\[~bold\]/g, "</b>");
    }
+
+   function getReferences(references) {
+      // Add links to references if available
+      if (!references) return "";
+      var combo = "";
+      $.each(references, function (rix, r) {
+         // reference r
+         combo += '<a href="' + r + '" target="_blank"><span class="glyphicon glyphicon-book-open"></span></a> ';
+      });
+
+      return combo;
+   }
+
 
    function annHoverIn(ev) {
       // Hovering over an annotation
@@ -435,7 +445,7 @@ textarea#txt.with-background {
       var hoverFuncs = {}; // Hover functions for tokens, indexed by token index
       annSpan = []; // Array of annotation token spans
       var unknownWords = {}; // Dict of already seen unknown words
-      $.each(j, function(pix, p) {
+      $.each(j, function (pix, p) {
          // We create a div for each paragraph
          x += "<div class='correct'>\n";
          // Left column: paragraph text
@@ -444,14 +454,14 @@ textarea#txt.with-background {
          var right = "";
          // Third child: SVG drawing stuff
          var canvas = "";
-         $.each(p, function(sentence_index, s) {
+         $.each(p, function (sentence_index, s) {
             // Sentence s
             const parsed = !s.annotations || !s.annotations.some((a) => a.code === "E001");
             lastSp = TP_NONE;
             left += parsed ? "<span class='sent'>" : "<span class='sent not-parsed'>";
             // Note where the sentence starts in the token array
             var six = w.length;
-            $.each(s.tokens, function(tix, t) {
+            $.each(s.tokens, function (tix, t) {
                // Token t
                var thisSp = spacing(t);
                // Insert a space in front of this word if required
@@ -475,7 +485,7 @@ textarea#txt.with-background {
                // This is fairly inefficient but that is not a problem in practice
                var hoverAnnotations = { a: [] };
                var clsAnnotation;
-               $.each(s.annotations, function(aix, a) {
+               $.each(s.annotations, function (aix, a) {
                   // Annotation a
                   if (tix >= a.start && tix <= a.end) {
                      // The annotation applies to this token:
@@ -495,15 +505,15 @@ textarea#txt.with-background {
                   cls.push(clsAnnotation);
                // Create hover functions for this token
                if (hoverAnnotations.a.length) {
-                  var hoverInFunc = function() {
+                  var hoverInFunc = function () {
                      for (var i = 0; i < this.a.length; i++)
                         $("#a" + this.a[i].divId).addClass("highlight");
                   }.bind(hoverAnnotations);
-                  var hoverOutFunc = function() {
+                  var hoverOutFunc = function () {
                      for (var i = 0; i < this.a.length; i++)
                         $("#a" + this.a[i].divId).removeClass("highlight");
                   }.bind(hoverAnnotations);
-                  hoverFuncs[w.length] = [ hoverInFunc, hoverOutFunc ];
+                  hoverFuncs[w.length] = [hoverInFunc, hoverOutFunc];
                }
                left += "<i id='w" + w.length +
                   "' class='" + cls.join(" ") + "'>" + tx + "</i>";
@@ -511,9 +521,10 @@ textarea#txt.with-background {
                w.push(t);
             });
             // Accumulate annotations into the right column
-            $.each(s.annotations, function(aix, a) {
+            $.each(s.annotations, function (aix, a) {
                // Annotation a
                // We do not show repeated annotations for unknown words
+               console.log(a.code)
                a.divId = undefined;
                if (a.code !== "U001" || unknownWords[a.text] === undefined) {
                   var cls = isWarning(a.code) ? " warning" : "";
@@ -529,7 +540,7 @@ textarea#txt.with-background {
                   }
                   a.divId = annSpan.length;
                   right += "<div id='a" + a.divId + "'>" +
-                     "<div class='ann-text" + cls + "'>" + info + formatAnnotation(a.text) + "</div>" +
+                     "<div class='ann-text" + cls + "'>" + info + formatAnnotation(a.text) + getReferences(a.references) + "</div>" +
                      detail +
                      "</div>\n";
                   // Add a path to the canvas (empty at this point
@@ -537,9 +548,9 @@ textarea#txt.with-background {
                   canvas += "<path id='p" + a.divId + "'" + cls + "></path>\n";
                   // Note the token span to which the annotation applies,
                   // within the global token list
-                  annSpan.push({start: six + a.start, end: six + a.end});
+                  annSpan.push({ start: six + a.start, end: six + a.end });
                   if (a.code === "U001")
-                     // Note that we have have now annotated this unknown word
+                     // Note that we have now annotated this unknown word
                      unknownWords[a.text] = true;
                }
             });
@@ -585,12 +596,12 @@ textarea#txt.with-background {
       // is called both when the annotations are originally
       // positioned, and when the browser window is resized.
       // Begin by clearing any previous top margins
-      $.each(annSpan, function(six) {
+      $.each(annSpan, function (six) {
          var ann = $("#a" + six);
          ann.css("margin-top", "0");
       });
       // Then, align with tokens as necessary
-      $.each(annSpan, function(six, span) {
+      $.each(annSpan, function (six, span) {
          var tokenTop = $("#w" + span.start).offset().top;
          var spanEnd = span.end;
          // If the last token is a punctuation token,
@@ -627,7 +638,7 @@ textarea#txt.with-background {
          // token and to the left of the annotation.
          var path = $("#p" + six);
          path.attr("d",
-            "M " + tokenX + " " + tokenY + 
+            "M " + tokenX + " " + tokenY +
             " C " + tokenX + " " + (tokenY + 40) +
             " " + (annX - 40) + " " + annY +
             " " + annX + " " + annY
@@ -673,7 +684,7 @@ textarea#txt.with-background {
          return;
       }
 
-      fd.set('file', f);   
+      fd.set('file', f);
       $("#txt").val("").removeClass("with-background");
 
       new CorrectionTask().submitFile(fd);
@@ -689,7 +700,7 @@ textarea#txt.with-background {
       var txt = $("#txt");
       txt
          .on("drop",
-            function(event) {
+            function (event) {
                $(this).removeClass("with-background");
                event.preventDefault();
                event.stopPropagation();
@@ -701,7 +712,7 @@ textarea#txt.with-background {
       // Clicking on the annotation detail popup should make it disappear
       $("#detail")
          .on("click touchend",
-            function(ev) {
+            function (ev) {
                $(this).css("visibility", "hidden");
                ev.stopPropagation();
                ev.preventDefault();
@@ -713,13 +724,13 @@ textarea#txt.with-background {
       txt
          .toggleClass("with-background", txt.val() == "")
          .on("change keyup paste focus blur popstate",
-            function(event) {
+            function (event) {
                var el = $(this);
                // We run the actual background toggler after 100ms
                // because the paste event is triggered before the
                // text content (el.val()) is modified
                setTimeout(
-                  function() {
+                  function () {
                      el.toggleClass("with-background", el.val() == "");
                   },
                   100
@@ -733,4 +744,3 @@ textarea#txt.with-background {
 </script>
 
 {% endblock %}
-
