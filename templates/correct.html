@@ -352,8 +352,8 @@
 
    function getReferences(references) {
       // Add links to references if available
-      var combo = "  ";
       if (!references) return "";
+      var combo = "";
       $.each(references, function (rix, r) {
          // reference r
          combo += '<a href="' + r + '" target="_blank"><span class="glyphicon glyphicon-book-open"></span></a> ';
