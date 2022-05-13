@@ -6,10 +6,11 @@ import os
 os.environ["PYTHONHASHSEED"] = "31743"
 
 Y_DEBUGGING = os.environ.get("DEBUG", "") in ("1", "True", "TRUE", "true", "Yes", "yes", "YES")
+DEBUG_BIND_IP = os.environ.get("DEBUG_BIND_IP", "127.0.0.1")
 
 if Y_DEBUGGING:
     DIR = './'
-    bind="127.0.0.1:5002"
+    bind=f"{DEBUG_BIND_IP}:5002"
 else:
     DIR = '/usr/share/nginx/yfirlestur.is/'  # type: ignore
     bind = 'unix:' + DIR + 'gunicorn.sock'

@@ -10,3 +10,4 @@ Flask-Cors>=3.0.10
 html2text>=2018.1.9
 odfpy>=1.4.1
 pdfminer.six>=20201018
+gunicorn>=20.1.0
