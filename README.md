@@ -191,9 +191,14 @@ is further [documented here](https://yfirlestur.is/doc/).
 
 ## Running for development
 
-The service can be packaged and started in development mode using Docker using the following commands.
+The service can be packaged and started in development mode using Docker. To start the service run the following commands:
 
 ```bash
+if [ ! -f "./gunicorn_user.txt" ]; then
+    echo 'root' > gunicorn_user.txt
+    echo 'root' >> gunicorn_user.txt
+fi
+
 docker build -t yfirlestur:latest .
 docker run -it -p 5002:5002 yfirlestur
 ```
