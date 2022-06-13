@@ -47,12 +47,11 @@ from flask import (
     jsonify,
     make_response,
     current_app,
-    Request,
-    Response,
     abort,
     request,
     url_for,
 )
+from flask.wrappers import Request, Response
 from flask import _request_ctx_stack  # type: ignore
 from flask.ctx import RequestContext
 from werkzeug.datastructures import FileStorage
@@ -74,8 +73,8 @@ routes: Blueprint = Blueprint("routes", __name__)
 def max_age(
     seconds: int,
 ) -> Callable[[Callable[[Any], Any]], Callable[[Any], Response]]:
-    """ Caching decorator for Flask - augments response
-        with a max-age cache header """
+    """Caching decorator for Flask - augments response
+    with a max-age cache header"""
 
     def decorator(f: Callable[[Any], Any]) -> Callable[[Any], Response]:
         @wraps(f)
@@ -92,7 +91,7 @@ def max_age(
 
 
 def restricted(f: Callable[[Any], Response]) -> Callable[[Any], Response]:
-    """ Decorator to return 403 Forbidden if not running in debug mode """
+    """Decorator to return 403 Forbidden if not running in debug mode"""
 
     @wraps(f)
     def decorated_function(*args: Any, **kwargs: Any) -> Response:
@@ -104,7 +103,7 @@ def restricted(f: Callable[[Any], Response]) -> Callable[[Any], Response]:
 
 
 def bool_from_request(rq: Request, name: str, default: bool = False) -> bool:
-    """ Get a boolean from JSON encoded in a request form """
+    """Get a boolean from JSON encoded in a request form"""
     b = rq.form.get(name)
     if b is None:
         b = rq.args.get(name)
@@ -115,7 +114,7 @@ def bool_from_request(rq: Request, name: str, default: bool = False) -> bool:
 
 
 def better_jsonify(**kwargs: Any) -> Response:
-    """ Ensure that the Content-Type header includes 'charset=utf-8' """
+    """Ensure that the Content-Type header includes 'charset=utf-8'"""
     resp: Response = jsonify(**kwargs)
     resp.headers["Content-Type"] = "application/json; charset=utf-8"
     return resp
@@ -124,11 +123,11 @@ def better_jsonify(**kwargs: Any) -> Response:
 def text_from_request(
     rq: Request, *, post_field: Optional[str] = None, get_field: Optional[str] = None
 ) -> str:
-    """ Return text passed in a HTTP request, either using GET or POST.
-        When using GET, the default parameter name is 't'. This can
-        be overridden using the get_field parameter.
-        When using POST, the default form field name is 'text'. This can
-        be overridden using the post_field parameter.
+    """Return text passed in a HTTP request, either using GET or POST.
+    When using GET, the default parameter name is 't'. This can
+    be overridden using the get_field parameter.
+    When using POST, the default form field name is 'text'. This can
+    be overridden using the post_field parameter.
     """
     if rq.method == "POST":
         if rq.headers.get("Content-Type") == "text/plain":
@@ -161,7 +160,7 @@ _tasks_lock = threading.Lock()
 
 
 def fancy_url_for(*args: Any, **kwargs: Any) -> str:
-    """ url_for() replacement that works even when there is no request context """
+    """url_for() replacement that works even when there is no request context"""
     if "_external" not in kwargs:
         kwargs["_external"] = False
     reqctx: Any = _request_ctx_stack.top  # type: ignore
@@ -185,10 +184,10 @@ before_app_first_request = cast(
 
 @before_app_first_request
 def before_first_request() -> None:
-    """ Start a background thread that cleans up old tasks """
+    """Start a background thread that cleans up old tasks"""
 
     def clean_old_tasks() -> None:
-        """ This function cleans up old tasks from an in-memory data structure """
+        """This function cleans up old tasks from an in-memory data structure"""
         global _tasks
         while True:
             # Only keep tasks that are running or
@@ -210,8 +209,8 @@ def before_first_request() -> None:
 
 class _FileProxy:
 
-    """ A hack that implements an in-memory proxy object for a Werkzeug FileStorage
-        instance, enabling it to be passed between threads """
+    """A hack that implements an in-memory proxy object for a Werkzeug FileStorage
+    instance, enabling it to be passed between threads"""
 
     def __init__(self, fs: FileStorage):
         # Initialize the file proxy object from a Werkzeug FileStorage instance,
@@ -242,13 +241,13 @@ class _FileProxy:
 
 class _RequestProxy:
 
-    """ A hack to emulate a Flask Request object with a data structure
-        that can be passed safely between threads, while retaining
-        the ability to read uploaded files and form data """
+    """A hack to emulate a Flask Request object with a data structure
+    that can be passed safely between threads, while retaining
+    the ability to read uploaded files and form data"""
 
     def __init__(self, rq: Request) -> None:
-        """ Create an instance that walks and quacks sufficiently similarly
-            to the Flask Request object in rq """
+        """Create an instance that walks and quacks sufficiently similarly
+        to the Flask Request object in rq"""
         self.method = rq.method
         self.headers: Dict[str, Any] = {k: v for k, v in rq.headers}  # type: ignore
         self.environ = rq.environ
@@ -278,13 +277,13 @@ class _RequestProxy:
         self.files: Dict[str, _FileProxy] = {k: _FileProxy(v) for k, v in rq.files.items()}  # type: ignore
 
     def set_progress_func(self, progress_func: ProgressFunc) -> None:
-        """ Set a function to call during processing of asynchronous requests """
+        """Set a function to call during processing of asynchronous requests"""
         self.progress_func = progress_func
 
 
 def async_task(f: Callable[[Any], Response]) -> Callable[[Any], Tuple[Any, ...]]:
-    """ This decorator transforms a sync route into an asynchronous one
-        by running it in a background thread """
+    """This decorator transforms a sync route into an asynchronous one
+    by running it in a background thread"""
 
     @wraps(f)
     def wrapped(*args: Any, **kwargs: Any) -> Tuple[Any, ...]:
@@ -293,12 +292,12 @@ def async_task(f: Callable[[Any], Response]) -> Callable[[Any], Tuple[Any, ...]]
         task_id = uuid.uuid4().hex
 
         def progress(ratio: float) -> None:
-            """ Function to call from the worker task to indicate progress. """
+            """Function to call from the worker task to indicate progress."""
             # ratio is a float from 0.0 (just started) to 1.0 (finished)
             _tasks[task_id]["progress"] = ratio
 
         def task(app: Any, rq: Request) -> None:
-            """ Run the decorated route function in a new thread """
+            """Run the decorated route function in a new thread"""
             this_task = _tasks[task_id]
             # Pretty ugly hack, but no better solution is apparent:
             # Create a fresh Flask RequestContext object, wrapping our
@@ -330,7 +329,8 @@ def async_task(f: Callable[[Any], Response]) -> Callable[[Any], Tuple[Any, ...]]
             # intact and available even after the original request has been closed
             rq = _RequestProxy(request)
             new_task = threading.Thread(
-                target=task, args=(current_app._get_current_object(), rq),  # type: ignore
+                target=task,
+                args=(current_app._get_current_object(), rq),  # type: ignore
             )
 
         new_task.start()
@@ -352,10 +352,10 @@ def async_task(f: Callable[[Any], Response]) -> Callable[[Any], Tuple[Any, ...]]
 
 @routes.route("/task_status/<task>", methods=["GET"])
 def get_task_status(task: str) -> Tuple[str, int, Dict[str, Any]]:
-    """ Return the status of an asynchronous task. If this request returns a
-        202 ACCEPTED status code, it means that task hasn't finished yet.
-        Else, the response from the task is returned (normally with a
-        200 OK status). """
+    """Return the status of an asynchronous task. If this request returns a
+    202 ACCEPTED status code, it means that task hasn't finished yet.
+    Else, the response from the task is returned (normally with a
+    200 OK status)."""
     task_id = task
     with _tasks_lock:
         t = _tasks.get(task_id)

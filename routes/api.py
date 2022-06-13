@@ -49,7 +49,8 @@ from multiprocessing.pool import ApplyResult
 from multiprocessing.managers import SyncManager
 from multiprocessing import get_context
 
-from flask import request, abort, url_for, current_app, Request
+from flask import request, abort, url_for, current_app
+from flask.wrappers import Request
 
 from settings import Settings
 
@@ -116,11 +117,11 @@ class RequestData:
         ...
 
     def get(self, key: str, default: Optional[Any] = None) -> Any:
-        """ Obtain an arbitrary data item from the request """
+        """Obtain an arbitrary data item from the request"""
         return self.q.get(key, default)
 
     def get_int(self, key: str, default: int = 0) -> int:
-        """ Obtain an integer data item from the request """
+        """Obtain an integer data item from the request"""
         try:
             return int(self.q.get(key, default))
         except (TypeError, ValueError):
@@ -139,7 +140,7 @@ class RequestData:
         ...
 
     def get_bool(self, key: str, default: Optional[bool] = None) -> Union[bool, None]:
-        """ Obtain a boolean data item from the request """
+        """Obtain a boolean data item from the request"""
         try:
             val = self.q.get(key, default)
             if val in self._TRUE_SET:
@@ -154,7 +155,7 @@ class RequestData:
         return default
 
     def get_list(self, key: str) -> List[Any]:
-        """ Obtain a list data item from the request """
+        """Obtain a list data item from the request"""
         if self.using_json:
             # Normal get from a JSON dictionary
             r = self.q.get(key, [])
@@ -164,14 +165,14 @@ class RequestData:
         return r if isinstance(r, list) else []
 
     def __getitem__(self, key: str) -> Any:
-        """ Shortcut: allow indexing syntax with an empty string default """
+        """Shortcut: allow indexing syntax with an empty string default"""
         return self.q.get(key, "")
 
 
 @routes.route("/feedback.api", methods=["POST"])
 @routes.route("/feedback.api/v<int:version>", methods=["POST"])
 def feedback(version: int = 1) -> Any:
-    """ Post feedback about a correction to a database table """
+    """Post feedback about a correction to a database table"""
 
     try:
         rq = RequestData(request)
@@ -238,9 +239,9 @@ def feedback(version: int = 1) -> Any:
 @routes.route("/correct.task", methods=["POST"])
 @routes.route("/correct.task/v<int:version>", methods=["POST"])
 def correct_async(version: int = 1) -> Any:
-    """ Correct text provided by the user, i.e. not coming from an article.
-        This can be either an uploaded file or a string. This is a lower level,
-        asynchronous API used by the Greynir web front-end. """
+    """Correct text provided by the user, i.e. not coming from an article.
+    This can be either an uploaded file or a string. This is a lower level,
+    asynchronous API used by the Greynir web front-end."""
     valid, result = validate(request, version)
     if not valid:
         return result
@@ -259,10 +260,10 @@ def correct_async(version: int = 1) -> Any:
 @routes.route("/correct.api", methods=["POST"])
 @routes.route("/correct.api/v<int:version>", methods=["POST"])
 def correct_sync(version: int = 1) -> Any:
-    """ Correct text provided by the user, i.e. not coming from an article.
-        This can be either an uploaded file or a string.
-        This is a synchronous HTTP API call that is easy for third party
-        code to work with. """
+    """Correct text provided by the user, i.e. not coming from an article.
+    This can be either an uploaded file or a string.
+    This is a synchronous HTTP API call that is easy for third party
+    code to work with."""
     valid, result = validate(request, version)
     if not valid:
         return result
@@ -292,8 +293,8 @@ def correct_sync(version: int = 1) -> Any:
 
 
 def validate(request: Request, version: int) -> Tuple[bool, Any]:
-    """ Validate an incoming correction request and extract the
-        text to validate from it, if valid """
+    """Validate an incoming correction request and extract the
+    text to validate from it, if valid"""
     if not (1 <= version <= 1):
         return False, better_jsonify(valid=False, reason="Unsupported version")
 
@@ -335,8 +336,8 @@ def validate(request: Request, version: int) -> Tuple[bool, Any]:
 
 class ChildTask:
 
-    """ A container class for the multiprocessing pool logic we use
-        to distribute correction workloads between CPU cores """
+    """A container class for the multiprocessing pool logic we use
+    to distribute correction workloads between CPU cores"""
 
     processes: Dict[str, "ChildTask"] = dict()
     pool: Optional[MultiprocessingPool] = None
@@ -346,8 +347,8 @@ class ChildTask:
 
     @classmethod
     def init_pool(cls) -> None:
-        """ If needed, create the multiprocessing pool we'll use
-            for concurrent processing of correction tasks """
+        """If needed, create the multiprocessing pool we'll use
+        for concurrent processing of correction tasks"""
         if cls.pool is None:
             # Set up a Manager for shared memory messaging
             cls.manager = _CTX.Manager()
@@ -378,13 +379,13 @@ class ChildTask:
 
     @staticmethod
     def progress_func(process_id: str, progress: float) -> None:
-        """ Update the child task progress in the shared dictionary """
+        """Update the child task progress in the shared dictionary"""
         if process_id in ChildTask.progress:
             ChildTask.progress[process_id] = progress
 
     @staticmethod
     def task(process_id: str, text: str, options: Dict[str, Any]) -> Tuple[Any, ...]:
-        """ This is a task that runs in a child process within the pool """
+        """This is a task that runs in a child process within the pool"""
         # We do a bit of functools.partial magic to pass the process_id as the first
         # parameter to the progress_func whenever it is called
         task_result = check_grammar(
@@ -397,29 +398,29 @@ class ChildTask:
         return task_result
 
     def complete(self, task_result: Tuple[Any, ...]) -> None:
-        """ This runs in the parent process when the task has completed
-            within the child process """
+        """This runs in the parent process when the task has completed
+        within the child process"""
         self.task_result = task_result
 
     def error(self, e: BaseException) -> None:
-        """ This runs in the parent process and is called if the
-            child task raised an exception """
+        """This runs in the parent process and is called if the
+        child task raised an exception"""
         self.exception = e
 
     @property
     def is_complete(self) -> bool:
-        """ Return True if the child process has finished this task """
+        """Return True if the child process has finished this task"""
         return self.task_result is not None or self.exception is not None
 
     @property
     def current_progress(self) -> float:
-        """ Return the current progress of this child task """
+        """Return the current progress of this child task"""
         return self.progress.get(self.identifier, 0.0)
 
     def finish(self) -> Tuple[Any, Any, str]:
-        """ Finish a task that ran within a child process,
-            removing it from the dictionary of active tasks
-            and returning its results """
+        """Finish a task that ran within a child process,
+        removing it from the dictionary of active tasks
+        and returning its results"""
         if self.exception is not None:
             # The child process raised an exception: re-raise it
             # after removing this task from the process dictionary
@@ -434,9 +435,9 @@ class ChildTask:
         return pgs, stats, text
 
     def abort(self) -> None:
-        """ The child task has finished with an exception:
-            remove it from the dictionary of active tasks
-            as well as from the progress dictionary """
+        """The child task has finished with an exception:
+        remove it from the dictionary of active tasks
+        as well as from the progress dictionary"""
         try:
             del self.processes[self.identifier]
         except KeyError:
@@ -447,8 +448,8 @@ class ChildTask:
             pass
 
     def launch(self, text: str) -> Any:
-        """ Launch a new task using a child process from the pool,
-            correcting the given text """
+        """Launch a new task using a child process from the pool,
+        correcting the given text"""
         assert self.pool is not None
         if len(self.processes) > MAX_CHILD_TASKS:
             # Protect the server by not allowing too many child tasks at the same time
@@ -481,7 +482,7 @@ class ChildTask:
 
     @classmethod
     def get_status(cls, process_id: str) -> Any:
-        """ Get the status of an ongoing correction task """
+        """Get the status of an ongoing correction task"""
         process = cls.processes.get(process_id)
         if process is None:
             # This is not an ongoing task
@@ -489,7 +490,7 @@ class ChildTask:
         return process.result()
 
     def result(self) -> Any:
-        """ Return a Response object with the current status of this child task """
+        """Return a Response object with the current status of this child task"""
         if self.exception is not None:
             # The task raised an exception: remove it herewith,
             # and return an HTTP 200 reply with an error message
@@ -516,8 +517,8 @@ class ChildTask:
 
     @classmethod
     def cleanup(cls) -> None:
-        """ Clean up lapsed child tasks from the processes dict.
-            This is called every 15 seconds from a housecleaner thread. """
+        """Clean up lapsed child tasks from the processes dict.
+        This is called every 15 seconds from a housecleaner thread."""
         # Only keep tasks that are running or
         # that finished within the result availability window
         keep_results = datetime.utcnow() - RESULT_AVAILABILITY_WINDOW
@@ -536,19 +537,19 @@ class ChildTask:
 
 @routes.route("/status/<process>", methods=["GET"])
 def get_process_status(process: str):
-    """ Return the status of a correction task. If this request returns a
-        202 ACCEPTED status code, it means that the task hasn't finished yet.
-        Else, the result from the task is returned (normally with a 200 OK status). """
+    """Return the status of a correction task. If this request returns a
+    202 ACCEPTED status code, it means that the task hasn't finished yet.
+    Else, the result from the task is returned (normally with a 200 OK status)."""
     return ChildTask.get_status(process)
 
 
 @routes.before_app_first_request  # type: ignore
 def delete_old_child_tasks() -> None:
-    """ Start a background thread that cleans up old tasks """
+    """Start a background thread that cleans up old tasks"""
 
     def delete_tasks() -> None:
-        """ This function runs every 15 seconds and initiates a clean-up
-            of completed child tasks """
+        """This function runs every 15 seconds and initiates a clean-up
+        of completed child tasks"""
         while True:
             time.sleep(CLEANUP_INTERVAL)
             ChildTask.cleanup()
@@ -561,7 +562,7 @@ def delete_old_child_tasks() -> None:
 
 @routes.route("/exit.api", methods=["GET"])
 def exit_api():
-    """ Allow a server to be remotely terminated if running in debug mode """
+    """Allow a server to be remotely terminated if running in debug mode"""
     if not Settings.DEBUG:
         abort(404)
     shutdown_func = request.environ.get("werkzeug.server.shutdown")

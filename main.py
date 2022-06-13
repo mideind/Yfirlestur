@@ -60,7 +60,8 @@ import re
 import logging
 from datetime import datetime
 
-from flask import Flask, Response, render_template, send_from_directory, jsonify
+from flask import Flask, render_template, send_from_directory, jsonify
+from flask.wrappers import Response
 from flask_caching import Cache  # type: ignore
 from flask_cors import CORS  # type: ignore
 
@@ -122,7 +123,7 @@ def make_pattern(rep_dict: Dict[str, Any]) -> Pattern[str]:
 def multiple_replace(
     string: str, rep_dict: Dict[str, str], pattern: Optional[Pattern[str]] = None
 ) -> str:
-    """ Perform multiple simultaneous replacements within string """
+    """Perform multiple simultaneous replacements within string"""
     if pattern is None:
         pattern = make_pattern(rep_dict)
     return pattern.sub(lambda x: rep_dict[x.group(0)], string)
@@ -134,14 +135,14 @@ _PATTERN_IS = make_pattern(_REP_DICT_IS)
 
 @app.template_filter("format_is")  # type: ignore
 def format_is(r: float, decimals: int = 0) -> str:
-    """ Flask/Jinja2 template filter to format a number for the Icelandic locale """
+    """Flask/Jinja2 template filter to format a number for the Icelandic locale"""
     fmt = "{0:,." + str(decimals) + "f}"
     return multiple_replace(fmt.format(float(r)), _REP_DICT_IS, _PATTERN_IS)
 
 
 @app.template_filter("format_ts")  # type: ignore
 def format_ts(ts: datetime) -> str:
-    """ Flask/Jinja2 template filter to format a timestamp """
+    """Flask/Jinja2 template filter to format a timestamp"""
     return str(ts)[0:19]
 
 
@@ -150,11 +151,11 @@ def format_ts(ts: datetime) -> str:
 def hashed_url_for_static_file(
     endpoint: str, values: Dict[str, Union[int, str]]
 ) -> None:
-    """ Add a ?h=XXX parameter to URLs for static .js and .css files,
-        where XXX is calculated from the file timestamp """
+    """Add a ?h=XXX parameter to URLs for static .js and .css files,
+    where XXX is calculated from the file timestamp"""
 
     def static_file_hash(filename: str) -> int:
-        """ Obtain a timestamp for the given file """
+        """Obtain a timestamp for the given file"""
         return int(os.stat(filename).st_mtime)
 
     if "static" == endpoint or endpoint.endswith(".static"):
@@ -185,20 +186,20 @@ def send_font(path: str):
 # Custom 404 error handler
 @app.errorhandler(404)
 def page_not_found(e: BaseException) -> str:
-    """ Return a custom 404 error """
+    """Return a custom 404 error"""
     return render_template("404.html")
 
 
 # Custom 500 error handler
 @app.errorhandler(500)
 def server_error(e: BaseException) -> str:
-    """ Return a custom 500 error """
+    """Return a custom 500 error"""
     return render_template("500.html")
 
 
 @app.errorhandler(410)
 def resource_gone(e: BaseException) -> Tuple[Response, int]:
-    """ Return a custom 410 GONE error """
+    """Return a custom 410 GONE error"""
     return cast(Response, jsonify(valid=False, error=str(e))), 410
 
 
