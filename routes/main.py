@@ -27,7 +27,7 @@
 
 
     This module contains the main Flask routes for the Yfirlestur.is
-    web server.
+    web application.
 
 """
 
@@ -48,8 +48,8 @@ from . import routes, text_from_request
 @routes.route("/", methods=["GET"])
 @routes.route("/correct", methods=["GET", "POST"])
 def correct():
-    """ Handler for a page for spelling and grammar correction
-        of user-entered text """
+    """Handler for a page for spelling and grammar correction
+    of user-entered text"""
     try:
         txt = text_from_request(request, post_field="txt", get_field="txt")
     except:
@@ -64,7 +64,7 @@ def correct():
 @routes.route("/about")
 # @max_age(seconds=10 * 60)
 def about():
-    """ Handler for the 'About' page """
+    """Handler for the 'About' page"""
     try:
         reynir_correct_version: str = cast(Any, reynir_correct).__version__
         python_version = "{0} ({1})".format(

@@ -35,6 +35,7 @@
 
 from typing import TYPE_CHECKING, Tuple, Dict, Any, Callable, Optional, cast
 
+import logging
 import threading
 import time
 import uuid
@@ -133,9 +134,20 @@ def text_from_request(
         if rq.headers.get("Content-Type") == "text/plain":
             # Accept plain text POSTs, UTF-8 encoded.
             # Example usage:
-            # curl -d @example.txt https://greynir.is/postag.api \
+            # curl -d @example.txt https://yfirlestur.is/correct.api \
             #     --header "Content-Type: text/plain"
             text = rq.data.decode("utf-8")
+        elif rq.headers.get("Content-Type") == "application/json":
+            # Accept JSON POSTs, UTF-8 encoded.
+            # Example usage:
+            # curl -d @example.json https://yfirlestur.is/correct.api \
+            #     --header "Content-Type: application/json"
+            json = rq.json
+            if json is None or not isinstance(json, dict):
+                logging.warning("Invalid JSON in POST request")
+                text = ""
+            else:
+                text = json.get(post_field or "text", "")
         else:
             # Also accept form/url-encoded requests:
             # curl -d "text=Í dag er ágætt veður en mikil hálka er á götum." \

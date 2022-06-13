@@ -44,15 +44,16 @@ from settings import *  # noqa
 
 # from pprint import pprint
 
+
 def checking(text: str, real: List[int]) -> None:
     resp = check_grammar(text)
-    i = [ i.get("i", 0) for i in resp[0][0][0]['tokens'] ] # t.original is in i["o"]
-    #if real != i:
+    i = [i.get("i", 0) for i in resp[0][0][0]["tokens"]]  # t.original is in i["o"]
+    # if real != i:
     #    print(text)
     #    print(f"Result: {i}")
     #    print(f"Real:   {real}")
     #    pprint(resp)
-    #else:
+    # else:
     #    pprint(resp)
     assert real == i
 
@@ -72,7 +73,7 @@ def test_character_spans() -> None:
     text = "Charles Parkton."
     real = [0, 15]
     checking(text, real)
-    
+
     text = "Hér er Nanna."
     real = [0, 3, 6, 12]
     checking(text, real)
@@ -87,7 +88,7 @@ def test_character_spans() -> None:
     checking(text, real)
 
     text = "Hér er Óskar von í dag."
-    real = [0, 3, 6, 16, 16, 18, 22]        # First token retains the original text
+    real = [0, 3, 6, 16, 16, 18, 22]  # First token retains the original text
     checking(text, real)
 
     # MW compound tests
@@ -104,7 +105,7 @@ def test_character_spans() -> None:
     checking(text, real)
 
     text = "Ég er katta -og hundakona."
-    real = [0, 2, 5, 11, 15, 25]         # TODO Ekki sameinað í einn tóka!
+    real = [0, 2, 5, 11, 15, 25]  # TODO Ekki sameinað í einn tóka!
     checking(text, real)
 
     # MWE tests
@@ -116,17 +117,19 @@ def test_character_spans() -> None:
     real = [0, 2, 8, 12, 18, 23]
     checking(text, real)
 
-    # amount tests 
+    # amount tests
     text = "Ég á 500 milljónir króna."
     real = [0, 2, 4, 24]
     checking(text, real)
 
     # Deletion tests
     text = "Ég á á."
-    real = [0, 2, 4, 6]     # Ekki lengur tekið sjálfkrafa út, bara merkt sem möguleg villa
+    real = [0, 2, 4, 6]  # Ekki lengur tekið sjálfkrafa út, bara merkt sem möguleg villa
     checking(text, real)
 
-    text = "Ég datt datt."  # Núna sameinað í einn tóka og stungið upp á að taka annan út
+    text = (
+        "Ég datt datt."  # Núna sameinað í einn tóka og stungið upp á að taka annan út
+    )
     real = [0, 2, 12]
     checking(text, real)
 
@@ -155,7 +158,7 @@ def test_character_spans() -> None:
     text = "Ég er kvennhatari."
     real = [0, 2, 5, 17]
     checking(text, real)
-    
+
     # Split compounds
     text = "Hér er ein birni."
     real = [0, 3, 6, 16]
@@ -170,6 +173,3 @@ def test_character_spans() -> None:
     text = "Ég varð afar stór."
     real = [0, 2, 7, 12, 17]
     checking(text, real)
-
-
-
