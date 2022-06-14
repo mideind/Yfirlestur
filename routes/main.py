@@ -40,6 +40,10 @@ from flask import render_template, request
 
 import reynir_correct
 
+from reynir import __version__ as greynir_version
+from reynir_correct import __version__ as greynir_correct_version
+from tokenizer.version import __version__ as tokenizer_version
+
 from doc import SUPPORTED_DOC_MIMETYPES
 
 from . import routes, text_from_request
@@ -66,16 +70,19 @@ def correct():
 def about():
     """Handler for the 'About' page"""
     try:
-        reynir_correct_version: str = cast(Any, reynir_correct).__version__
         python_version = "{0} ({1})".format(
             ".".join(str(n) for n in sys.version_info[:3]),
             platform.python_implementation(),
         )
+        platform_name = platform.system()
     except AttributeError:
-        reynir_correct_version = ""
         python_version = ""
+        platform_name = ""
     return render_template(
         "about.html",
-        reynir_correct_version=reynir_correct_version,
+        greynir_correct_version=greynir_correct_version,
+        greynir_version=greynir_version,
+        tokenizer_version=tokenizer_version,
         python_version=python_version,
+        platform_name=platform_name,
     )
