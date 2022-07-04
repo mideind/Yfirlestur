@@ -30,6 +30,9 @@
 import sys
 import os
 
+import pytest
+from flask.testing import FlaskClient
+
 # Hack to fix imports from parent directory
 basepath, _ = os.path.split(os.path.realpath(__file__))
 mainpath = os.path.join(basepath, "..")
@@ -42,7 +45,53 @@ from main import *  # noqa
 from nertokenizer import *  # noqa
 from settings import *  # noqa
 
-# from pprint import pprint
+
+@pytest.fixture
+def client() -> FlaskClient:
+    """Instantiate Flask's modified Werkzeug client to use in tests"""
+    app.config["TESTING"] = True
+    app.config["DEBUG"] = True
+    return app.test_client()
+
+
+HTML_MIME_TYPE = "text/html"
+JSON_MIME_TYPE = "application/json"
+
+
+def test_html_page_routes(client: FlaskClient):
+    """Test all page routes in web application."""
+    for page in ["/", "/about"]:
+        resp = client.get(page)
+        assert resp.status_code == 200
+        assert resp.content_type.startswith(HTML_MIME_TYPE)
+        assert resp.content_length > 100
+
+
+def test_api_sync_routes(client: FlaskClient):
+    """Test synchronous API routes in web application."""
+
+    def verify(resp):
+        assert resp.status_code == 200
+        assert resp.content_type.startswith(JSON_MIME_TYPE)
+        assert isinstance(resp.json, dict)
+        assert resp.json["valid"] == True
+        assert "result" in resp.json and isinstance(resp.json["result"], list)
+        assert "stats" in resp.json and isinstance(resp.json["stats"], dict)
+        assert "text" in resp.json and isinstance(resp.json["text"], str)
+
+    resp = client.post("/correct.api", data={"text": "Þetta er prufa."})
+    verify(resp)
+    resp = client.post("/correct.api", json={"text": "Þetta er prufa."})
+    verify(resp)
+
+
+def test_api_async_routes(client: FlaskClient):
+    """Test asynchronous API routes in web application."""
+    resp = client.post("/correct.task", data={"text": "Þetta er prufa."})
+    assert resp.status_code == 202  # Accepted
+    assert resp.content_type.startswith(JSON_MIME_TYPE)
+    assert isinstance(resp.json, dict)
+    assert "progress" in resp.json and isinstance(resp.json["progress"], float)
 
 
 def checking(text: str, real: List[int]) -> None:
