@@ -92,6 +92,7 @@ def test_api_async_routes(client: FlaskClient):
     assert resp.content_type.startswith(JSON_MIME_TYPE)
     assert isinstance(resp.json, dict)
     assert "progress" in resp.json and isinstance(resp.json["progress"], float)
+    assert resp.headers["Location"].startswith("/status/")
 
 
 def checking(text: str, real: List[int]) -> None:
