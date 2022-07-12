@@ -131,6 +131,17 @@ and how many of those sentences could be parsed. The `valid` field is
 `true` if the request was correctly formatted and could be processed
 without error, or `false` if there was a problem.
 
+#### Options
+
+The `/correct.api` endpoint supports several options:
+
+| Key                           | Type | Default |
+| ----------------------------- | ---- | ------- |
+| annotate\_unparsed\_sentences | bool | true    |
+| suppress_suggestions          | bool | false   |
+| ignore_wordlist               | list | []      |
+| ignore_rules                  | list | []      |
+
 ### From Python
 
 As an example of accessing the Yfirlestur API from Python, here is

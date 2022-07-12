@@ -26,23 +26,19 @@
         SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 
-    This module contains the main Flask routes for the Yfirlestur.is
-    web application.
+    This module contains the main routes for the Yfirlestur.is web application.
 
 """
 
-from typing import Any, cast
 
 import platform
 import sys
 
 from flask import render_template, request
 
-import reynir_correct
-
 from reynir import __version__ as greynir_version
 from reynir_correct import __version__ as greynir_correct_version
-from tokenizer.version import __version__ as tokenizer_version
+from tokenizer import __version__ as tokenizer_version
 
 from doc import SUPPORTED_DOC_MIMETYPES
 

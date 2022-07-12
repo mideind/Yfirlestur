@@ -109,13 +109,13 @@ def test_api_correct_sync_route_with_options(client: FlaskClient):
         client, SENT1, opts={"annotate_unparsed_sentences": False}, json=False
     )
     verify(resp)
-    assert len(resp.json["result"][0][0]["annotations"]) == 0
+    assert resp.json and len(resp.json["result"][0][0]["annotations"]) == 0
 
     resp = post_correct_request(
         client, SENT1, opts={"annotate_unparsed_sentences": True}, json=False
     )
     verify(resp)
-    assert len(resp.json["result"][0][0]["annotations"]) == 1
+    assert resp.json and len(resp.json["result"][0][0]["annotations"]) == 1
 
     # Test suppress_suggestions=True
     SENT2 = "Það var gott að koma tímalega á áfangastað."
@@ -123,13 +123,13 @@ def test_api_correct_sync_route_with_options(client: FlaskClient):
         client, SENT2, opts={"suppress_suggestions": True}, json=False
     )
     verify(resp)
-    assert len(resp.json["result"][0][0]["annotations"]) == 0
+    assert resp.json and len(resp.json["result"][0][0]["annotations"]) == 0
 
     resp = post_correct_request(
         client, SENT2, opts={"suppress_suggestions": False}, json=False
     )
     verify(resp)
-    assert len(resp.json["result"][0][0]["annotations"]) == 1
+    assert resp.json and len(resp.json["result"][0][0]["annotations"]) == 1
 
     # Test ignore_wordlist
     # SENT3 = "Það var flargor í gær."

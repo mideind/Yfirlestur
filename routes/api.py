@@ -40,7 +40,6 @@ import time
 import threading
 import json
 import uuid
-import logging
 from datetime import datetime, timedelta
 from functools import partial
 
@@ -257,7 +256,7 @@ def opts_from_request(rq: Request) -> Dict[str, Any]:
             d[k] = rqd.get_bool(k)
         elif v == "list":
             d[k] = rqd.get_list(k)
-    print(d)
+
     return d
 
 
