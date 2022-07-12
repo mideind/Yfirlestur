@@ -40,6 +40,7 @@ import time
 import threading
 import json
 import uuid
+import logging
 from datetime import datetime, timedelta
 from functools import partial
 
@@ -168,6 +169,9 @@ class RequestData:
         """Shortcut: allow indexing syntax with an empty string default"""
         return self.q.get(key, "")
 
+    def __str__(self) -> str:
+        return str(self.q)
+
 
 @routes.route("/feedback.api", methods=["POST"])
 @routes.route("/feedback.api/v<int:version>", methods=["POST"])
@@ -236,6 +240,27 @@ def feedback(version: int = 1) -> Any:
     return better_jsonify(ok=True)
 
 
+CONFIG_FLAGS = {
+    "annotate_unparsed_sentences": "bool",
+    "suppress_suggestions": "bool",
+    # "ignore_wordlist": "list",
+}
+
+
+def opts_from_request(rq: Request) -> Dict[str, Any]:
+    d = dict()
+
+    rqd = RequestData(request)
+
+    for k, v in CONFIG_FLAGS.items():
+        if v == "bool":
+            d[k] = rqd.get_bool(k)
+        elif v == "list":
+            d[k] = rqd.get_list(k)
+    print(d)
+    return d
+
+
 @routes.route("/correct.task", methods=["POST"])
 @routes.route("/correct.task/v<int:version>", methods=["POST"])
 def correct_async(version: int = 1) -> Any:
@@ -246,14 +271,14 @@ def correct_async(version: int = 1) -> Any:
     if not valid:
         return result
     assert isinstance(result, str)
-    # Retrieve the annotate_unparsed_sentences flag from the request URL
-    annotate_unparsed_sentences = (
-        request.args.get("annotate_unparsed_sentences", "true") == "true"
-    )
+
+    # Retrieve options flags from the request
+    opts = opts_from_request(request)
+
     # Launch the correction task within a child process
     # and return an intermediate HTTP 202 result including a status/result URL
     # that can be queried later to obtain the progress or the final result
-    task = ChildTask(annotate_unparsed_sentences=annotate_unparsed_sentences)
+    task = ChildTask(**opts)
     return task.launch(result)
 
 
@@ -268,12 +293,12 @@ def correct_sync(version: int = 1) -> Any:
     if not valid:
         return result
     assert isinstance(result, str)
-    # Retrieve the annotate_unparsed_sentences flag from the request URL
-    annotate_unparsed_sentences = (
-        request.args.get("annotate_unparsed_sentences", "true") == "true"
-    )
+
+    # Retrieve option flags from request
+    opts = opts_from_request(request)
+
     # Launch the correction task within a child process and wait for its outcome
-    task = ChildTask(annotate_unparsed_sentences=annotate_unparsed_sentences)
+    task = ChildTask(**opts)
     task.launch(result)
     duration = 0.0
     INCREMENT = 1.5  # Seconds
@@ -319,7 +344,7 @@ def validate(request: Request, version: int) -> Tuple[bool, Any]:
 
     else:
 
-        # Handle POSTed form data or plain text string
+        # Handle POSTed form data, JSON, or plain text string
         try:
             text = text_from_request(request)
         except Exception as e:

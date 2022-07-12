@@ -165,7 +165,7 @@ class NERCorrect(reynir_correct.GreynirCorrect):
 
 def generate_nonce() -> str:
     """Generate a random nonce, consisting of 8 digits"""
-    return "{0:08}".format(random.randint(0, 10 ** 8 - 1))
+    return "{0:08}".format(random.randint(0, 10**8 - 1))
 
 
 def generate_token(original: str, nonce: str) -> str:
@@ -188,6 +188,8 @@ def check_grammar(
     progress_func: Optional[Callable[[float], None]] = None,
     split_paragraphs: bool = True,
     annotate_unparsed_sentences: bool = True,
+    suppress_suggestions: bool = False,
+    ignore_wordlist: List = [],
 ) -> CheckResult:
     """Check the grammar and spelling of the given text and return
     a list of annotated paragraphs, containing sentences, containing
@@ -200,6 +202,8 @@ def check_grammar(
         progress_func=progress_func,
         split_paragraphs=split_paragraphs,
         annotate_unparsed_sentences=annotate_unparsed_sentences,
+        suppress_suggestions=suppress_suggestions,
+        ignore_wordlist=ignore_wordlist,
     )
 
     # Character index of each token within the submitted text,
