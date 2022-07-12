@@ -210,10 +210,10 @@ managed by Almannarómur. The LT Programme is described
 
 ## Copyright and licensing
 
-Yfirlestur is *copyright © 2021 by Miðeind ehf.*
+Yfirlestur.is is Copyright © 2022 [Miðeind ehf.](https://mideind.is).
 The original author of this software is *Vilhjálmur Þorsteinsson*.
 
-<a href="https://mideind.is"><img src="static/img/mideind-horizontal-small.png" alt="Miðeind ehf." 
+<a href="https://mideind.is"><img src="static/img/mideind-horizontal-small.png" alt="Miðeind ehf."
     width="214" height="66" align="right" style="margin-left:20px; margin-bottom: 20px;"></a>
 
 This software is licensed under the **MIT License**:

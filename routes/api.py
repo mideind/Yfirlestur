@@ -243,6 +243,7 @@ CONFIG_FLAGS = {
     "annotate_unparsed_sentences": "bool",
     "suppress_suggestions": "bool",
     # "ignore_wordlist": "list",
+    # "ignore_rules": "list",
 }
 
 

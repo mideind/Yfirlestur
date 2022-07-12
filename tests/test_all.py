@@ -67,7 +67,7 @@ def test_html_page_routes(client: FlaskClient):
         assert resp.content_length > 100
 
 
-def verify(resp):
+def verify_correct_api_response(resp):
     """Verify response from /correct.api sync route."""
     assert resp.status_code == 200
     assert resp.content_type.startswith(JSON_MIME_TYPE)
@@ -80,7 +80,7 @@ def verify(resp):
 
 def post_correct_request(
     client: FlaskClient, text: str, opts: Dict = {}, json=False
-) -> Response:
+) -> Any:
     payload = {"text": text}
     payload.update(opts)
     if json:
@@ -95,41 +95,39 @@ def test_api_sync_routes(client: FlaskClient):
 
     # www form url-encoded POST request
     resp = post_correct_request(client, sent, json=False)
-    verify(resp)
+    verify_correct_api_response(resp)
 
     # JSON POST request
     resp = post_correct_request(client, sent, json=True)
-    verify(resp)
+    verify_correct_api_response(resp)
 
 
 def test_api_correct_sync_route_with_options(client: FlaskClient):
-    # Test annotate_unparsed_sentences=False
-    SENT1 = "Ég kannaði firðinum ásamt hún."
-    resp = post_correct_request(
-        client, SENT1, opts={"annotate_unparsed_sentences": False}, json=False
-    )
-    verify(resp)
-    assert resp.json and len(resp.json["result"][0][0]["annotations"]) == 0
+    """Test /correct.api options."""
 
-    resp = post_correct_request(
-        client, SENT1, opts={"annotate_unparsed_sentences": True}, json=False
-    )
-    verify(resp)
-    assert resp.json and len(resp.json["result"][0][0]["annotations"]) == 1
+    def verify_options(text: str, opts: Dict[str, Any], expected_num_ann=0) -> None:
+        resp = post_correct_request(client, text, opts, json=False)
+        verify_correct_api_response(resp)
+        assert resp.json  # Silence type checker
+        assert len(resp.json["result"][0][0]["annotations"]) == expected_num_ann
 
-    # Test suppress_suggestions=True
-    SENT2 = "Það var gott að koma tímalega á áfangastað."
-    resp = post_correct_request(
-        client, SENT2, opts={"suppress_suggestions": True}, json=False
-    )
-    verify(resp)
-    assert resp.json and len(resp.json["result"][0][0]["annotations"]) == 0
+    # Test annotate_unparsed_sentences option
+    SENT1 = "Ég kannaði firðinum ásamt hún."  # Should not parse!
+    # Verify no result when false
+    verify_options(SENT1, {"annotate_unparsed_sentences": False}, expected_num_ann=0)
+    # Verify one result when true
+    verify_options(SENT1, {"annotate_unparsed_sentences": True}, expected_num_ann=1)
+    # Verify that true is the default
+    verify_options(SENT1, {}, expected_num_ann=1)
 
-    resp = post_correct_request(
-        client, SENT2, opts={"suppress_suggestions": False}, json=False
-    )
-    verify(resp)
-    assert resp.json and len(resp.json["result"][0][0]["annotations"]) == 1
+    # Test suppress_suggestions option
+    SENT2 = "Það var gott að koma tímalega á áfangastað."  # tímalega -> tímanlega
+    # Verify no result when true
+    verify_options(SENT2, {"suppress_suggestions": True}, expected_num_ann=0)
+    # Verify one result when false
+    verify_options(SENT2, {"suppress_suggestions": False}, expected_num_ann=1)
+    # Verify that false is the default
+    verify_options(SENT2, {}, expected_num_ann=1)
 
     # Test ignore_wordlist
     # SENT3 = "Það var flargor í gær."
@@ -142,6 +140,8 @@ def test_api_correct_sync_route_with_options(client: FlaskClient):
 
 def test_api_async_routes(client: FlaskClient):
     """Test asynchronous API routes in web application."""
+
+    # /correct.task
     resp = client.post("/correct.task", data={"text": "Þetta er prufa."})
     assert resp.status_code == 202  # Accepted
     assert resp.content_type.startswith(JSON_MIME_TYPE)
