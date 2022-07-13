@@ -135,12 +135,12 @@ without error, or `false` if there was a problem.
 
 The `/correct.api` endpoint supports several options:
 
-| Key                           | Type | Default |
-| ----------------------------- | ---- | ------- |
-| annotate\_unparsed\_sentences | bool | true    |
-| suppress_suggestions          | bool | false   |
-| ignore_wordlist               | list | []      |
-| ignore_rules                  | list | []      |
+| Key                           | Type | Default | Explanation
+| ----------------------------- | ---- | ------- | ------------------------------
+| annotate\_unparsed\_sentences | bool | true    | Annotate sentence even when parsing fails
+| suppress_suggestions          | bool | false   | Don't return suggestions
+| ignore_wordlist               | list | []      | Words to accept without comment
+| ignore_rules                  | list | []      | Rules to ignore when annotating
 
 ### From Python
 
