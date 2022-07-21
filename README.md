@@ -92,7 +92,7 @@ The example returns the following JSON (shown indented, for ease of reading):
 The `result` field contains the result of the annotation, as a list of paragraphs,
 each containing a list of sentences, each containing a list of annotations (under
 the `annotations` field). Of course, if a sentence is correct and has no annotations,
-its annotation list will be empty.
+its annotation list will be empty. An overview of error codes used in annotations is available [here](https://github.com/mideind/GreynirCorrect/blob/master/doc/errorcodes.rst).
 
 Each sentence entry has a field containing a `corrected` version of it, where
 likely errors have been corrected. The `corrected` string includes corrections
@@ -101,8 +101,21 @@ the system is intentionally less aggressive about automatically applying those
 (as can be seen in the example above).
 
 Sentence entries also contain a list of `tokens`. The tokens
-originate in the [Tokenizer package](https://github.com/mideind/Tokenizer)
-and their format is documented there.
+originate in the [Tokenizer package] and contain the following fields:
+
+`i`: Character index of token start.
+`k`: Token type number, (WORD, DATEREL, AMOUNT, etc.). Mapping from numbers to strings is found in the documentation for the [Tokenizer package](https://github.com/mideind/Tokenizer).
+`o`: Original token text.
+`x`: Corrected text of token.
+
+Other possible fields:
+`s`: Stem of word. It can contain '-' if the stem is not found in BÍN and compound analysis has been used.
+`c`: Part-of-speech (kk/kvk/hk, so, lo, ao, fs, st, etc.).
+`b`: Inflectional form given in BÍN. Can be '-' if the word cannot be inflected.
+`t`: Terminal that the token is connected to in the CFG.
+`v`: Token value (if applicable). Number, amount, date or name of currency.
+`f`: BÍN category (alm, ism, fyr, örn, etc.). 
+
 
 Each annotation applies to a span of sentence tokens, starting
 at the token whose index is
@@ -199,7 +212,7 @@ managed by Almannarómur. The LT Programme is described
 
 ## Copyright and licensing
 
-Yfirlestur is *copyright © 2021 by Miðeind ehf.*
+Yfirlestur is *copyright © 2022 by Miðeind ehf.*
 The original author of this software is *Vilhjálmur Þorsteinsson*.
 
 <a href="https://mideind.is"><img src="static/img/mideind-horizontal-small.png" alt="Miðeind ehf." 
