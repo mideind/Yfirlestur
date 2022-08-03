@@ -242,8 +242,8 @@ def feedback(version: int = 1) -> Any:
 CONFIG_FLAGS = {
     "annotate_unparsed_sentences": "bool",
     "suppress_suggestions": "bool",
-    # "ignore_wordlist": "list",
-    # "ignore_rules": "list",
+    "ignore_wordlist": "list",
+    "ignore_rules": "list",
 }
 
 
@@ -254,9 +254,13 @@ def opts_from_request(rq: Request) -> Dict[str, Any]:
 
     for k, v in CONFIG_FLAGS.items():
         if v == "bool":
-            d[k] = rqd.get_bool(k)
+            b = rqd.get_bool(k)
+            if b is not None:
+                d[k] = b
         elif v == "list":
-            d[k] = rqd.get_list(k)
+            l = rqd.get_list(k)
+            if l is not None:
+                d[k] = rqd.get_list(k)
 
     return d
 
@@ -296,6 +300,9 @@ def correct_sync(version: int = 1) -> Any:
 
     # Retrieve option flags from request
     opts = opts_from_request(request)
+
+    print(opts)
+    print("#########")
 
     # Launch the correction task within a child process and wait for its outcome
     task = ChildTask(**opts)

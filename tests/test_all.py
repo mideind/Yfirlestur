@@ -105,8 +105,10 @@ def test_api_sync_routes(client: FlaskClient):
 def test_api_correct_sync_route_with_options(client: FlaskClient):
     """Test /correct.api options."""
 
-    def verify_options(text: str, opts: Dict[str, Any], expected_num_ann=0) -> None:
-        resp = post_correct_request(client, text, opts, json=False)
+    def verify_options(
+        text: str, opts: Dict[str, Any], expected_num_ann=0, json=False
+    ) -> None:
+        resp = post_correct_request(client, text, opts, json=json)
         verify_correct_api_response(resp)
         assert resp.json  # Silence type checker
         assert len(resp.json["result"][0][0]["annotations"]) == expected_num_ann
@@ -130,12 +132,20 @@ def test_api_correct_sync_route_with_options(client: FlaskClient):
     verify_options(SENT2, {}, expected_num_ann=1)
 
     # Test ignore_wordlist
-    # SENT3 = "Það var flargor í gær."
-    # W2IGN = ["flargor"]
-    # resp = post_correct_request(
-    #     client, SENT1, opts={"ignore_wordlist": W2IGN}, json=True
-    # )
-    # verify(resp)
+    SENT3 = "Það var flargor í gær."
+    W2IGN = ["flargor"]
+    # No annotations since "flargor" is ignored
+    verify_options(SENT3, {"ignore_wordlist": W2IGN}, expected_num_ann=0, json=True)
+    # Otherwise, one annotation
+    verify_options(SENT3, {}, expected_num_ann=1, json=True)
+
+    # Test ignore_rules
+    SENT4 = "Mér langar í brauðsneið."
+    R2IGN = ["P_WRONG_CASE_þgf_þf"]
+    # No annotations since "P_WRONG_CASE_þgf_þf" rule is ignored
+    verify_options(SENT4, {"ignore_rules": R2IGN}, expected_num_ann=0, json=True)
+    # Otherwise, one annotation
+    verify_options(SENT4, {}, expected_num_ann=1, json=True)
 
 
 def test_api_async_routes(client: FlaskClient):
