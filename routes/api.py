@@ -302,9 +302,6 @@ def correct_sync(version: int = 1) -> Any:
     # Retrieve option flags from request
     opts = opts_from_request(request)
 
-    print(opts)
-    print("#########")
-
     # Launch the correction task within a child process and wait for its outcome
     task = ChildTask(**opts)
     task.launch(result)

@@ -198,8 +198,6 @@ def check_grammar(
     during processing to indicate progress, with a ratio parameter
     which is a float in the range 0.0..1.0."""
 
-    print(locals())
-
     result = check_with_stats(
         text,
         progress_func=progress_func,
