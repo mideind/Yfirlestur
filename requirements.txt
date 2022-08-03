@@ -1,9 +1,9 @@
 Flask==2.1.2
 flask-caching>=2.0.0
 Flask-Cors>=3.0.10
-SQLAlchemy==1.4.23
+SQLAlchemy==1.4.39
 psycopg2cffi==2.9.0
-reynir-correct>=3.2.0
+reynir-correct>=3.4.4
 striprtf>=0.0.6
 defusedxml>=0.6.0
 cachetools>=3.1.1

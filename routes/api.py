@@ -239,7 +239,7 @@ def feedback(version: int = 1) -> Any:
     return better_jsonify(ok=True)
 
 
-CONFIG_FLAGS = {
+OPTIONS_FLAGS = {
     "annotate_unparsed_sentences": "bool",
     "suppress_suggestions": "bool",
     "ignore_wordlist": "list",
@@ -248,11 +248,12 @@ CONFIG_FLAGS = {
 
 
 def opts_from_request(rq: Request) -> Dict[str, Any]:
+    """Extract valid options from a request into dict."""
     d = dict()
 
     rqd = RequestData(request)
 
-    for k, v in CONFIG_FLAGS.items():
+    for k, v in OPTIONS_FLAGS.items():
         if v == "bool":
             b = rqd.get_bool(k)
             if b is not None:
