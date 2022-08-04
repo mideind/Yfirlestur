@@ -131,18 +131,19 @@ def text_from_request(
     be overridden using the post_field parameter.
     """
     if rq.method == "POST":
-        if rq.headers.get("Content-Type") == "text/plain":
+        content_type = rq.headers.get("Content-Type")
+        if content_type == "text/plain":
             # Accept plain text POSTs, UTF-8 encoded.
             # Example usage:
             # curl -d @example.txt https://yfirlestur.is/correct.api \
             #     --header "Content-Type: text/plain"
             text = rq.data.decode("utf-8")
-        elif rq.headers.get("Content-Type") == "application/json":
+        elif content_type == "application/json":
             # Accept JSON POSTs, UTF-8 encoded.
             # Example usage:
             # curl -d @example.json https://yfirlestur.is/correct.api \
             #     --header "Content-Type: application/json"
-            json = rq.json
+            json = rq.get_json(silent=True)
             if json is None or not isinstance(json, dict):
                 logging.warning("Invalid JSON in POST request")
                 text = ""
