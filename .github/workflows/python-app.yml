@@ -1,5 +1,5 @@
 
-name: Yfirlestur CI tests
+name: tests
 
 on:
   push:
