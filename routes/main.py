@@ -26,19 +26,19 @@
         SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 
-    This module contains the main Flask routes for the Yfirlestur.is
-    web server.
+    This module contains the main routes for the Yfirlestur.is web application.
 
 """
 
-from typing import Any, cast
 
 import platform
 import sys
 
 from flask import render_template, request
 
-import reynir_correct
+from reynir import __version__ as greynir_version
+from reynir_correct import __version__ as greynir_correct_version
+from tokenizer import __version__ as tokenizer_version
 
 from doc import SUPPORTED_DOC_MIMETYPES
 
@@ -48,8 +48,8 @@ from . import routes, text_from_request
 @routes.route("/", methods=["GET"])
 @routes.route("/correct", methods=["GET", "POST"])
 def correct():
-    """ Handler for a page for spelling and grammar correction
-        of user-entered text """
+    """Handler for a page for spelling and grammar correction
+    of user-entered text"""
     try:
         txt = text_from_request(request, post_field="txt", get_field="txt")
     except:
@@ -64,18 +64,21 @@ def correct():
 @routes.route("/about")
 # @max_age(seconds=10 * 60)
 def about():
-    """ Handler for the 'About' page """
+    """Handler for the 'About' page"""
     try:
-        reynir_correct_version: str = cast(Any, reynir_correct).__version__
         python_version = "{0} ({1})".format(
             ".".join(str(n) for n in sys.version_info[:3]),
             platform.python_implementation(),
         )
+        platform_name = platform.system()
     except AttributeError:
-        reynir_correct_version = ""
         python_version = ""
+        platform_name = ""
     return render_template(
         "about.html",
-        reynir_correct_version=reynir_correct_version,
+        greynir_correct_version=greynir_correct_version,
+        greynir_version=greynir_version,
+        tokenizer_version=tokenizer_version,
         python_version=python_version,
+        platform_name=platform_name,
     )

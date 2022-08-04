@@ -1,48 +1,46 @@
-
 {% extends "container-normal.html" %}
 
 {% block styles %}
 
-<link href="{{ url_for('static', filename='css/main-bootstrap.css') }}"
-   rel='stylesheet' type='text/css'>
+<link href="{{ url_for('static', filename='css/main-bootstrap.css') }}" rel='stylesheet' type='text/css'>
 
 <style type="text/css">
-
-.lead {
-   font-size: 22px;
-}
-.lead b {
-   font-style: italic;
-}
-
-@media (min-width: 768px) {
    .lead {
-      font-size: 34px;
+      font-size: 22px;
    }
+
    .lead b {
       font-style: italic;
    }
-}
 
-blockquote {
-   font-size: 0.9em;
-}
+   @media (min-width: 768px) {
+      .lead {
+         font-size: 34px;
+      }
 
-blockquote cite {
-   margin-left: 0.2rem;
-}
+      .lead b {
+         font-style: italic;
+      }
+   }
 
-li.list-group-item p i {
-   display: inline-block;
-   white-space: nowrap;
-}
+   blockquote {
+      font-size: 0.9em;
+   }
 
-p.small {
-   margin-top: 2px;
-   margin-bottom: 2px;
-   font-size: 14px;
-}
+   blockquote cite {
+      margin-left: 0.2rem;
+   }
 
+   li.list-group-item p i {
+      display: inline-block;
+      white-space: nowrap;
+   }
+
+   p.small {
+      margin-top: 2px;
+      margin-bottom: 2px;
+      font-size: 14px;
+   }
 </style>
 
 {% endblock %}
@@ -52,93 +50,105 @@ p.small {
 <div class="panel panel-warning">
    <div class="panel-heading"><span class="glyphicon glyphicon-info"></span></div>
    <div class="panel-body">
-      <div style="float:right"><img class="villi img-rounded"
-      src="{{ url_for('static', filename='img/vth.jpg') }}" width="80" height="97"></div>
+      <div style="float:right"><img class="villi img-rounded" src="{{ url_for('static', filename='img/vth.jpg') }}"
+            width="80" height="97"></div>
       <p class="lead"><b>Yfirlestur.is</b> er vefur sem rýnir íslenskan texta.</p>
       <p class="author"><i>Upphafsmaður Yfirlestrar.is<br>er Vilhjálmur Þorsteinsson</i></p>
    </div>
    <ul class="list-group">
-   <li class="list-group-item">
-      <p>
-         Yfirlestur.is les íslenskan texta og finnur&mdash;með sjálfvirkum hætti&mdash;ýmislegt
-         sem betur mætti fara í stafsetningu og málfari.
-      </p>
-      <p>
-         Vefurinn bendir á <b>stafsetningarvillur</b>, þ.e. orðmyndir sem ekki finnast
-         í orðabókum (einkum <a href="https://bin.arnastofnun.is">Beygingarlýsingu íslensks nútímamáls</a>)
-         og eru jafnframt ólíklegar til að vera gild samsett orð.
-         Einnig finnur hann <b>samhengisháðar villur</b>, svo sem <i>að ýmsu ?leiti</i>
-         og <i>á næsta ?leyti</i>, tvöfölduð orð (<i>eru eru</i>), ranga notkun hástafa
-         og lágstafa (<i>Þetta er ?Franskt rauðvín</i>), o.m.fl.
-      </p>
-      <p>
-         Markverðasta nýjungin er þó sú að Yfirlestur.is kemur auga á ýmis
-         <b>málfræðileg atriði</b> sem betur mættu fara. Til dæmis finnur vefurinn
-         tilvik þar sem sagnir eru notaðar með frumlagi í öðru falli en
-         réttast þykir, svo sem <i>?Manninum á verkstæðinu vantaði hamar</i> og
-         <i>?Litla drenginn með rauðu slaufuna hlakkaði til jólanna</i>. Þá grípur
-         hann misræmi milli eintölu og fleirtölu á borð við
-         <i>Fjöldi stuðningsmanna KR ?fögnuðu að leik loknum</i> og
-         <i>Einn af leiðangursmönnunum ?sögðu að ferðin hefði verið erfið.</i>
-      </p>
-      <p>
-         Þótt Yfirlestur.is sé að ýmsu leyti öflugri en sambærileg tól
-         sem áður hafa boðist fyrir íslensku er hann ekki fullkominn og á
-         eftir að þróast áfram í samstarfi við notendur. Ábendingar um endurbætur
-         eru vel þegnar í tölvupósti á <a href="mailto:mideind@mideind.is">mideind@mideind.is</a>.
-      </p>
-      <p>
-         Yfirlestur.is er meðal afurða <a href="https://mideind.is/greynir.html">Greynis-verkefnisins</a>,
-         sem unnið er að hjá <a href="https://mideind.is">Miðeind ehf.</a>
-      </p>
-   </li>
-   <li class="list-group-item">
-      <p><a href="https://mideind.is"><img src="{{ url_for('static', filename='img/mideind-horizontal-small.png') }}"
-         width="200" height="62" style="margin-top:14px; float:left; margin-right: 28px; margin-bottom: 18px;"></a>
-      </p>
-      <p>
-         <b>Höfundaréttur &copy; 2021 Miðeind ehf.</b>
-         <br>
-         <span>[Þróunarútgáfa]</span> <!-- This text is replaced by a date stamp in deploy.sh -->
-         &bull;
-         <span>[Git-útgáfa]</span> <!-- This text is replaced by git commit hash in deploy.sh -->
-{%- if reynir_correct_version %}
-         &bull;
-         <span>GreynirCorrect {{ reynir_correct_version }}</span>
-{%- endif -%}
-{%- if python_version %}
-         &bull;
-         <span>Python {{ python_version }}</a></span>
-{%- endif -%}
-      </p>
-      <p>
-         Yfirlestur.is byggir á málrýnihugbúnaðinum
-         <a href="https://github.com/mideind/GreynirCorrect">GreynirCorrect</a>,
-         sem er opinn og frjáls
-         <a href="https://pypi.org/project/reynir-correct/" target="_blank">Python-pakki</a>.
-         Bæði Yfirlestur.is og GreynirCorrect eru undir
-         <a href="https://github.com/mideind/GreynirCorrect/blob/master/LICENSE">MIT hugbúnaðarleyfi</a>.
-      </p>
-   </li>
-   <li class="list-group-item">
-      <p class="small">
-         Yfirlestur.is nýtir hugbúnað og gögn sem þróuð eru sem hluti af
-         <a href="https://www.stjornarradid.is/lisalib/getfile.aspx?itemid=56f6368e-54f0-11e7-941a-005056bc530c">5
-            ára máltækniáætlun stjórnvalda</a> til stuðnings máltækni fyrir íslensku.
-      </p>
-   </li>
-   <li class="list-group-item">
-      <p class="small">
-         Yfirlestur.is byggir á opnum gögnum
-         <a href="http://bin.arnastofnun.is" target="_blank"><i>Beygingarlýsingar
-         íslensks nútímamáls</i></a> (BÍN).
-         Höfundarrétt að BÍN á
-         <a href="http://www.arnastofnun.is" target="_blank"><i>Stofnun Árna Magnússonar
-         í íslenskum fræðum</i></a>. BÍN er notuð í Greyni og á þessum vef samkvæmt
-         <a href="http://bin.arnastofnun.is/gogn/skilmalar/"
-         target="_blank">skilmálum SÁM</a>.
-      </p>
-   </li>
+      <li class="list-group-item">
+         <p>
+            Yfirlestur.is les íslenskan texta og finnur&mdash;með sjálfvirkum hætti&mdash;ýmislegt
+            sem betur mætti fara í stafsetningu og málfari.
+         </p>
+         <p>
+            Vefurinn bendir á <b>stafsetningarvillur</b>, þ.e. orðmyndir sem ekki finnast
+            í orðabókum (einkum <a href="https://bin.arnastofnun.is">Beygingarlýsingu íslensks nútímamáls</a>)
+            og eru jafnframt ólíklegar til að vera gild samsett orð.
+            Einnig finnur hann <b>samhengisháðar villur</b>, svo sem <i>að ýmsu ?leiti</i>
+            og <i>á næsta ?leyti</i>, tvöfölduð orð (<i>eru eru</i>), ranga notkun hástafa
+            og lágstafa (<i>Þetta er ?Franskt rauðvín</i>), o.m.fl.
+         </p>
+         <p>
+            Markverðasta nýjungin er þó sú að Yfirlestur.is kemur auga á ýmis
+            <b>málfræðileg atriði</b> sem betur mættu fara. Til dæmis finnur vefurinn
+            tilvik þar sem sagnir eru notaðar með frumlagi í öðru falli en
+            réttast þykir, svo sem <i>?Manninum á verkstæðinu vantaði hamar</i> og
+            <i>?Litla drenginn með rauðu slaufuna hlakkaði til jólanna</i>. Þá grípur
+            hann misræmi milli eintölu og fleirtölu á borð við
+            <i>Fjöldi stuðningsmanna KR ?fögnuðu að leik loknum</i> og
+            <i>Einn af leiðangursmönnunum ?sögðu að ferðin hefði verið erfið.</i>
+         </p>
+         <p>
+            Þótt Yfirlestur.is sé að ýmsu leyti öflugri en sambærileg tól
+            sem áður hafa boðist fyrir íslensku er hann ekki fullkominn og á
+            eftir að þróast áfram í samstarfi við notendur. Ábendingar um endurbætur
+            eru vel þegnar í tölvupósti á <a href="mailto:mideind@mideind.is">mideind@mideind.is</a>.
+         </p>
+         <p>
+            Yfirlestur.is er meðal afurða <a href="https://mideind.is/greynir.html">Greynis-verkefnisins</a>,
+            sem unnið er að hjá <a href="https://mideind.is">Miðeind ehf.</a>
+         </p>
+      </li>
+      <li class="list-group-item">
+         <p><a href="https://mideind.is"><img src="{{ url_for('static', filename='img/mideind-horizontal-small.png') }}"
+                  width="200" height="62"
+                  style="margin-top:14px; float:left; margin-right: 28px; margin-bottom: 18px;"></a>
+         </p>
+         <p>
+            <b>Höfundaréttur &copy; 2022 Miðeind ehf.</b>
+            <br>
+            <span>[Þróunarútgáfa]</span> <!-- This text is replaced by a date stamp in deploy.sh -->
+            &bull;
+            <span>[Git-útgáfa]</span> <!-- This text is replaced by git commit hash in deploy.sh -->
+            {%- if greynir_correct_version %}
+            &bull;
+            <span>GreynirCorrect {{ greynir_correct_version }}</span>
+            {%- endif -%}
+            {%- if greynir_version %}
+            &bull;
+            <span>Greynir {{ greynir_version }}</span>
+            {%- endif -%}
+            {%- if tokenizer_version %}
+            &bull;
+            <span>Tokenizer {{ tokenizer_version }}</span>
+            {%- endif -%}
+            {%- if python_version %}
+            &bull;
+            <span>Python {{ python_version }}</a></span>
+            {%- endif -%}
+            {%- if platform_name %}
+            &bull;
+            <span>{{ platform_name }}</a></span>
+            {%- endif -%}
+         </p>
+         <p>
+            Yfirlestur.is byggir á málrýnihugbúnaðinum
+            <a href="https://github.com/mideind/GreynirCorrect">GreynirCorrect</a>,
+            sem er opinn og frjáls
+            <a href="https://pypi.org/project/reynir-correct/" target="_blank">Python-pakki</a>.
+            Bæði Yfirlestur.is og GreynirCorrect eru undir
+            <a href="https://github.com/mideind/GreynirCorrect/blob/master/LICENSE">MIT hugbúnaðarleyfi</a>.
+         </p>
+      </li>
+      <li class="list-group-item">
+         <p class="small">
+            Yfirlestur.is nýtir hugbúnað og gögn sem þróuð eru sem hluti af
+            <a href="https://www.stjornarradid.is/lisalib/getfile.aspx?itemid=56f6368e-54f0-11e7-941a-005056bc530c">5
+               ára máltækniáætlun stjórnvalda</a> til stuðnings máltækni fyrir íslensku.
+         </p>
+      </li>
+      <li class="list-group-item">
+         <p class="small">
+            Yfirlestur.is byggir á opnum gögnum
+            <a href="http://bin.arnastofnun.is" target="_blank"><i>Beygingarlýsingar
+                  íslensks nútímamáls</i></a> (BÍN).
+            Höfundarrétt að BÍN á
+            <a href="http://www.arnastofnun.is" target="_blank"><i>Stofnun Árna Magnússonar
+                  í íslenskum fræðum</i></a>. BÍN er notuð í Greyni og á þessum vef samkvæmt
+            <a href="http://bin.arnastofnun.is/gogn/skilmalar/" target="_blank">skilmálum SÁM</a>.
+         </p>
+      </li>
    </ul>
 </div>
 
@@ -158,4 +168,3 @@ p.small {
 </script>
 
 {% endblock %}
-

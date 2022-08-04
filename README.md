@@ -1,5 +1,5 @@
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
-[![Python 3.6](https://img.shields.io/badge/python-3.6-blue.svg)](https://www.python.org/downloads/release/python-360/)
+[![Python 3.7](https://img.shields.io/badge/python-3.7-blue.svg)](https://www.python.org/downloads/release/python-370/)
 [![Join the chat at https://gitter.im/Greynir/Lobby](https://badges.gitter.im/Greynir/Lobby.svg)](https://gitter.im/Greynir/Lobby?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)
 [![Build](https://github.com/mideind/Yfirlestur/actions/workflows/python-app.yml/badge.svg)]()
 
@@ -144,6 +144,17 @@ and how many of those sentences could be parsed. The `valid` field is
 `true` if the request was correctly formatted and could be processed
 without error, or `false` if there was a problem.
 
+#### Options
+
+The `/correct.api` endpoint supports several options:
+
+| Key                           | Type | Default | Explanation
+| ----------------------------- | ---- | ------- | ------------------------------
+| annotate\_unparsed\_sentences | bool | true    | Annotate sentence even when parsing fails
+| suppress_suggestions          | bool | false   | Don't return suggestions
+| ignore_wordlist               | list | []      | Words to accept without comment
+| ignore_rules                  | list | []      | Rules to ignore when annotating
+
 ### From Python
 
 As an example of accessing the Yfirlestur API from Python, here is
@@ -212,10 +223,10 @@ managed by Almannarómur. The LT Programme is described
 
 ## Copyright and licensing
 
-Yfirlestur is *copyright © 2022 by Miðeind ehf.*
+Yfirlestur.is is Copyright © 2022 [Miðeind ehf.](https://mideind.is).
 The original author of this software is *Vilhjálmur Þorsteinsson*.
 
-<a href="https://mideind.is"><img src="static/img/mideind-horizontal-small.png" alt="Miðeind ehf." 
+<a href="https://mideind.is"><img src="static/img/mideind-horizontal-small.png" alt="Miðeind ehf."
     width="214" height="66" align="right" style="margin-left:20px; margin-bottom: 20px;"></a>
 
 This software is licensed under the **MIT License**:
