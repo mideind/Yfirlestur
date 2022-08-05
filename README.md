@@ -104,12 +104,12 @@ Sentence entries also contain a list of `tokens`. The tokens
 originate in the [Tokenizer package](https://github.com/mideind/Tokenizer) and contain the following fields:
 
 `i`: Character index of token start.
-`k`: Token type number, (WORD, DATEREL, AMOUNT, etc.). Mapping from numbers to strings is found in the documentation for the [Tokenizer package](https://github.com/mideind/Tokenizer).
+`k`: Number identifying the token type (WORD, DATEREL, AMOUNT, etc.). The mapping from numbers to token types can be found in the documentation for the [Tokenizer package](https://github.com/mideind/Tokenizer).
 `o`: Original token text.
 `x`: Corrected text of token.
 
 Other possible fields:
-`s`: Stem of word. It can contain '-' if the stem is not found in BÍN and compound analysis has been used.
+`s`: Lemma of word. It can contain '-' if the lemma does not appear in BÍN and the word has been identified as a compound word.
 `c`: Part-of-speech (kk/kvk/hk, so, lo, ao, fs, st, etc.).
 `b`: Inflectional form given in BÍN. Can be '-' if the word cannot be inflected.
 `t`: Terminal that the token is connected to in the CFG.
