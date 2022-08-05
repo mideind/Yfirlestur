@@ -101,7 +101,7 @@ the system is intentionally less aggressive about automatically applying those
 (as can be seen in the example above).
 
 Sentence entries also contain a list of `tokens`. The tokens
-originate in the [Tokenizer package] and contain the following fields:
+originate in the [Tokenizer package](https://github.com/mideind/Tokenizer) and contain the following fields:
 
 `i`: Character index of token start.
 `k`: Token type number, (WORD, DATEREL, AMOUNT, etc.). Mapping from numbers to strings is found in the documentation for the [Tokenizer package](https://github.com/mideind/Tokenizer).
