@@ -1,4 +1,6 @@
 #!/usr/bin/env python3
+# type: ignore
+
 """
 
     Copyright (C) 2021 Miðeind ehf.

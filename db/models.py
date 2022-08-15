@@ -51,7 +51,7 @@ from sqlalchemy import (
     func,
     text,
 )
-from sqlalchemy.orm import relationship, backref
+from sqlalchemy.orm import relationship, backref  # type: ignore
 from sqlalchemy.ext.hybrid import Comparator, hybrid_property
 from sqlalchemy.dialects.postgresql import UUID as psql_UUID
 from sqlalchemy.orm.relationships import RelationshipProperty
@@ -64,7 +64,7 @@ class CaseInsensitiveComparator(Comparator):
 
     # See https://docs.sqlalchemy.org/en/13/orm/extensions/hybrid.html
 
-    def __eq__(self, other: object) -> bool:
+    def __eq__(self, other: object) -> bool:  # type: ignore
         return func.lower(self.__clause_element__()) == func.lower(other)  # type: ignore
 
 

@@ -29,7 +29,7 @@
 
 """
 
-from typing import List, Union, Dict, Type, Mapping, Any
+from typing import Callable, List, Union, Dict, Type, Mapping, Any, cast
 
 import re
 import abc
@@ -143,7 +143,7 @@ class RTFDocument(Document):
         # Hack to handle Apple's extensions to the RTF format
         txt = txt.replace("\\\n\\\n", "\\\n\\par\n")
 
-        return rtf_to_text(txt)
+        return cast(Callable[[str], str], rtf_to_text)(txt)
 
 
 class PDFDocument(Document):

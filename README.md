@@ -146,7 +146,9 @@ without error, or `false` if there was a problem.
 
 #### Options
 
-The `/correct.api` endpoint supports several options:
+The `/correct.api` endpoint supports several options that can be included
+with the request data, either as additional form fields (for `x-www-form-urlencoded`
+requests) or JSON properties (for `application/json` requests).
 
 | Key                           | Type | Default | Explanation
 | ----------------------------- | ---- | ------- | ------------------------------
@@ -154,6 +156,12 @@ The `/correct.api` endpoint supports several options:
 | suppress_suggestions          | bool | false   | Don't return suggestions
 | ignore_wordlist               | list | []      | Words to accept without comment
 | ignore_rules                  | list | []      | Rules to ignore when annotating
+
+As an example, to suppress suggestions:
+
+```bash
+    $ curl https://yfirlestur.is/correct.api -d "text=Manninum á verkstæðinu vantar hamar&suppress_suggestions=true"
+```
 
 ### From Python
 
@@ -173,6 +181,8 @@ my_text = (
 )
 
 # Make the POST request, submitting the text
+# Include additional keys in the dict if you want to specify options,
+# such as dict(text=mytext, suppress_suggestions=True)
 rq = requests.post("https://yfirlestur.is/correct.api", data=dict(text=my_text))
 
 # Retrieve the JSON response
@@ -215,9 +225,12 @@ is further [documented here](https://yfirlestur.is/doc/).
 
 ## Running for development
 
-The service can be packaged and started in development mode using Docker. To start the service run the following commands:
+The service can be packaged and started in development mode using
+[Docker](https://www.docker.com). Run the following commands to start the service
+and expose it via HTTP on port 5002:
 
 ```bash
+# Set internal Gunicorn (WSGI web server) user and password
 if [ ! -f "./gunicorn_user.txt" ]; then
     echo 'root' > gunicorn_user.txt
     echo 'root' >> gunicorn_user.txt
@@ -227,7 +240,9 @@ docker build -t yfirlestur:latest .
 docker run -it -p 5002:5002 yfirlestur
 ```
 
-Note that this setup is not recommended for any kind of production use.
+For production use, the Docker module should be packaged inside a robust server
+such as [nginx](https://www.nginx.com), and the [Gunicorn](https://gunicorn.org)
+user should be configured appropriately.
 
 ## Acknowledgements
 
@@ -239,7 +254,7 @@ managed by Almannarómur. The LT Programme is described
 
 ## Copyright and licensing
 
-Yfirlestur.is is Copyright © 2022 [Miðeind ehf.](https://mideind.is).
+Yfirlestur.is is Copyright © 2022 [Miðeind ehf.](https://mideind.is)
 The original author of this software is *Vilhjálmur Þorsteinsson*.
 
 <a href="https://mideind.is"><img src="static/img/mideind-horizontal-small.png" alt="Miðeind ehf."

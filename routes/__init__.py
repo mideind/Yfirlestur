@@ -33,9 +33,8 @@
 
 """
 
-from typing import TYPE_CHECKING, Tuple, Dict, Any, Callable, Optional, cast
+from typing import TYPE_CHECKING, Tuple, Dict, Any, Callable, Optional, Union, cast
 
-import logging
 import threading
 import time
 import uuid
@@ -45,13 +44,13 @@ from datetime import datetime, timedelta
 
 from flask import (
     Blueprint,
-    jsonify,
     make_response,
     current_app,
     abort,
     request,
     url_for,
 )
+from flask import jsonify  # type: ignore
 from flask.wrappers import Request, Response
 from flask import _request_ctx_stack  # type: ignore
 from flask.ctx import RequestContext
@@ -130,38 +129,36 @@ def text_from_request(
     When using POST, the default form field name is 'text'. This can
     be overridden using the post_field parameter.
     """
-    if rq.method == "POST":
-        content_type = rq.headers.get("Content-Type")
-        if content_type == "text/plain":
-            # Accept plain text POSTs, UTF-8 encoded.
-            # Example usage:
-            # curl -d @example.txt https://yfirlestur.is/correct.api \
-            #     --header "Content-Type: text/plain"
-            text = rq.data.decode("utf-8")
-        elif content_type == "application/json":
-            # Accept JSON POSTs, UTF-8 encoded.
-            # Example usage:
-            # curl -d @example.json https://yfirlestur.is/correct.api \
-            #     --header "Content-Type: application/json"
-            json = rq.get_json(silent=True)
-            if json is None or not isinstance(json, dict):
-                logging.warning("Invalid JSON in POST request")
-                text = ""
-            else:
-                text = json.get(post_field or "text", "")
-        else:
-            # Also accept form/url-encoded requests:
-            # curl -d "text=Í dag er ágætt veður en mikil hálka er á götum." \
-            #     https://greynir.is/postag.api
-            text = rq.form.get(post_field or "text", "")
-        text = text[0:_MAX_TEXT_LENGTH]
-    elif rq.method == "GET":
-        text = rq.args.get(get_field or "t", "")[0:_MAX_TEXT_LENGTH_VIA_URL]
-    else:
+    if rq.method == "GET":
+        return rq.args.get(get_field or "t", "")[0:_MAX_TEXT_LENGTH_VIA_URL]
+    if rq.method != "POST":
         # Unknown/unsupported method
-        text = ""
-
-    return text
+        raise ValueError("Unsupported HTTP method")
+    content_type = (rq.content_type or "").split(";")[0]
+    charset = rq.mimetype_params.get("charset", "utf-8").lower()
+    if content_type == "text/plain":
+        # Accept plain text POSTs, UTF-8 encoded by default.
+        # Example usage:
+        # curl -d @example.txt https://yfirlestur.is/correct.api \
+        #     --header "Content-Type: text/plain"
+        text = rq.data.decode(charset)  # May throw an exception, which is OK
+    elif content_type == "application/json":
+        # Accept JSON POSTs, UTF-8 encoded.
+        # Example usage:
+        # curl -d @example.json https://yfirlestur.is/correct.api \
+        #     --header "Content-Type: application/json"
+        json: Union[None, str, Dict[str, str]] = cast(Any, rq).get_json(silent=True)
+        if json is None or not isinstance(json, dict):
+            raise ValueError("Invalid JSON")
+        text = json.get(post_field or "text", "")
+    else:
+        # Also accept 'application/x-www-form-urlencoded' requests:
+        # curl -d "text=Í dag er ágætt veður en mikil hálka er á götum." \
+        #     https://greynir.is/postag.api
+        if charset != "utf-8":
+            raise ValueError("Form data must be UTF-8 encoded")
+        text = rq.form.get(post_field or "text", "")
+    return text[0:_MAX_TEXT_LENGTH]
 
 
 # The following asynchronous support code is adapted from Miguel Grinberg's

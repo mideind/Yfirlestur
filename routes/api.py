@@ -32,7 +32,7 @@
 
 """
 
-from typing import Any, Dict, List, Tuple, Optional, TypeVar, Union, cast, overload
+from typing import Any, Dict, List, Mapping, Tuple, Optional, TypeVar, Union, cast, overload
 from typing_extensions import Literal
 
 import os
@@ -50,7 +50,7 @@ from multiprocessing.managers import SyncManager
 from multiprocessing import get_context
 
 from flask import request, abort, url_for, current_app
-from flask.wrappers import Request
+from flask.wrappers import Request, Response
 
 from settings import Settings
 
@@ -239,7 +239,7 @@ def feedback(version: int = 1) -> Any:
     return better_jsonify(ok=True)
 
 
-OPTIONS_FLAGS: Dict[str, str] = {
+OPTIONS_FLAGS: Mapping[str, str] = {
     "annotate_unparsed_sentences": "bool",
     "suppress_suggestions": "bool",
     "ignore_wordlist": "list",
@@ -251,7 +251,7 @@ def opts_from_request(rq: Request) -> Dict[str, Any]:
     """Extract valid options from a request into dict."""
     d: Dict[str, Any] = dict()
 
-    rqd = RequestData(request)
+    rqd = RequestData(rq)
 
     for k, v in OPTIONS_FLAGS.items():
         if v == "bool":
@@ -260,20 +260,21 @@ def opts_from_request(rq: Request) -> Dict[str, Any]:
                 d[k] = b
         elif v == "list":
             l = rqd.get_list(k)
-            if l is not None:
-                d[k] = rqd.get_list(k)
+            if l:  # No need to specify empty lists
+                d[k] = l
 
     return d
 
 
 @routes.route("/correct.task", methods=["POST"])
 @routes.route("/correct.task/v<int:version>", methods=["POST"])
-def correct_async(version: int = 1) -> Any:
+def correct_async(version: int = 1) -> Response:
     """Correct text provided by the user, i.e. not coming from an article.
     This can be either an uploaded file or a string. This is a lower level,
     asynchronous API used by the Greynir web front-end."""
     valid, result = validate(request, version)
     if not valid:
+        assert isinstance(result, Response)
         return result
     assert isinstance(result, str)
 
@@ -289,13 +290,14 @@ def correct_async(version: int = 1) -> Any:
 
 @routes.route("/correct.api", methods=["POST"])
 @routes.route("/correct.api/v<int:version>", methods=["POST"])
-def correct_sync(version: int = 1) -> Any:
+def correct_sync(version: int = 1) -> Response:
     """Correct text provided by the user, i.e. not coming from an article.
     This can be either an uploaded file or a string.
     This is a synchronous HTTP API call that is easy for third party
     code to work with."""
     valid, result = validate(request, version)
     if not valid:
+        assert isinstance(result, Response)
         return result
     assert isinstance(result, str)
 
@@ -322,7 +324,7 @@ def correct_sync(version: int = 1) -> Any:
     )
 
 
-def validate(request: Request, version: int) -> Tuple[bool, Any]:
+def validate(request: Request, version: int) -> Tuple[bool, Union[str, Response]]:
     """Validate an incoming correction request and extract the
     text to validate from it, if valid"""
     if not (1 <= version <= 1):
@@ -344,7 +346,7 @@ def validate(request: Request, version: int) -> Tuple[bool, Any]:
             doc = doc_class(file.read())
             text = doc.extract_text()
         except Exception as e:
-            current_app.logger.warning("Exception in correct_process(): {0}".format(e))  # type: ignore
+            current_app.logger.warning("Exception in correct_process(): {0}".format(e))
             return False, better_jsonify(valid=False, reason="Error reading file")
 
     else:
@@ -352,8 +354,10 @@ def validate(request: Request, version: int) -> Tuple[bool, Any]:
         # Handle POSTed form data, JSON, or plain text string
         try:
             text = text_from_request(request)
+        except ValueError as e:
+            return False, better_jsonify(valid=False, reason=f"Error in request: {e}")
         except Exception as e:
-            current_app.logger.warning("Exception in correct_process(): {0}".format(e))  # type: ignore
+            current_app.logger.warning("Exception in correct_process(): {0}".format(e))
             return False, better_jsonify(valid=False, reason="Invalid request")
 
     text = text.strip()
@@ -384,7 +388,7 @@ class ChildTask:
             cls.manager = _CTX.Manager()
             # Create an inter-process dict object to hold progress info
             assert cls.manager is not None
-            cls.progress = cls.manager.dict()
+            cls.progress = cast(Dict[str, float], cls.manager.dict())
             # Initialize the worker process pool
             cls.pool = cast(Any, _CTX).Pool(POOL_SIZE)
 
@@ -519,7 +523,7 @@ class ChildTask:
             abort(410)  # Return HTTP 410 GONE
         return process.result()
 
-    def result(self) -> Any:
+    def result(self) -> Response:
         """Return a Response object with the current status of this child task"""
         if self.exception is not None:
             # The task raised an exception: remove it herewith,
@@ -534,10 +538,10 @@ class ChildTask:
             pgs, stats, text = self.finish()
             return better_jsonify(valid=True, result=pgs, stats=stats, text=text)
         # Not yet completed: report progress
-        return (
-            json.dumps(dict(progress=self.current_progress)),
-            202,  # ACCEPTED
-            {
+        return Response(
+            response=json.dumps(dict(progress=self.current_progress)),
+            status=202,  # ACCEPTED
+            headers={
                 "Location": url_for(
                     "routes.get_process_status", process=self.identifier
                 ),

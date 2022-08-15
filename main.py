@@ -60,7 +60,8 @@ import re
 import logging
 from datetime import datetime
 
-from flask import Flask, render_template, send_from_directory, jsonify
+from flask import Flask, render_template, send_from_directory
+from flask import jsonify  # type: ignore
 from flask.wrappers import Response
 from flask_caching import Cache  # type: ignore
 from flask_cors import CORS  # type: ignore
