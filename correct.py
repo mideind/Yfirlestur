@@ -36,6 +36,7 @@
 from typing import (
     Any,
     List,
+    Sequence,
     Tuple,
     Iterator,
     Iterable,
@@ -228,8 +229,8 @@ def check_grammar(
     split_paragraphs: bool = True,
     annotate_unparsed_sentences: bool = True,
     suppress_suggestions: bool = False,
-    ignore_wordlist: List = [],
-    ignore_rules: List = DEFAULT_IGNORED_RULES,
+    ignore_wordlist: Sequence[str] = [],
+    ignore_rules: Sequence[str] = DEFAULT_IGNORED_RULES
 ) -> CheckResult:
     """Check the grammar and spelling of the given text and return
     a list of annotated paragraphs, containing sentences, containing

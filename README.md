@@ -92,7 +92,7 @@ The example returns the following JSON (shown indented, for ease of reading):
 The `result` field contains the result of the annotation, as a list of paragraphs,
 each containing a list of sentences, each containing a list of annotations (under
 the `annotations` field). Of course, if a sentence is correct and has no annotations,
-its annotation list will be empty.
+its annotation list will be empty. An overview of error codes used in annotations is available [here](https://github.com/mideind/GreynirCorrect/blob/master/doc/errorcodes.rst).
 
 Each sentence entry has a field containing a `corrected` version of it, where
 likely errors have been corrected. The `corrected` string includes corrections
@@ -101,8 +101,21 @@ the system is intentionally less aggressive about automatically applying those
 (as can be seen in the example above).
 
 Sentence entries also contain a list of `tokens`. The tokens
-originate in the [Tokenizer package](https://github.com/mideind/Tokenizer)
-and their format is documented there.
+originate in the [Tokenizer package](https://github.com/mideind/Tokenizer) and contain the following fields:
+
+`i`: Character index of token start.
+`k`: Number identifying the token type (WORD, DATEREL, AMOUNT, etc.). The mapping from numbers to token types can be found in the documentation for the [Tokenizer package](https://github.com/mideind/Tokenizer).
+`o`: Original token text.
+`x`: Corrected text of token.
+
+Other possible fields:
+`s`: Lemma of word. It can contain '-' if the lemma does not appear in BÍN and the word has been identified as a compound word.
+`c`: Part-of-speech (kk/kvk/hk, so, lo, ao, fs, st, etc.).
+`b`: Inflectional form given in BÍN. Can be '-' if the word cannot be inflected.
+`t`: Terminal that the token is connected to in the CFG.
+`v`: Token value (if applicable). Number, amount, date or name of currency.
+`f`: BÍN category (alm, ism, fyr, örn, etc.). 
+
 
 Each annotation applies to a span of sentence tokens, starting
 at the token whose index is
@@ -133,7 +146,9 @@ without error, or `false` if there was a problem.
 
 #### Options
 
-The `/correct.api` endpoint supports several options:
+The `/correct.api` endpoint supports several options that can be included
+with the request data, either as additional form fields (for `x-www-form-urlencoded`
+requests) or JSON properties (for `application/json` requests).
 
 | Key                           | Type | Default | Explanation
 | ----------------------------- | ---- | ------- | ------------------------------
@@ -141,6 +156,12 @@ The `/correct.api` endpoint supports several options:
 | suppress_suggestions          | bool | false   | Don't return suggestions
 | ignore_wordlist               | list | []      | Words to accept without comment
 | ignore_rules                  | list | []      | Rules to ignore when annotating
+
+As an example, to suppress suggestions:
+
+```bash
+    $ curl https://yfirlestur.is/correct.api -d "text=Manninum á verkstæðinu vantar hamar&suppress_suggestions=true"
+```
 
 ### From Python
 
@@ -160,6 +181,8 @@ my_text = (
 )
 
 # Make the POST request, submitting the text
+# Include additional keys in the dict if you want to specify options,
+# such as dict(text=mytext, suppress_suggestions=True)
 rq = requests.post("https://yfirlestur.is/correct.api", data=dict(text=my_text))
 
 # Retrieve the JSON response
@@ -200,6 +223,27 @@ $ python test.py
 The open source *GreynirCorrect* engine that powers Yfirlestur.is
 is further [documented here](https://yfirlestur.is/doc/).
 
+## Running for development
+
+The service can be packaged and started in development mode using
+[Docker](https://www.docker.com). Run the following commands to start the service
+and expose it via HTTP on port 5002:
+
+```bash
+# Set internal Gunicorn (WSGI web server) user and password
+if [ ! -f "./gunicorn_user.txt" ]; then
+    echo 'root' > gunicorn_user.txt
+    echo 'root' >> gunicorn_user.txt
+fi
+
+docker build -t yfirlestur:latest .
+docker run -it -p 5002:5002 yfirlestur
+```
+
+For production use, the Docker module should be packaged inside a robust server
+such as [nginx](https://www.nginx.com), and the [Gunicorn](https://gunicorn.org)
+user should be configured appropriately.
+
 ## Acknowledgements
 
 Parts of this software are developed under the auspices of the
@@ -210,7 +254,7 @@ managed by Almannarómur. The LT Programme is described
 
 ## Copyright and licensing
 
-Yfirlestur.is is Copyright © 2022 [Miðeind ehf.](https://mideind.is).
+Yfirlestur.is is Copyright © 2022 [Miðeind ehf.](https://mideind.is)
 The original author of this software is *Vilhjálmur Þorsteinsson*.
 
 <a href="https://mideind.is"><img src="static/img/mideind-horizontal-small.png" alt="Miðeind ehf."
