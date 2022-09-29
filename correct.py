@@ -182,6 +182,45 @@ def validate_token_and_nonce(original: str, token: str, nonce: str) -> bool:
     return generate_token(original, nonce) == token
 
 
+DEFAULT_IGNORED_RULES = [
+    "ASLAUKASTAF",
+    "ASLBRODDVANTAR",
+    "ASLSTAFVANTAR",
+    "ASLVITLSTAF",
+    "ASLVIXL",
+    "BEYGVILLA",
+    "C005_w",
+    "C005",
+    "EY4EI",
+    "P_DIR_LOC",
+    "P_DOUBLE_DEFINITE",
+    "P_MOOD_ACK",
+    "P_MOOD_COND",
+    "P_MOOD_PURP",
+    "P_MOOD_REL",
+    "P_MOOD_TEMP_w",
+    "P_NT_Einkunn",
+    "P_NT_EndingIR",
+    "P_NT_FsMeðFallstjórn",
+    "P_NT_ÍTölu",
+    "P_NT_Manns",
+    "P_NT_Né",
+    "P_NT_Sem_w",
+    "P_NT_ÞóAð",
+    "P_SINGSUB_GEN",
+    "P_veraAð",
+    "P_wrong_case",
+    "P_WRONG_CASE_x -- margar reglur!",
+    "P_WRONG_PLACE_PP",
+    "P_WRONG_PREP_AÐ",
+    "RFTGR",
+    "S001",
+    "W001_w",
+    "Y001_w",
+    "Ý4Í",
+]
+
+
 def check_grammar(
     text: str,
     *,
@@ -190,7 +229,7 @@ def check_grammar(
     annotate_unparsed_sentences: bool = True,
     suppress_suggestions: bool = False,
     ignore_wordlist: List = [],
-    ignore_rules: List = []
+    ignore_rules: List = DEFAULT_IGNORED_RULES,
 ) -> CheckResult:
     """Check the grammar and spelling of the given text and return
     a list of annotated paragraphs, containing sentences, containing
