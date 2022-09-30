@@ -184,7 +184,6 @@ def validate_token_and_nonce(original: str, token: str, nonce: str) -> bool:
 
 
 DEFAULT_IGNORED_RULES = [
-    "ASLAUKASTAF",
     "ASLBRODDVANTAR",
     "ASLSTAFVANTAR",
     "ASLVITLSTAF",
@@ -209,9 +208,8 @@ DEFAULT_IGNORED_RULES = [
     "P_NT_Sem_w",
     "P_NT_ÞóAð",
     "P_SINGSUB_GEN",
-    "P_veraAð",
+    "P_VeraAð",
     "P_wrong_case",
-    "P_WRONG_CASE_x -- margar reglur!",
     "P_WRONG_PLACE_PP",
     "P_WRONG_PREP_AÐ",
     "RFTGR",
@@ -219,6 +217,10 @@ DEFAULT_IGNORED_RULES = [
     "W001_w",
     "Y001_w",
     "Ý4Í",
+    "P_WRONG_CASE_nf_þf",
+    "P_WRONG_CASE_nf_þgf",
+    "P_WRONG_CASE_þgf_nf",
+    "P_WRONG_PLACE_PP",
 ]
 
 
