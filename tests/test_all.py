@@ -290,3 +290,26 @@ def test_character_spans() -> None:
     text = "Ég varð afar stór."
     real = [0, 2, 7, 12, 17]
     verify_char_spans(text, real)
+
+
+def test_doc():
+    """Test document-related functions in doc.py"""
+    from doc import PlainTextDocument, DocxDocument
+
+    txt_bytes = "Halló, gaman að kynnast þér.\n\nHvernig gengur?".encode("utf-8")
+    doc = PlainTextDocument(txt_bytes)
+    assert doc.extract_text() == txt_bytes.decode("utf-8")
+
+    # Change to same directory as this file in order
+    # to resolve relative path to files used by tests
+    prev_dir = os.getcwd()
+    abspath = os.path.abspath(__file__)
+    dname = os.path.dirname(abspath)
+    os.chdir(dname)
+
+    txt = "Þetta er prufa.\n\nLína 1.\n\nLína 2."
+    doc = DocxDocument("files/test.docx")
+    assert doc.extract_text() == txt
+
+    # Change back to previous directory
+    os.chdir(prev_dir)
