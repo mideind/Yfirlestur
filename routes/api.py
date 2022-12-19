@@ -100,7 +100,7 @@ class RequestData:
     _TRUE_SET = frozenset(("true", "True", "1", 1, True))
     _FALSE_SET = frozenset(("false", "False", "0", 0, False))
 
-    def __init__(self, rq: Request, *, use_args: bool = False) -> None:
+    def __init__(self, rq: Request, *, use_args: bool = True) -> None:
         # If JSON data is present, assume this is a JSON request
         self.q: Dict[str, Any] = cast(Any, rq).get_json(silent=True)
         self.using_json = True
