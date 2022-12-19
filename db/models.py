@@ -56,7 +56,6 @@ from sqlalchemy.orm.relationships import RelationshipProperty
 
 
 class CaseInsensitiveComparator(Comparator):
-
     """Boilerplate from the PostgreSQL documentation to implement
     a case-insensitive comparator"""
 
@@ -76,7 +75,6 @@ setattr(Base, "table", classmethod(lambda cls: cls.__table__))
 
 
 class Root(Base):
-
     """Represents a scraper root, i.e. a base domain and root URL"""
 
     __tablename__ = "roots"
@@ -114,7 +112,6 @@ class Root(Base):
 
 
 class Article(Base):
-
     """Represents an article from one of the roots, to be scraped or having already been scraped"""
 
     __tablename__ = "articles"
@@ -196,7 +193,6 @@ class Article(Base):
 
 
 class Entity(Base):
-
     """Represents a named entity"""
 
     __tablename__ = "entities"
@@ -252,7 +248,6 @@ class Entity(Base):
 
 
 class Correction(Base):
-
     """Represents correction feedback"""
 
     __tablename__ = "corrections"

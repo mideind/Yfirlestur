@@ -4,10 +4,10 @@ Flask-Cors>=3.0.10
 SQLAlchemy==1.4.45
 psycopg2cffi==2.9.0
 reynir-correct>=3.4.6
-striprtf>=0.0.6
-defusedxml>=0.6.0
-cachetools>=3.1.1
-html2text>=2018.1.9
+striprtf>=0.0.22
+defusedxml>=0.7.1
+cachetools>=5.2.0
+html2text>=2020.1.16
 odfpy>=1.4.1
-pdfminer.six>=20201018
+pdfminer.six>=20221105
 gunicorn>=20.1.0

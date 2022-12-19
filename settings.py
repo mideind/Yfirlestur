@@ -56,7 +56,6 @@ _DEFAULT_LOCALE = ("IS_is", "UTF-8")
 
 
 class ConfigError(Exception):
-
     """Exception class for configuration errors"""
 
     def __init__(self, s: str) -> None:
@@ -79,7 +78,6 @@ class ConfigError(Exception):
 
 
 class LineReader:
-
     """Read lines from a text file, recognizing $include directives"""
 
     def __init__(

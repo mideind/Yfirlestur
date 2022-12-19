@@ -380,7 +380,6 @@ def validate(request: Request, version: int) -> Tuple[bool, Union[str, Response]
 
 
 class ChildTask:
-
     """A container class for the multiprocessing pool logic we use
     to distribute correction workloads between CPU cores"""
 
