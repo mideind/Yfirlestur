@@ -25,6 +25,8 @@
     SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 
+    Tests for the Yfirlestur web application.
+
 """
 
 import sys

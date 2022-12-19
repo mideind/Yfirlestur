@@ -1,96 +1,100 @@
 <!DOCTYPE html>
 <html lang="is">
+
 <head>
-<meta charset="UTF-8">
-<meta http-equiv="X-UA-Compatible" content="IE=edge">
-<meta name="viewport" content="width=device-width, initial-scale=1">
-<meta name="description" content="Yfirlestur íslensks texta, málrýni, leiðrétting, stafsetning, málfræði">
-<meta name="application-name" content="Yfirlestur">
+   <meta charset="UTF-8">
+   <meta http-equiv="X-UA-Compatible" content="IE=edge">
+   <meta name="viewport" content="width=device-width, initial-scale=1">
+   <meta name="description" content="Yfirlestur íslensks texta, málrýni, leiðrétting, stafsetning, málfræði">
+   <meta name="application-name" content="Yfirlestur">
 
-<title>Yfirlestur - Málrýni fyrir íslensku</title>
+   <title>Yfirlestur - Málrýni fyrir íslensku</title>
 
-<link rel="apple-touch-icon" sizes="57x57" href="/static/img/apple-icon-57x57.png">
-<link rel="apple-touch-icon" sizes="60x60" href="/static/img/apple-icon-60x60.png">
-<link rel="apple-touch-icon" sizes="72x72" href="/static/img/apple-icon-72x72.png">
-<link rel="apple-touch-icon" sizes="76x76" href="/static/img/apple-icon-76x76.png">
-<link rel="apple-touch-icon" sizes="114x114" href="/static/img/apple-icon-114x114.png">
-<link rel="apple-touch-icon" sizes="120x120" href="/static/img/apple-icon-120x120.png">
-<link rel="apple-touch-icon" sizes="144x144" href="/static/img/apple-icon-144x144.png">
-<link rel="apple-touch-icon" sizes="152x152" href="/static/img/apple-icon-152x152.png">
-<link rel="apple-touch-icon" sizes="180x180" href="/static/img/apple-icon-180x180.png">
-<link rel="icon" type="image/png" sizes="192x192" href="/static/img/android-icon-192x192.png">
-<link rel="icon" type="image/png" sizes="32x32" href="/static/img/favicon-32x32.png">
-<link rel="icon" type="image/png" sizes="96x96" href="/static/img/favicon-96x96.png">
-<link rel="icon" type="image/png" sizes="16x16" href="/static/img/favicon-16x16.png">
-<link rel="icon" href="/static/img/favicon.ico">
-<link rel="manifest" href="/static/manifest.json">
-<meta property="og:image" content="https://yfirlestur.is/static/img/yfirlestur_opengraph.png">
+   <link rel="apple-touch-icon" sizes="57x57" href="/static/img/apple-icon-57x57.png">
+   <link rel="apple-touch-icon" sizes="60x60" href="/static/img/apple-icon-60x60.png">
+   <link rel="apple-touch-icon" sizes="72x72" href="/static/img/apple-icon-72x72.png">
+   <link rel="apple-touch-icon" sizes="76x76" href="/static/img/apple-icon-76x76.png">
+   <link rel="apple-touch-icon" sizes="114x114" href="/static/img/apple-icon-114x114.png">
+   <link rel="apple-touch-icon" sizes="120x120" href="/static/img/apple-icon-120x120.png">
+   <link rel="apple-touch-icon" sizes="144x144" href="/static/img/apple-icon-144x144.png">
+   <link rel="apple-touch-icon" sizes="152x152" href="/static/img/apple-icon-152x152.png">
+   <link rel="apple-touch-icon" sizes="180x180" href="/static/img/apple-icon-180x180.png">
+   <link rel="icon" type="image/png" sizes="192x192" href="/static/img/android-icon-192x192.png">
+   <link rel="icon" type="image/png" sizes="32x32" href="/static/img/favicon-32x32.png">
+   <link rel="icon" type="image/png" sizes="96x96" href="/static/img/favicon-96x96.png">
+   <link rel="icon" type="image/png" sizes="16x16" href="/static/img/favicon-16x16.png">
+   <link rel="icon" href="/static/img/favicon.ico">
+   <link rel="manifest" href="/static/manifest.json">
+   <meta property="og:image" content="https://yfirlestur.is/static/img/yfirlestur_opengraph.png">
 
-<meta name="msapplication-TileColor" content="#ffffff">
-<meta name="msapplication-TileImage" content="/static/img/ms-icon-144x144.png">
-<meta name="theme-color" content="#ffffff">
+   <meta name="msapplication-TileColor" content="#ffffff">
+   <meta name="msapplication-TileImage" content="/static/img/ms-icon-144x144.png">
+   <meta name="theme-color" content="#ffffff">
 
-{% block meta %}
-{% endblock %}
+   {% block meta %}
+   {% endblock %}
 
-<link href="https://fonts.gstatic.com" rel="preconnect" crossorigin>
-<link href="https://fonts.googleapis.com/css?family=Lato:200,200i,300,300i,400,400i,700,700i,900,900i&display=swap" rel="stylesheet" crossorigin>
+   <link href="https://fonts.gstatic.com" rel="preconnect" crossorigin>
+   <link href="https://fonts.googleapis.com/css?family=Lato:200,200i,300,300i,400,400i,700,700i,900,900i&display=swap"
+      rel="stylesheet" crossorigin>
 
-<!-- Bootstrap main CSS -->
-<link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/3.4.0/css/bootstrap.min.css"
-   integrity="sha384-PmY9l28YgO4JwMKbTvgaS7XNZJ30MK9FAZjjzXtlqyZCqBY6X6bXIkM++IkyinN+" crossorigin="anonymous">
-<!-- Bootstrap theme CSS -->
-<link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/3.4.0/css/bootstrap-theme.min.css"
-   integrity="sha384-jzngWsPS6op3fgRCDTESqrEJwRKck+CILhJVO5VvaAZCq8JYf8HsR/HPpBOOPZfR" crossorigin="anonymous">
+   <!-- Bootstrap main CSS -->
+   <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/3.4.0/css/bootstrap.min.css"
+      integrity="sha384-PmY9l28YgO4JwMKbTvgaS7XNZJ30MK9FAZjjzXtlqyZCqBY6X6bXIkM++IkyinN+" crossorigin="anonymous">
+   <!-- Bootstrap theme CSS -->
+   <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/3.4.0/css/bootstrap-theme.min.css"
+      integrity="sha384-jzngWsPS6op3fgRCDTESqrEJwRKck+CILhJVO5VvaAZCq8JYf8HsR/HPpBOOPZfR" crossorigin="anonymous">
 
-{% block styles %}
-{% endblock %}
+   {% block styles %}
+   {% endblock %}
 
-{% block scripts %}
-{% endblock %}
+   {% block scripts %}
+   {% endblock %}
 
 </head>
+
 <body id="bodytag">
 
-{% block navbar %}
-<!-- Fixed navbar -->
-<nav class="navbar navbar-default navbar-fixed-top">
-   <div class="container">
-      <div class="navbar-header">
-         <button type="button" class="navbar-toggle collapsed" data-toggle="collapse"
-            data-target="#navbar" aria-expanded="false" aria-controls="navbar">
-            <span class="sr-only">Toggle navigation</span>
-            <span class="icon-bar"></span>
-            <span class="icon-bar"></span>
-            <span class="icon-bar"></span>
-         </button>
-         <a class="navbar-brand" href="{{ url_for('routes.correct') }}">
-            <img src="{{ url_for('static', filename='img/Yfirlestur-horizontal-80.png') }}" width=131 height=40>
-         </a>
+   {% block navbar %}
+   <!-- Fixed navbar -->
+   <nav class="navbar navbar-default navbar-fixed-top">
+      <div class="container">
+         <div class="navbar-header">
+            <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#navbar"
+               aria-expanded="false" aria-controls="navbar">
+               <span class="sr-only">Toggle navigation</span>
+               <span class="icon-bar"></span>
+               <span class="icon-bar"></span>
+               <span class="icon-bar"></span>
+            </button>
+            <a class="navbar-brand" href="{{ url_for('routes.correct') }}">
+               <img src="{{ url_for('static', filename='img/Yfirlestur-horizontal-80.png') }}" width=131 height=40>
+            </a>
+         </div>
+         <div id="navbar" class="navbar-collapse collapse">
+            <ul class="nav navbar-nav">
+               <li id="navid-main"><a href="{{ url_for('routes.correct') }}">Heim</a></li>
+               <li id="navid-about"><a href="{{ url_for('routes.about') }}">Um Yfirlestur</a></li>
+            </ul>
+         </div>
       </div>
-      <div id="navbar" class="navbar-collapse collapse">
-         <ul class="nav navbar-nav">
-            <li id="navid-main"><a href="{{ url_for('routes.correct') }}">Heim</a></li>
-            <li id="navid-about"><a href="{{ url_for('routes.about') }}">Um Yfirlestur</a></li>
-         </ul>
-      </div>
-   </div>
-</nav>
-{% endblock %}
+   </nav>
+   {% endblock %}
 
-{% block container -%}
-{%- endblock %}
+   {% block container -%}
+   {%- endblock %}
 
-<!-- jQuery -->
-<script src="https://code.jquery.com/jquery-2.2.4.min.js"></script>
+   <!-- jQuery -->
+   <script src="https://code.jquery.com/jquery-2.2.4.min.js"></script>
 
-<!-- Bootstrap -->
-<script src="https://stackpath.bootstrapcdn.com/bootstrap/3.4.0/js/bootstrap.min.js"
-   integrity="sha384-vhJnz1OVIdLktyixHY4Uk3OHEwdQqPppqYR8+5mjsauETgLOcEynD9oPHhhz18Nw"
-   crossorigin="anonymous"></script>
+   <!-- Bootstrap -->
+   <script src="https://stackpath.bootstrapcdn.com/bootstrap/3.4.0/js/bootstrap.min.js"
+      integrity="sha384-vhJnz1OVIdLktyixHY4Uk3OHEwdQqPppqYR8+5mjsauETgLOcEynD9oPHhhz18Nw"
+      crossorigin="anonymous"></script>
 
-{% block endscripts -%}
-{%- endblock %}
+   {% block endscripts -%}
+   {%- endblock %}
 
 </body>
+
 </html>

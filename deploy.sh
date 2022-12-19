@@ -3,7 +3,7 @@
 # deploy.sh
 #
 # Deployment script for yfirlestur.is
-# 
+#
 # Prompts for confirmation before copying files over
 #
 

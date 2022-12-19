@@ -1,6 +1,6 @@
 /*
 
-   Greynir: Natural language processing for Icelandic
+   Yfirlestur: Online spelling and grammar correction for Icelandic
 
    Page.js
 

@@ -1,6 +1,5 @@
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 [![Python 3.7](https://img.shields.io/badge/python-3.7-blue.svg)](https://www.python.org/downloads/release/python-370/)
-[![Join the chat at https://gitter.im/Greynir/Lobby](https://badges.gitter.im/Greynir/Lobby.svg)](https://gitter.im/Greynir/Lobby?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)
 [![Build](https://github.com/mideind/Yfirlestur/actions/workflows/python-app.yml/badge.svg)]()
 
 <img src="static/img/yfirlestur-logo-large.png" alt="Yfirlestur" width="200" height="200"
@@ -40,7 +39,7 @@ This API can for example by accessed by `curl` from the Linux/MacOS command line
 as follows (try it!):
 
 ```bash
-    $ curl https://yfirlestur.is/correct.api -d "text=Manninum á verkstæðinu vantar hamar"
+    curl https://yfirlestur.is/correct.api -d "text=Manninum á verkstæðinu vantar hamar"
 ```
 
 ...or, of course, via a HTTPS `POST` from your own code; see below.
@@ -114,8 +113,7 @@ Other possible fields:
 `b`: Inflectional form given in BÍN. Can be '-' if the word cannot be inflected.
 `t`: Terminal that the token is connected to in the CFG.
 `v`: Token value (if applicable). Number, amount, date or name of currency.
-`f`: BÍN category (alm, ism, fyr, örn, etc.). 
-
+`f`: BÍN category (alm, ism, fyr, örn, etc.).
 
 Each annotation applies to a span of sentence tokens, starting
 at the token whose index is
@@ -160,7 +158,7 @@ requests) or JSON properties (for `application/json` requests).
 As an example, to suppress suggestions:
 
 ```bash
-    $ curl https://yfirlestur.is/correct.api -d "text=Manninum á verkstæðinu vantar hamar&suppress_suggestions=true"
+    curl https://yfirlestur.is/correct.api -d "text=Manninum á verkstæðinu vantar hamar&suppress_suggestions=true"
 ```
 
 ### From Python
@@ -254,7 +252,7 @@ managed by Almannarómur. The LT Programme is described
 
 ## Copyright and licensing
 
-Yfirlestur.is is Copyright © 2022 [Miðeind ehf.](https://mideind.is)
+Yfirlestur.is is Copyright © 2022 [Miðeind ehf.](https://mideind.is)  
 The original author of this software is *Vilhjálmur Þorsteinsson*.
 
 <a href="https://mideind.is"><img src="static/img/mideind-horizontal-small.png" alt="Miðeind ehf."

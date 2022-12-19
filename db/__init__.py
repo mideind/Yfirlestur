@@ -49,7 +49,6 @@ from .models import Base
 
 
 class Scraper_DB:
-
     """Wrapper around the SQLAlchemy connection, engine and session"""
 
     def __init__(self):
@@ -95,7 +94,6 @@ class classproperty:
 
 
 class SessionContext:
-
     """Context manager for database sessions"""
 
     # Singleton instance of Scraper_DB
