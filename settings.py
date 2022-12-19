@@ -1,9 +1,10 @@
 """
-    Greynir: Natural language processing for Icelandic
+
+    Yfirlestur: Online spelling and grammar correction for Icelandic
 
     Settings module
 
-    Copyright (c) 2021 Miðeind ehf.
+    Copyright (c) 2022 Miðeind ehf.
 
     This software is licensed under the MIT License:
 
@@ -56,7 +57,7 @@ _DEFAULT_LOCALE = ("IS_is", "UTF-8")
 
 class ConfigError(Exception):
 
-    """ Exception class for configuration errors """
+    """Exception class for configuration errors"""
 
     def __init__(self, s: str) -> None:
         super().__init__(self, s)
@@ -64,13 +65,13 @@ class ConfigError(Exception):
         self.line: int = 0
 
     def set_pos(self, fname: str, line: int) -> None:
-        """ Set file name and line information, if not already set """
+        """Set file name and line information, if not already set"""
         if not self.fname:
             self.fname = fname
             self.line = line
 
     def __str__(self) -> str:
-        """ Return a string representation of this exception """
+        """Return a string representation of this exception"""
         s = Exception.__str__(self)
         if not self.fname:
             return s
@@ -79,9 +80,11 @@ class ConfigError(Exception):
 
 class LineReader:
 
-    """ Read lines from a text file, recognizing $include directives """
+    """Read lines from a text file, recognizing $include directives"""
 
-    def __init__(self, fname: str, outer_fname: Optional[str]=None, outer_line: int=0) -> None:
+    def __init__(
+        self, fname: str, outer_fname: Optional[str] = None, outer_line: int = 0
+    ) -> None:
         self._fname = fname
         self._line = 0
         self._inner_rdr: Optional["LineReader"] = None
@@ -95,7 +98,7 @@ class LineReader:
         return self._line if self._inner_rdr is None else self._inner_rdr.line()
 
     def lines(self) -> Iterator[str]:
-        """ Generator yielding lines from a text file """
+        """Generator yielding lines from a text file"""
         self._line = 0
         try:
             with codecs.open(self._fname, "r", "utf-8") as inp:
@@ -122,15 +125,17 @@ class LineReader:
             if self._outer_fname:
                 # This is an include file within an outer config file
                 c = ConfigError(
-                    "Error while opening or reading include file '{0}'"
-                    .format(self._fname)
+                    "Error while opening or reading include file '{0}'".format(
+                        self._fname
+                    )
                 )
                 c.set_pos(self._outer_fname, self._outer_line)
             else:
                 # This is an outermost config file
                 c = ConfigError(
-                    "Error while opening or reading config file '{0}'"
-                    .format(self._fname)
+                    "Error while opening or reading config file '{0}'".format(
+                        self._fname
+                    )
                 )
             raise c
 
@@ -139,8 +144,8 @@ class LineReader:
 
 
 @contextmanager
-def changedlocale(new_locale: Optional[str]=None, category: str='LC_COLLATE'):
-    """ Change locale temporarily within a context (with-statement) """
+def changedlocale(new_locale: Optional[str] = None, category: str = "LC_COLLATE"):
+    """Change locale temporarily within a context (with-statement)"""
     # The new locale parameter should be a tuple, e.g. ('is_IS', 'UTF-8')
     # The category should be a string such as 'LC_TIME', 'LC_NUMERIC' etc.
     cat = getattr(locale, category)
@@ -152,8 +157,8 @@ def changedlocale(new_locale: Optional[str]=None, category: str='LC_COLLATE'):
         locale.setlocale(cat, old_locale)
 
 
-def sort_strings(strings: List[str], loc: Optional[str]=None) -> List[str]:
-    """ Sort a list of strings using the specified locale's collation order """
+def sort_strings(strings: List[str], loc: Optional[str] = None) -> List[str]:
+    """Sort a list of strings using the specified locale's collation order"""
     # Change locale temporarily for the sort
     with changedlocale(loc) as strxfrm:
         return sorted(strings, key=strxfrm)
@@ -169,14 +174,14 @@ class Settings:
 
     # Postgres SQL database server hostname and port
     DB_HOSTNAME: str = os.environ.get("GREYNIR_DB_HOST", "localhost")
-    db_port_str: str = os.environ.get("GREYNIR_DB_PORT", "5432")  # Default PostgreSQL port
+    db_port_str: str = os.environ.get(
+        "GREYNIR_DB_PORT", "5432"
+    )  # Default PostgreSQL port
 
     try:
         DB_PORT = int(db_port_str)
     except ValueError:
-        raise ConfigError(
-            "Invalid environment variable value: DB_PORT"
-        )
+        raise ConfigError("Invalid environment variable value: DB_PORT")
 
     # Flask server host and port
     HOST: str = os.environ.get("GREYNIR_HOST", "localhost")
@@ -184,9 +189,7 @@ class Settings:
     try:
         PORT = int(port_str)
     except ValueError:
-        raise ConfigError(
-            "Invalid environment variable value: GREYNIR_PORT"
-        )
+        raise ConfigError("Invalid environment variable value: GREYNIR_PORT")
 
     # Flask debug parameter
     DEBUG: bool = False
@@ -195,7 +198,7 @@ class Settings:
 
     @staticmethod
     def _handle_settings(s: str) -> None:
-        """ Handle config parameters in the settings section """
+        """Handle config parameters in the settings section"""
         a = s.lower().split("=", maxsplit=1)
         par = a[0].strip().lower()
         val = a[1].strip()
@@ -217,7 +220,7 @@ class Settings:
 
     @staticmethod
     def read(fname: str) -> None:
-        """ Read configuration file """
+        """Read configuration file"""
 
         with Settings._lock:
 

@@ -1,10 +1,8 @@
 """
 
-    Greynir: Natural language processing for Icelandic
+    Yfirlestur: Online spelling and grammar correction for Icelandic
 
-    Scraper database models
-
-    Copyright (C) 2021 Miðeind ehf.
+    Copyright (C) 2022 Miðeind ehf.
 
     This software is licensed under the MIT License:
 
@@ -28,7 +26,7 @@
         SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 
-    This module describes the SQLAlchemy models for the scraper database.
+    This module describes the SQLAlchemy models for the database.
 
 """
 
@@ -59,8 +57,8 @@ from sqlalchemy.orm.relationships import RelationshipProperty
 
 class CaseInsensitiveComparator(Comparator):
 
-    """ Boilerplate from the PostgreSQL documentation to implement
-        a case-insensitive comparator """
+    """Boilerplate from the PostgreSQL documentation to implement
+    a case-insensitive comparator"""
 
     # See https://docs.sqlalchemy.org/en/13/orm/extensions/hybrid.html
 
@@ -79,7 +77,7 @@ setattr(Base, "table", classmethod(lambda cls: cls.__table__))
 
 class Root(Base):
 
-    """ Represents a scraper root, i.e. a base domain and root URL """
+    """Represents a scraper root, i.e. a base domain and root URL"""
 
     __tablename__ = "roots"
 
@@ -117,7 +115,7 @@ class Root(Base):
 
 class Article(Base):
 
-    """ Represents an article from one of the roots, to be scraped or having already been scraped """
+    """Represents an article from one of the roots, to be scraped or having already been scraped"""
 
     __tablename__ = "articles"
 
@@ -134,11 +132,14 @@ class Article(Base):
     )
 
     # Foreign key to a root
-    root_id = cast(Optional[int], Column(
-        Integer,
-        # We don't delete associated articles if the root is deleted
-        ForeignKey("roots.id", onupdate="CASCADE", ondelete="SET NULL"),
-    ))
+    root_id = cast(
+        Optional[int],
+        Column(
+            Integer,
+            # We don't delete associated articles if the root is deleted
+            ForeignKey("roots.id", onupdate="CASCADE", ondelete="SET NULL"),
+        ),
+    )
 
     # Article heading, if known
     heading = Column(String)
@@ -196,7 +197,7 @@ class Article(Base):
 
 class Entity(Base):
 
-    """ Represents a named entity """
+    """Represents a named entity"""
 
     __tablename__ = "entities"
 
@@ -252,7 +253,7 @@ class Entity(Base):
 
 class Correction(Base):
 
-    """ Represents correction feedback """
+    """Represents correction feedback"""
 
     __tablename__ = "corrections"
 
@@ -260,7 +261,7 @@ class Correction(Base):
     id = Column(
         psql_UUID(as_uuid=False),
         server_default=text("uuid_generate_v1()"),
-        primary_key=True
+        primary_key=True,
     )
 
     # Timestamp of this entry

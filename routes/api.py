@@ -1,8 +1,8 @@
 """
 
-    Greynir: Natural language processing for Icelandic
+    Yfirlestur: Online spelling and grammar correction for Icelandic
 
-    Copyright (C) 2021 Miðeind ehf.
+    Copyright (C) 2022 Miðeind ehf.
 
     This software is licensed under the MIT License:
 
@@ -32,7 +32,18 @@
 
 """
 
-from typing import Any, Dict, List, Mapping, Tuple, Optional, TypeVar, Union, cast, overload
+from typing import (
+    Any,
+    Dict,
+    List,
+    Mapping,
+    Tuple,
+    Optional,
+    TypeVar,
+    Union,
+    cast,
+    overload,
+)
 from typing_extensions import Literal
 
 import os

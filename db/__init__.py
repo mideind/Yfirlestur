@@ -1,10 +1,8 @@
 """
 
-    Greynir: Natural language processing for Icelandic
+    Yfirlestur: Online spelling and grammar correction for Icelandic
 
-    Scraper database model
-
-    Copyright (C) 2021 Miðeind ehf.
+    Copyright (C) 2022 Miðeind ehf.
 
     This software is licensed under the MIT License:
 
@@ -52,10 +50,10 @@ from .models import Base
 
 class Scraper_DB:
 
-    """ Wrapper around the SQLAlchemy connection, engine and session """
+    """Wrapper around the SQLAlchemy connection, engine and session"""
 
     def __init__(self):
-        """ Initialize the SQLAlchemy connection to the scraper database """
+        """Initialize the SQLAlchemy connection to the scraper database"""
 
         # Assemble the right connection string for CPython/psycopg2 vs.
         # PyPy/psycopg2cffi, respectively
@@ -67,25 +65,27 @@ class Scraper_DB:
 
         # Create engine and bind session
         self._engine = create_engine(conn_str)
-        self._Session: Type[Session] = cast(Type[Session], sessionmaker(bind=self._engine))
+        self._Session: Type[Session] = cast(
+            Type[Session], sessionmaker(bind=self._engine)
+        )
 
     def create_tables(self) -> None:
-        """ Create all missing tables in the database """
+        """Create all missing tables in the database"""
         Base.metadata.create_all(self._engine)  # type: ignore
 
     def execute(self, sql: str, **kwargs: Any) -> CursorResult:
-        """ Execute raw SQL directly on the engine """
+        """Execute raw SQL directly on the engine"""
         return self._engine.execute(sql, **kwargs)  # type: ignore
 
     @property
     def session(self) -> Session:
-        """ Returns a freshly created Session instance from the sessionmaker """
+        """Returns a freshly created Session instance from the sessionmaker"""
         return self._Session()
 
 
 class classproperty:
 
-    """ Shim to create a property on a class """
+    """Shim to create a property on a class"""
 
     def __init__(self, f: Callable[..., Any]) -> None:
         self.f = f
@@ -96,7 +96,7 @@ class classproperty:
 
 class SessionContext:
 
-    """ Context manager for database sessions """
+    """Context manager for database sessions"""
 
     # Singleton instance of Scraper_DB
     _db: Optional[Scraper_DB] = None
@@ -110,7 +110,7 @@ class SessionContext:
 
     @classmethod
     def cleanup(cls) -> None:
-        """ Clean up the reference to the singleton Scraper_DB instance """
+        """Clean up the reference to the singleton Scraper_DB instance"""
         cls._db = None
 
     def __init__(
@@ -139,7 +139,7 @@ class SessionContext:
             self._commit = False
 
     def __enter__(self) -> Session:
-        """ Python context manager protocol """
+        """Python context manager protocol"""
         # Return the wrapped database session
         return self._session
 
@@ -147,7 +147,7 @@ class SessionContext:
     def __exit__(
         self, exc_type: Type[BaseException], exc_value: BaseException, traceback: Any
     ) -> Literal[False]:
-        """ Python context manager protocol """
+        """Python context manager protocol"""
         if self._new_session:
             if self._commit:
                 if exc_type is None:
@@ -158,6 +158,7 @@ class SessionContext:
             self._session.close()  # type: ignore
         # Return False to re-throw exception from the context, if any
         return False
+
 
 __all__ = (
     "create_engine",

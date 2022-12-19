@@ -1,10 +1,10 @@
 """
 
-    Greynir: Natural language processing for Icelandic
+    Yfirlestur: Online spelling and grammar correction for Icelandic
 
     High-level tokenizer and named entity recognizer
 
-    Copyright (C) 2021 Miðeind ehf.
+    Copyright (C) 2022 Miðeind ehf.
 
     This software is licensed under the MIT License:
 
@@ -61,11 +61,11 @@ def recognize_entities(
     token_ctor: Type[TOK] = TOK,
 ) -> Iterator[Tok]:
 
-    """ Parse a stream of tokens looking for (capitalized) entity names
-        The algorithm implements N-token lookahead where N is the
-        length of the longest entity name having a particular initial word.
-        Adds a named entity recognition layer on top of the
-        reynir.bintokenizer.tokenize() function. """
+    """Parse a stream of tokens looking for (capitalized) entity names
+    The algorithm implements N-token lookahead where N is the
+    length of the longest entity name having a particular initial word.
+    Adds a named entity recognition layer on top of the
+    reynir.bintokenizer.tokenize() function."""
 
     # Token queue
     tq: List[Tok] = []
@@ -106,8 +106,8 @@ def recognize_entities(
             return e
 
         def lookup_lastname(lastname: str) -> Optional[Tok]:
-            """ Look up a last name in the lastnames registry,
-                eventually without a possessive 's' at the end, if present"""
+            """Look up a last name in the lastnames registry,
+            eventually without a possessive 's' at the end, if present"""
             fullname = lastnames.get(lastname)
             if fullname is not None:
                 # Found it
@@ -133,9 +133,9 @@ def recognize_entities(
             return new_ent
 
         def token_or_entity(token: Tok) -> Tok:
-            """ Return a token as-is or, if it is a last name of a person
-                that has already been mentioned in the token stream by full name,
-                refer to the full name """
+            """Return a token as-is or, if it is a last name of a person
+            that has already been mentioned in the token stream by full name,
+            refer to the full name"""
             assert token.txt[0].isupper()
             tfull = lookup_lastname(token.txt)
             if tfull is None:
@@ -170,7 +170,7 @@ def recognize_entities(
                 w = token.txt  # Original word
 
                 def add_to_state(slist: List[str], entity: Entity) -> None:
-                    """ Add the list of subsequent words to the new parser state """
+                    """Add the list of subsequent words to the new parser state"""
                     wrd = slist[0] if slist else None
                     rest = slist[1:]
                     newstate[wrd].append((rest, entity))

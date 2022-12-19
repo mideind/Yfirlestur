@@ -1,10 +1,10 @@
 """
 
-    Greynir: Natural language processing for Icelandic
+    Yfirlestur: Online spelling and grammar correction for Icelandic
 
     High-level wrappers for checking grammar and spelling
 
-    Copyright (C) 2021 Miðeind ehf.
+    Copyright (C) 2022 Miðeind ehf.
 
     This software is licensed under the MIT License:
 

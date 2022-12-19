@@ -1,9 +1,7 @@
 #!/usr/bin/env python3
-# type: ignore
-
 """
 
-    Copyright (C) 2021 Miðeind ehf.
+    Copyright (C) 2022 Miðeind ehf.
 
     This software is licensed under the MIT License:
 
