@@ -1,5 +1,6 @@
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 [![Python 3.7](https://img.shields.io/badge/python-3.7-blue.svg)](https://www.python.org/downloads/release/python-370/)
+![Release](https://shields.io/github/v/release/mideind/Yfirlestur?display_name=tag)
 [![Build](https://github.com/mideind/Yfirlestur/actions/workflows/python-app.yml/badge.svg)]()
 
 <img src="static/img/yfirlestur-logo-large.png" alt="Yfirlestur" width="200" height="200"
@@ -244,7 +245,7 @@ user should be configured appropriately.
 
 ## Acknowledgements
 
-Parts of this software are developed under the auspices of the
+Parts of this software were developed under the auspices of the
 Icelandic Government's 5-year Language Technology Programme for Icelandic,
 managed by Almannarómur. The LT Programme is described
 [here](https://www.stjornarradid.is/lisalib/getfile.aspx?itemid=56f6368e-54f0-11e7-941a-005056bc530c)
@@ -252,7 +253,7 @@ managed by Almannarómur. The LT Programme is described
 
 ## Copyright and licensing
 
-Yfirlestur.is is Copyright © 2022 [Miðeind ehf.](https://mideind.is)  
+Yfirlestur.is is Copyright © 2023 [Miðeind ehf.](https://mideind.is)  
 The original author of this software is *Vilhjálmur Þorsteinsson*.
 
 <a href="https://mideind.is"><img src="static/img/mideind-horizontal-small.png" alt="Miðeind ehf."
