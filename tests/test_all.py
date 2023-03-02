@@ -222,7 +222,7 @@ def test_character_spans() -> None:
     verify_char_spans(text, real)
 
     text = "Ég er katta -og hundakona."
-    real = [0, 2, 5, 11, 15, 25]  # TODO Ekki sameinað í einn tóka!
+    real = [0, 2, 5, 11, 15, 25]  # TODO Should be merged into one token
     verify_char_spans(text, real)
 
     # MWE tests
@@ -241,11 +241,11 @@ def test_character_spans() -> None:
 
     # Deletion tests
     text = "Ég á á."
-    real = [0, 2, 4, 6]  # Ekki lengur tekið sjálfkrafa út, bara merkt sem möguleg villa
+    real = [0, 2, 4, 6]  # No longer automatically deleted, only marked as a possible error
     verify_char_spans(text, real)
 
     text = (
-        "Ég datt datt."  # Núna sameinað í einn tóka og stungið upp á að taka annan út
+        "Ég datt datt."  # Merged into one token, suggestion for deleting one
     )
     real = [0, 2, 12]
     verify_char_spans(text, real)
