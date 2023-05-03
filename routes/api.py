@@ -587,8 +587,7 @@ def get_process_status(process: str):
     return ChildTask.get_status(process)
 
 
-@routes.before_app_first_request  # type: ignore
-def delete_old_child_tasks() -> None:
+def start_delete_old_child_tasks_thread() -> None:
     """Start a background thread that cleans up old tasks"""
 
     def delete_tasks() -> None:

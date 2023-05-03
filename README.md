@@ -1,5 +1,5 @@
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
-[![Python 3.7](https://img.shields.io/badge/python-3.7-blue.svg)](https://www.python.org/downloads/release/python-370/)
+[![Python 3.8](https://img.shields.io/badge/python-3.8-blue.svg)](https://www.python.org/downloads/release/python-380/)
 ![Release](https://shields.io/github/v/release/mideind/Yfirlestur?display_name=tag)
 [![Build](https://github.com/mideind/Yfirlestur/actions/workflows/python-app.yml/badge.svg)]()
 
@@ -10,8 +10,8 @@
 
 ### Spelling and grammar correction for Icelandic
 
-*Yfirlestur.is* is a public website where you can enter or submit your Icelandic text
-and have it checked for spelling and grammar errors.
+*Yfirlestur.is* is a web application where you can enter or submit
+Icelandic text and have it checked for spelling and grammar errors.
 
 The tool also gives hints on words and structures that might not be appropriate,
 depending on the intended audience for the text.

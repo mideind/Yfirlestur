@@ -184,16 +184,7 @@ def fancy_url_for(*args: Any, **kwargs: Any) -> str:
     return url_for(*args, **kwargs)
 
 
-# Mypy/Pylance shenanigans for type checking of @routes.before_app_first_request
-FirstRequestFunc = Callable[[], None]
-before_app_first_request = cast(
-    Callable[[FirstRequestFunc], FirstRequestFunc],
-    cast(Any, routes).before_app_first_request,
-)
-
-
-@before_app_first_request
-def before_first_request() -> None:
+def start_task_cleanup_thread() -> None:
     """Start a background thread that cleans up old tasks"""
 
     def clean_old_tasks() -> None:

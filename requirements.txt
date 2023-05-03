@@ -1,13 +1,13 @@
-Flask==2.2.2
-flask-caching>=2.0.0
+Flask==2.3.2
+flask-caching>=2.0.2
 Flask-Cors>=3.0.10
-SQLAlchemy==1.4.45
+SQLAlchemy==1.4.48
 sqlalchemy2-stubs>=0.0.2a30
 psycopg2cffi==2.9.0
 reynir-correct>=3.4.6
 striprtf>=0.0.22
 defusedxml>=0.7.1
-cachetools>=5.2.0
+cachetools>=5.3.0
 html2text>=2020.1.16
 odfpy>=1.4.1
 pdfminer.six>=20221105
