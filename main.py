@@ -73,7 +73,6 @@ import reynir_correct
 
 from settings import Settings, ConfigError
 
-
 # RUNNING_AS_SERVER is True if we're executing under nginx/Gunicorn,
 # but False if the program was invoked directly as a Python main module.
 RUNNING_AS_SERVER = __name__ != "__main__"
@@ -88,10 +87,14 @@ app.config["CORS_HEADERS"] = "Content-Type"
 # Fix access to client remote_addr when running behind proxy
 setattr(app, "wsgi_app", ProxyFix(cast(Any, app).wsgi_app))
 
+# We're fine with non-ASCII characters in JSON responses
+app.json.ensure_ascii = False  # type: ignore
 
-app.config["JSON_AS_ASCII"] = False  # We're fine with using Unicode/UTF-8
-app.config["MAX_CONTENT_LENGTH"] = 1 * 1024 * 1024  # 1 MB, max upload file size
-app.config["CACHE_NO_NULL_WARNING"] = True  # Don't warn if caching is disabled
+# 1 MB, max upload file size
+app.config["MAX_CONTENT_LENGTH"] = 1 * 1024 * 1024
+
+# Don't warn if caching is disabled
+app.config["CACHE_NO_NULL_WARNING"] = True
 
 # Only auto-reload templates if we're not running as a production server
 app.config["TEMPLATES_AUTO_RELOAD"] = not RUNNING_AS_SERVER
@@ -113,6 +116,12 @@ else:
     from routes import routes as routes_blueprint, max_age
 
 app.register_blueprint(routes_blueprint)
+
+from routes import start_task_cleanup_thread
+from routes.api import start_delete_old_child_tasks_thread
+
+start_task_cleanup_thread()
+start_delete_old_child_tasks_thread()
 
 
 # Utilities for Flask/Jinja2 formatting of numbers using the Icelandic locale
