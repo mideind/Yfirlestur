@@ -33,13 +33,15 @@
 
 """
 
+from pathlib import Path
 from typing import TYPE_CHECKING, Tuple, Dict, Any, Callable, Optional, Union, cast
 
+import logging
 import threading
 import time
 import uuid
 import json
-from functools import wraps
+from functools import lru_cache, wraps
 from datetime import datetime, timedelta
 
 from flask import (
@@ -65,6 +67,8 @@ _MAX_TEXT_LENGTH = 16384
 _MAX_TEXT_LENGTH_VIA_URL = 512
 
 _TRUTHY = frozenset(("true", "1", "yes"))
+
+_RESOURCES_DIR = Path(__file__).parent.parent.resolve() / "resources"
 
 cache = current_app.config["CACHE"]
 routes: Blueprint = Blueprint("routes", __name__)
@@ -118,6 +122,20 @@ def better_jsonify(**kwargs: Any) -> Response:
     resp: Response = jsonify(**kwargs)
     resp.headers["Content-Type"] = "application/json; charset=utf-8"
     return resp
+
+
+@lru_cache(maxsize=32)
+def read_txt_api_key(key_name: str, *, folder: Path = _RESOURCES_DIR) -> str:
+    """
+    Read the given key from a text file in resources directory. Cached.
+    Optionally provide a different path to the folder containing the key file.
+    """
+    p: Path = folder / f"{key_name}.txt"
+    try:
+        return p.read_text().strip()
+    except FileNotFoundError:
+        logging.warning(f"API key file {p} not found in {folder}")
+    return ""
 
 
 def text_from_request(
@@ -288,7 +306,6 @@ def async_task(f: Callable[[Any], Response]) -> Callable[[Any], Tuple[Any, ...]]
 
     @wraps(f)
     def wrapped(*args: Any, **kwargs: Any) -> Tuple[Any, ...]:
-
         # Assign a unique id to each asynchronous task
         task_id = uuid.uuid4().hex
 

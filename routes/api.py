@@ -50,6 +50,7 @@ import os
 import time
 import threading
 import json
+import requests
 import uuid
 from datetime import datetime, timedelta
 from functools import partial
@@ -71,7 +72,7 @@ from doc import SUPPORTED_DOC_MIMETYPES, doc_class_for_mime_type
 from db import SessionContext
 from db.models import Correction
 
-from . import routes, better_jsonify, text_from_request
+from . import routes, better_jsonify, text_from_request, read_txt_api_key
 
 
 T = TypeVar("T")
@@ -90,6 +91,9 @@ _CTX = get_context("fork")
 # Number of processes in worker pool
 # By default, use all available CPU cores except one
 POOL_SIZE = int(os.environ.get("POOL_SIZE", multiprocessing.cpu_count() - 1))
+
+_GREYNIR_SEQ_API_KEY_FILENAME = "GreynirSeqAPIKey"
+_GREYNIR_SEQ_API_GRAMMAR_URL = "https://api.greynir.is/grammar/"
 
 
 class RequestData:
@@ -277,6 +281,49 @@ def opts_from_request(rq: Request) -> Dict[str, Any]:
     return d
 
 
+@routes.route("/grammar", methods=["POST"])
+@routes.route("/grammar/v<int:version>", methods=["POST"])
+def correct_proxy(version: int = 1) -> Response:
+    """Correct text provided by the user, i.e. not coming from an article.
+    This can be either an uploaded file or a string. This is a proxy
+    used to send the request to api.greynir.is."""
+    valid, result = validate(request, version)
+    if not valid:
+        assert isinstance(result, Response)
+        return result
+    assert isinstance(result, str)
+
+    # Retrieve options flags from the request
+    opts = opts_from_request(request)
+
+    api_key = read_txt_api_key(_GREYNIR_SEQ_API_KEY_FILENAME)
+    if not api_key:
+        return better_jsonify(
+            valid=False,
+            reason="GreynirSeq API key not found",
+        )
+
+    def grammar_request() -> Response:
+        """Send the request to api.greynir.is/grammar"""
+        request = requests.post(
+            _GREYNIR_SEQ_API_GRAMMAR_URL,
+            json=dict(text=result, **opts),
+            headers={
+                "Content-Type": "application/json;charset=utf-8",
+                "X-API-Key": api_key,
+            },
+        )
+
+        response = Response(
+            response=request.text,
+            status=request.status_code,
+            headers={"Content-Type": "application/json; charset=utf-8"},
+        )
+        return response
+
+    return grammar_request()
+
+
 @routes.route("/correct.task", methods=["POST"])
 @routes.route("/correct.task/v<int:version>", methods=["POST"])
 def correct_async(version: int = 1) -> Response:
@@ -343,7 +390,6 @@ def validate(request: Request, version: int) -> Tuple[bool, Union[str, Response]
 
     file = request.files.get("file")
     if file is not None:
-
         # Handle uploaded file
         # file is a proxy object that emulates a Werkzeug FileStorage object
         mimetype = file.mimetype
@@ -361,7 +407,6 @@ def validate(request: Request, version: int) -> Tuple[bool, Union[str, Response]
             return False, better_jsonify(valid=False, reason="Error reading file")
 
     else:
-
         # Handle POSTed form data, JSON, or plain text string
         try:
             text = text_from_request(request)

@@ -161,12 +161,56 @@
          // Note: the following should not be a serverJsonQuery call,
          // this is done via a HTTP form post
          // Endpoints with .task or .api suffix are not cached
-         serverQuery('/correct.task',
+         serverQuery( "/grammar",
             {
-               text: txt
+               text: txt,
+               "options": {
+               "annotate_unparsed_sentences": true,
+               "suppress_suggestions": false,
+               "ignore_words": [],
+               "ignore_rules": [ "ASLBRODDVANTAR",
+                                 "ASLSTAFVANTAR",
+                                 "ASLVITLSTAF",
+                                 "ASLVIXL",
+                                 "BEYGVILLA",
+                                 "C005_w",
+                                 "C005",
+                                 "EY4EI",
+                                 "P_DIR_LOC",
+                                 "P_DOUBLE_DEFINITE",
+                                 "P_MOOD_ACK",
+                                 "P_MOOD_COND",
+                                 "P_MOOD_PURP",
+                                 "P_MOOD_REL",
+                                 "P_MOOD_TEMP_w",
+                                 "P_NT_Einkunn",
+                                 "P_NT_EndingIR",
+                                 "P_NT_FsMeðFallstjórn",
+                                 "P_NT_ÍTölu",
+                                 "P_NT_Manns",
+                                 "P_NT_Né",
+                                 "P_NT_Sem_w",
+                                 "P_NT_ÞóAð",
+                                 "P_SINGSUB_GEN",
+                                 "P_VeraAð",
+                                 "P_wrong_case",
+                                 "P_WRONG_PLACE_PP",
+                                 "P_WRONG_PREP_AÐ",
+                                 "RFTGR",
+                                 "S001",
+                                 "W001_w",
+                                 "Y001_w",
+                                 "Ý4Í",
+                                 "P_WRONG_CASE_nf_þf",
+                                 "P_WRONG_CASE_nf_þgf",
+                                 "P_WRONG_CASE_þgf_nf",
+                                 "P_WRONG_PLACE_PP",
+                              ],
+               "custom": ""
+               },
             },
-            this.start.bind(this),
             null,
+            this.populateResult.bind(this),
             this.handleError.bind(this)
          );
       };
@@ -176,10 +220,11 @@
          this.updateProgress();
          // Send off ajax request
          $.ajax({
-            url: '/correct.task',
+            url: '/grammar',
             type: 'POST',
             data: fd,
-            success: this.start.bind(this),
+            success: null,
+            complete: this.populateResult.bind(this),
             error: this.handleError.bind(this),
             cache: false,
             contentType: false,
@@ -200,7 +245,7 @@
       CorrectionTask.prototype.start = function (json, status, resp) {
          // Called when the task has been started and we're being informed
          // of the status (polling) URL to use
-         if (resp.status == 202) {
+         if (resp.status == 200) {
             // This is the expected status: obtain the status URL
             // from the Location header
             this.url = resp.getResponseHeader("Location");
@@ -243,7 +288,7 @@
 
       CorrectionTask.prototype.checkProgress = function (json, status, resp) {
          // Response from the server to a progress check
-         if (resp.status == 202) {
+         if (resp.status == 200) {
             // Still in progress
             this.progress = json.progress;
             this.updateProgress();
@@ -305,20 +350,20 @@
          }
       };
 
-      CorrectionTask.prototype.populateResult = function (json) {
+      CorrectionTask.prototype.populateResult = function (json, status, resp) {
          // Processing completed: display the result
          this.wait(false);
-         if (!json.valid || json.result === undefined || json.result === null) {
+         if (!json.responseJSON.valid || json.responseJSON === undefined || json.responseJSON === null) {
             showError("<b>Villa kom upp</b> í samskiptum við netþjón Greynis");
          }
          else {
             // Display the paragraphs, sentences and tokens
             // along with the sentence-level annotations
-            displayAnnotations(json.result);
-            populateStats(json.stats);
+            displayAnnotations(json.responseJSON.paragraphs);
+            populateStats(json.responseJSON.stats);
             // Replace text in text field
-            if (json.text) {
-               $("#txt").val(json.text);
+            if (json.responseJSON.text) {
+               $("#txt").val(json.responseJSON.text);
             }
          }
       };
@@ -445,6 +490,7 @@
       annSpan = []; // Array of annotation token spans
       var unknownWords = {}; // Dict of already seen unknown words
       $.each(j, function (pix, p) {
+         p_sentences = p.sentences;
          // We create a div for each paragraph
          x += "<div class='correct'>\n";
          // Left column: paragraph text
@@ -453,7 +499,7 @@
          var right = "";
          // Third child: SVG drawing stuff
          var canvas = "";
-         $.each(p, function (sentence_index, s) {
+         $.each(p_sentences, function (sentence_index, s) {
             // Sentence s
             const parsed = !s.annotations || !s.annotations.some((a) => a.code === "E001");
             lastSp = TP_NONE;
@@ -468,9 +514,9 @@
                if (TP_SPACE[lastSp - 1][thisSp - 1] && tix)
                   left += " ";
                lastSp = thisSp;
-               var tx = t.x;
+               var tx = t.text;
                var cls = [];
-               if (t.k === TOK_PUNCTUATION) {
+               if (t.kind === TOK_PUNCTUATION) {
                   // Add space around em-dash
                   if (tx === "—")
                      tx = " — ";
@@ -523,7 +569,6 @@
             $.each(s.annotations, function (aix, a) {
                // Annotation a
                // We do not show repeated annotations for unknown words
-               console.log(a.code)
                a.divId = undefined;
                if (a.code !== "U001" || unknownWords[a.text] === undefined) {
                   var cls = isWarning(a.code) ? " warning" : "";
