@@ -32,47 +32,42 @@
 
 """
 
+import json
+import multiprocessing
+import os
+import threading
+import time
+import uuid
+from datetime import datetime, timedelta
+from functools import partial
+from multiprocessing import get_context
+from multiprocessing.managers import SyncManager
+from multiprocessing.pool import ApplyResult
+from multiprocessing.pool import Pool as MultiprocessingPool
 from typing import (
     Any,
     Dict,
     List,
     Mapping,
-    Tuple,
     Optional,
+    Tuple,
     TypeVar,
     Union,
     cast,
     overload,
 )
-from typing_extensions import Literal
 
-import os
-import time
-import threading
-import json
-import uuid
-from datetime import datetime, timedelta
-from functools import partial
-
-import multiprocessing
-from multiprocessing.pool import Pool as MultiprocessingPool
-from multiprocessing.pool import ApplyResult
-from multiprocessing.managers import SyncManager
-from multiprocessing import get_context
-
-from flask import request, abort, url_for, current_app
+import requests
+from flask import abort, current_app, request, url_for
 from flask.wrappers import Request, Response
-
-from settings import Settings
-
-from correct import check_grammar, validate_token_and_nonce
-from doc import SUPPORTED_DOC_MIMETYPES, doc_class_for_mime_type
+from typing_extensions import Literal
 
 from db import SessionContext
 from db.models import Correction
+from doc import SUPPORTED_DOC_MIMETYPES, doc_class_for_mime_type
+from settings import Settings
 
-from . import routes, better_jsonify, text_from_request
-
+from . import better_jsonify, routes, text_from_request
 
 T = TypeVar("T")
 
@@ -90,6 +85,9 @@ _CTX = get_context("fork")
 # Number of processes in worker pool
 # By default, use all available CPU cores except one
 POOL_SIZE = int(os.environ.get("POOL_SIZE", multiprocessing.cpu_count() - 1))
+
+_GREYNIR_SEQ_API_KEY_FILENAME = "GreynirSeqAPIKey"
+_GREYNIR_SEQ_API_GRAMMAR_URL = "https://api.greynir.is/grammar/"
 
 
 class RequestData:
@@ -277,6 +275,61 @@ def opts_from_request(rq: Request) -> Dict[str, Any]:
     return d
 
 
+@routes.route("/grammar", methods=["POST"])
+@routes.route("/grammar/v<int:version>", methods=["POST"])
+def correct_proxy(version: int = 1) -> Response:
+    """Correct text provided by the user, i.e. not coming from an article.
+    This can be either an uploaded file or a string. This is a proxy
+    used to send the request to api.greynir.is."""
+    valid, result = validate(request, version)
+    if not valid:
+        assert isinstance(result, Response)
+        return result
+    assert isinstance(result, str)
+
+    # Retrieve options flags from the request
+    opts_from_request(request)
+
+    api_key = os.environ.get("GREYNIRSEQ_API_KEY")
+    if not api_key:
+        return better_jsonify(
+            valid=False,
+            reason="GreynirSeq API key not found",
+        )
+
+    def grammar_request() -> Response:
+        """Send the request to api.greynir.is/grammar"""
+        current_app.logger.info("Sending request to api.greynir.is/grammar")
+        current_app.logger.info(f"{result=}")
+        request = requests.post(
+            _GREYNIR_SEQ_API_GRAMMAR_URL,
+            json=dict(
+                text=result,
+                options={
+                    "annotate_unparsed_sentences": True,
+                    "suppress_suggestions": False,
+                    "readability_analysis": True,
+                    "rare_word_analysis": True,
+                    "ignore_rules": [],
+                    "custom": "isb",
+                },
+            ),
+            headers={
+                "Content-Type": "application/json;charset=utf-8",
+                "X-API-Key": api_key,
+            },
+        )
+
+        response = Response(
+            response=request.text,
+            status=request.status_code,
+            headers={"Content-Type": "application/json; charset=utf-8"},
+        )
+        return response
+
+    return grammar_request()
+
+
 @routes.route("/correct.task", methods=["POST"])
 @routes.route("/correct.task/v<int:version>", methods=["POST"])
 def correct_async(version: int = 1) -> Response:
@@ -330,8 +383,7 @@ def correct_sync(version: int = 1) -> Response:
         duration += INCREMENT
     return better_jsonify(
         valid=False,
-        reason=f"Request took too long to process; maximum is "
-        f"{MAX_SYNCHRONOUS_WAIT/60.0:.1f} minutes",
+        reason=f"Request took too long to process; maximum is " f"{MAX_SYNCHRONOUS_WAIT/60.0:.1f} minutes",
     )
 
 
@@ -343,7 +395,6 @@ def validate(request: Request, version: int) -> Tuple[bool, Union[str, Response]
 
     file = request.files.get("file")
     if file is not None:
-
         # Handle uploaded file
         # file is a proxy object that emulates a Werkzeug FileStorage object
         mimetype = file.mimetype
@@ -361,7 +412,6 @@ def validate(request: Request, version: int) -> Tuple[bool, Union[str, Response]
             return False, better_jsonify(valid=False, reason="Error reading file")
 
     else:
-
         # Handle POSTed form data, JSON, or plain text string
         try:
             text = text_from_request(request)
@@ -430,6 +480,8 @@ class ChildTask:
     @staticmethod
     def task(process_id: str, text: str, options: Dict[str, Any]) -> Tuple[Any, ...]:
         """This is a task that runs in a child process within the pool"""
+        from correct import check_grammar
+
         # We do a bit of functools.partial magic to pass the process_id as the first
         # parameter to the progress_func whenever it is called
         task_result = check_grammar(
@@ -498,9 +550,7 @@ class ChildTask:
         if len(self.processes) > MAX_CHILD_TASKS:
             # Protect the server by not allowing too many child tasks at the same time
             return (
-                json.dumps(
-                    dict(valid=False, error="Too many child tasks already running")
-                ),
+                json.dumps(dict(valid=False, error="Too many child tasks already running")),
                 503,  # SERVER BUSY
             )
         self.text = text
@@ -517,9 +567,7 @@ class ChildTask:
             json.dumps(dict(progress=0.0)),
             202,  # ACCEPTED
             {
-                "Location": url_for(
-                    "routes.get_process_status", process=self.identifier
-                ),
+                "Location": url_for("routes.get_process_status", process=self.identifier),
                 "Content-Type": "application/json; charset=utf-8",
             },
         )
@@ -552,9 +600,7 @@ class ChildTask:
             response=json.dumps(dict(progress=self.current_progress)),
             status=202,  # ACCEPTED
             headers={
-                "Location": url_for(
-                    "routes.get_process_status", process=self.identifier
-                ),
+                "Location": url_for("routes.get_process_status", process=self.identifier),
                 "Content-Type": "application/json; charset=utf-8",
             },
         )
