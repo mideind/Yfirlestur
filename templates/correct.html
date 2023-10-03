@@ -108,7 +108,18 @@
             <!-- Annotation detail hover box -->
             <div id="detail"></div>
          </div>
-
+         <!-- readability is not visible by default -->
+         <div id="readability" style="display: none;">
+            <h3>Læsileiki</h3>
+            <ul>
+               <li><span id="flesch-kincaid-feedback">0</span> (<span id="flesch-kincaid-score">0</span>).</li>
+            </ul>
+        </div>
+        <div id="rare-words" style="display: none;">
+            <h3>Sjaldgæf orð</h3>
+            <ul id="rare-words-list">
+            </ul>
+        </div>
          <div id="statistics">
             <!-- Statistics go here -->
             <h3>Tölfræði</h3>
@@ -361,6 +372,8 @@
             // along with the sentence-level annotations
             displayAnnotations(json.responseJSON.paragraphs);
             populateStats(json.responseJSON.stats);
+            populateReadability(json.responseJSON.readability_stats);  // null or object 
+            populateRareWords(json.responseJSON.rare_words);  // null or list of strings
             // Replace text in text field
             if (json.responseJSON.text) {
                $("#txt").val(json.responseJSON.text);
