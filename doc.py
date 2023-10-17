@@ -178,7 +178,6 @@ class DocxDocument(Document):
     BREAK_TAG = WORD_NAMESPACE + "br"
 
     def extract_text(self) -> str:
-
         zipfile = ZipFile(BytesIO(self.data), "r")
 
         # Verify that archive contains document.xml
@@ -229,7 +228,7 @@ MIMETYPE_TO_DOC_CLASS: Dict[str, DocumentType] = {
     "application/x-pdf": PDFDocument,
     "application/rtf": RTFDocument,
     "application/vnd.oasis.opendocument.text": ODTDocument,
-    # Yes, really!
+    # Yes, really! Mime type naming by committee...
     "application/vnd.openxmlformats-officedocument.wordprocessingml.document": DocxDocument,
 }
 
