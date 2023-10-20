@@ -1,6 +1,5 @@
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 [![Python 3.8](https://img.shields.io/badge/python-3.8-blue.svg)](https://www.python.org/downloads/release/python-380/)
-![Release](https://shields.io/github/v/release/mideind/Yfirlestur?display_name=tag)
 [![Build](https://github.com/mideind/Yfirlestur/actions/workflows/python-app.yml/badge.svg)]()
 
 <img src="static/img/yfirlestur-logo-large.png" alt="Yfirlestur" width="200" height="200"
