@@ -447,6 +447,41 @@ function displayTokens(j) {
    $("i.person").click(showPerson);
 }
 
+function populateReadability(readabilityStats) {
+	// "readability_stats": {
+	// 	"flesch_kincaid_score": 57.539608466933885,
+	// 	"flesch_kincaid_feedback": "Svolítið þungur texti"
+	// }
+  // if readability is not null, make the block visible
+  if (readabilityStats !== null) {
+    $("div#readability").css("display", "block");
+    // flesch-kincaid-feedback 
+    $("#flesch-kincaid-feedback").text(readabilityStats.flesch_kincaid_feedback);
+    // flesch-kincaid-score
+    $("#flesch-kincaid-score").text(readabilityStats.flesch_kincaid_score);
+  } else {
+    // Hide the readability block
+    $("div#readability").css("display", "none");
+  }
+}
+
+function populateRareWords(rareWords) {
+  // this is a list
+  // if rareWords is not null, make the block visible
+  if (rareWords !== null) {
+    $("div#rare-words").css("display", "block");
+    // for each word in the list, add a list item to: <ul id="rare-words-list">
+    $("#rare-words-list").html("");
+    $.each(rareWords, function (index, word) {
+      $("#rare-words-list").append("<li>" + word + "</li>");
+    });
+
+  } else {
+    // Hide the rare words block
+    $("div#rare-words").css("display", "none");
+  } 
+
+}
 function populateStats(stats) {
    $("#tok-num").text(format_is(stats.num_tokens));
    $("#num-sent").text(format_is(stats.num_sentences));

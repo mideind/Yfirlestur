@@ -138,3 +138,7 @@ mypy.ini
 .pyre/
 
 test.json
+
+# Resoures folder for keys
+resources/*
+!resources/.gitkeep

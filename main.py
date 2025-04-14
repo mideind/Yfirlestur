@@ -39,39 +39,24 @@
 
 """
 
-from typing import (
-    List,
-    TYPE_CHECKING,
-    Tuple,
-    Pattern,
-    Dict,
-    Any,
-    Optional,
-    Union,
-    cast,
-)
-
-import sys
-import os
-import time
-import re
 import logging
+import os
+import re
+import sys
+import time
 from datetime import datetime
+from typing import TYPE_CHECKING, Any, Dict, List, Optional, Pattern, Tuple, Union, cast
 
-from flask import Flask, render_template, send_from_directory
+import reynir
 from flask import jsonify  # type: ignore
+from flask import Flask, render_template, send_from_directory
 from flask.wrappers import Response
 from flask_caching import Cache  # type: ignore
 from flask_cors import CORS  # type: ignore
-
+from reynir.bindb import GreynirBin
 from werkzeug.middleware.proxy_fix import ProxyFix
 
-import reynir
-from reynir.bindb import GreynirBin
-
-import reynir_correct
-
-from settings import Settings, ConfigError
+from settings import ConfigError, Settings
 
 # RUNNING_AS_SERVER is True if we're executing under nginx/Gunicorn,
 # but False if the program was invoked directly as a Python main module.
@@ -111,17 +96,13 @@ app.config["CACHE"] = cache
 
 # Register blueprint routes
 if TYPE_CHECKING:
-    from .routes import routes as routes_blueprint, max_age
+    from .routes import max_age
+    from .routes import routes as routes_blueprint
 else:
-    from routes import routes as routes_blueprint, max_age
+    from routes import max_age
+    from routes import routes as routes_blueprint
 
 app.register_blueprint(routes_blueprint)
-
-from routes import start_task_cleanup_thread
-from routes.api import start_delete_old_child_tasks_thread
-
-start_task_cleanup_thread()
-start_delete_old_child_tasks_thread()
 
 
 # Utilities for Flask/Jinja2 formatting of numbers using the Icelandic locale
@@ -129,9 +110,7 @@ def make_pattern(rep_dict: Dict[str, Any]) -> Pattern[str]:
     return re.compile("|".join([re.escape(k) for k in rep_dict.keys()]), re.M)
 
 
-def multiple_replace(
-    string: str, rep_dict: Dict[str, str], pattern: Optional[Pattern[str]] = None
-) -> str:
+def multiple_replace(string: str, rep_dict: Dict[str, str], pattern: Optional[Pattern[str]] = None) -> str:
     """Perform multiple simultaneous replacements within string"""
     if pattern is None:
         pattern = make_pattern(rep_dict)
@@ -157,9 +136,7 @@ def format_ts(ts: datetime) -> str:
 
 # Flask cache busting for static .css and .js files
 @app.url_defaults  # type: ignore
-def hashed_url_for_static_file(
-    endpoint: str, values: Dict[str, Union[int, str]]
-) -> None:
+def hashed_url_for_static_file(endpoint: str, values: Dict[str, Union[int, str]]) -> None:
     """Add a ?h=XXX parameter to URLs for static .js and .css files,
     where XXX is calculated from the file timestamp"""
 
@@ -218,9 +195,7 @@ try:
     # Read configuration file
     Settings.read(os.path.join("config", "Yfirlestur.conf"))
 except ConfigError as e:
-    logging.error(
-        "Yfirlestur.is did not start due to a configuration error:\n{0}".format(e)
-    )
+    logging.error("Yfirlestur.is did not start due to a configuration error:\n{0}".format(e))
     sys.exit(1)
 
 if Settings.DEBUG:
@@ -239,11 +214,9 @@ if Settings.DEBUG:
     )
     # Clobber Settings.DEBUG in ReynirPackage and GreynirCorrect
     reynir.Settings.DEBUG = True
-    reynir_correct.Settings.DEBUG = True
 
 
 if not RUNNING_AS_SERVER:
-
     if os.environ.get("GREYNIR_ATTACH_PTVSD"):
         # Attach to the VSCode PTVSD debugger, enabling remote debugging via SSH
         # import ptvsd
@@ -272,9 +245,7 @@ if not RUNNING_AS_SERVER:
         "Names.conf",
     ]
 
-    dirs: List[str] = list(
-        map(os.path.dirname, [__file__, reynir.__file__, reynir_correct.__file__])  # type: ignore
-    )
+    dirs: List[str] = list(map(os.path.dirname, [__file__, reynir.__file__]))  # type: ignore
     for i, fname in enumerate(extra_files):
         # Look for the extra file in the different package directories
         for directory in dirs:
@@ -296,18 +267,14 @@ if not RUNNING_AS_SERVER:
         )
     )
 
-    from socket import error as socket_error
     import errno
+    from socket import error as socket_error
 
     try:
-
         # Suppress information log messages from Werkzeug
         werkzeug_log = logging.getLogger("werkzeug")
         if werkzeug_log:
             werkzeug_log.setLevel(logging.WARNING)
-
-        # Pre-load the correction engine into memory
-        reynir_correct.check_single("Þetta er upphitun")
 
         # Run the Flask web server application
         app.run(
@@ -320,11 +287,7 @@ if not RUNNING_AS_SERVER:
 
     except socket_error as e:
         if e.errno == errno.EADDRINUSE:  # Address already in use
-            logging.error(
-                "Another server is already running at host {0}:{1}".format(
-                    Settings.HOST, Settings.PORT
-                )
-            )
+            logging.error("Another server is already running at host {0}:{1}".format(Settings.HOST, Settings.PORT))
             sys.exit(1)
         else:
             raise
@@ -349,8 +312,5 @@ else:
         f"on Python {log_version}"
     )
     app.logger.info(log_str)  # type: ignore
-
-    # Pre-load the correction engine into memory
-    reynir_correct.check_single("Þetta er upphitun")
 
     app.logger.info("Instance warmed up and ready.")  # type: ignore
