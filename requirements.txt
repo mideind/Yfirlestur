@@ -1,7 +1,7 @@
 Flask==2.3.3
 flask-caching>=2.3.1
-Flask-Cors>=4.0.0
-SQLAlchemy==1.4.49
+Flask-Cors>=5.0.1
+SQLAlchemy==1.4.54
 sqlalchemy2-stubs>=0.0.2a38
 psycopg2cffi==2.9.0
 reynir-correct>=4.1.0

@@ -35,8 +35,7 @@ checking.
 
 ### From the command line
 
-This API can for example by accessed by `curl` from the Linux/macOS command line
-as follows:
+This API can for example by accessed by `curl` from the command line as follows:
 
 ```bash
 curl https://yfirlestur.is/correct.api -d "text=Manninum á verkstæðinu vantar hamar"
@@ -246,13 +245,13 @@ user should be configured appropriately.
 
 Parts of this software were developed under the auspices of the
 Icelandic Government's 5-year Language Technology Programme for Icelandic,
-managed by Almannarómur. The LT Programme is described
+managed by [Almannarómur](https://almannaromur.is/). The LT Programme is described
 [here](https://www.stjornarradid.is/lisalib/getfile.aspx?itemid=56f6368e-54f0-11e7-941a-005056bc530c)
 (English version [here](https://clarin.is/media/uploads/mlt-en.pdf)).
 
 ## Copyright and licensing
 
-Yfirlestur.is is Copyright © 2023 [Miðeind ehf.](https://mideind.is)  
+Yfirlestur.is is Copyright © 2020-2025 [Miðeind ehf.](https://mideind.is)  
 The original author of this software is *Vilhjálmur Þorsteinsson*.
 
 <a href="https://mideind.is"><img src="static/img/mideind-horizontal-small.png" alt="Miðeind ehf."
