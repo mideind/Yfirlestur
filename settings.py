@@ -4,7 +4,7 @@
 
     Settings module
 
-    Copyright (c) 2022 Miðeind ehf.
+    Copyright (c) 2020-2025 Miðeind ehf.
 
     This software is licensed under the MIT License:
 

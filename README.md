@@ -1,5 +1,5 @@
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
-[![Python 3.8](https://img.shields.io/badge/python-3.8-blue.svg)](https://www.python.org/downloads/release/python-380/)
+[![Python 3.9](https://img.shields.io/badge/python-3.9-blue.svg)](https://www.python.org/downloads/release/python-390/)
 [![Build](https://github.com/mideind/Yfirlestur/actions/workflows/python-app.yml/badge.svg)]()
 
 <img src="static/img/yfirlestur-logo-large.png" alt="Yfirlestur" width="200" height="200"
@@ -15,7 +15,7 @@ Icelandic text and have it checked for spelling and grammar errors.
 The tool also gives hints on words and structures that might not be appropriate,
 depending on the intended audience for the text.
 
-Try Yfirlestur (in Icelandic) at [https://yfirlestur.is](https://yfirlestur.is)!
+Try Yfirlestur (in Icelandic) at [https://yfirlestur.is](https://yfirlestur.is).
 
 <img src="static/img/yfirlestur-example-small.png" width="720" height="536"
   alt="Yfirlestur annotation" style="margin-top: 18px; margin-bottom: 6px">
@@ -35,11 +35,11 @@ checking.
 
 ### From the command line
 
-This API can for example by accessed by `curl` from the Linux/MacOS command line
-as follows (try it!):
+This API can for example by accessed by `curl` from the Linux/macOS command line
+as follows:
 
 ```bash
-    curl https://yfirlestur.is/correct.api -d "text=Manninum á verkstæðinu vantar hamar"
+curl https://yfirlestur.is/correct.api -d "text=Manninum á verkstæðinu vantar hamar"
 ```
 
 ...or, of course, via a HTTPS `POST` from your own code; see below.

@@ -2,7 +2,7 @@
 
     Yfirlestur: Online spelling and grammar correction for Icelandic
 
-    Copyright (C) 2021 Miðeind ehf.
+    Copyright (C) 2020-2025 Miðeind ehf.
 
     This software is licensed under the MIT License:
 

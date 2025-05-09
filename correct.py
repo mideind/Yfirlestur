@@ -4,7 +4,7 @@
 
     High-level wrappers for checking grammar and spelling
 
-    Copyright (C) 2022 Miðeind ehf.
+    Copyright (C) 2020-2025 Miðeind ehf.
 
     This software is licensed under the MIT License:
 
