@@ -1,5 +1,5 @@
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
-[![Python 3.8](https://img.shields.io/badge/python-3.8-blue.svg)](https://www.python.org/downloads/release/python-380/)
+[![Python 3.9](https://img.shields.io/badge/python-3.9-blue.svg)](https://www.python.org/downloads/release/python-390/)
 [![Build](https://github.com/mideind/Yfirlestur/actions/workflows/python-app.yml/badge.svg)]()
 
 <img src="static/img/yfirlestur-logo-large.png" alt="Yfirlestur" width="200" height="200"
@@ -11,11 +11,12 @@
 
 *Yfirlestur.is* is a web application where you can enter or submit
 Icelandic text and have it checked for spelling and grammar errors.
+Requires CPython or PyPy 3.9 or later.
 
 The tool also gives hints on words and structures that might not be appropriate,
 depending on the intended audience for the text.
 
-Try Yfirlestur (in Icelandic) at [https://yfirlestur.is](https://yfirlestur.is)!
+Try Yfirlestur (in Icelandic) at [https://yfirlestur.is](https://yfirlestur.is).
 
 <img src="static/img/yfirlestur-example-small.png" width="720" height="536"
   alt="Yfirlestur annotation" style="margin-top: 18px; margin-bottom: 6px">
@@ -35,11 +36,10 @@ checking.
 
 ### From the command line
 
-This API can for example by accessed by `curl` from the Linux/MacOS command line
-as follows (try it!):
+This API can for example by accessed by `curl` from the command line as follows:
 
 ```bash
-    curl https://yfirlestur.is/correct.api -d "text=Manninum á verkstæðinu vantar hamar"
+curl https://yfirlestur.is/correct.api -d "text=Manninum á verkstæðinu vantar hamar"
 ```
 
 ...or, of course, via a HTTPS `POST` from your own code; see below.
@@ -246,13 +246,13 @@ user should be configured appropriately.
 
 Parts of this software were developed under the auspices of the
 Icelandic Government's 5-year Language Technology Programme for Icelandic,
-managed by Almannarómur. The LT Programme is described
+managed by [Almannarómur](https://almannaromur.is/). The LT Programme is described
 [here](https://www.stjornarradid.is/lisalib/getfile.aspx?itemid=56f6368e-54f0-11e7-941a-005056bc530c)
 (English version [here](https://clarin.is/media/uploads/mlt-en.pdf)).
 
 ## Copyright and licensing
 
-Yfirlestur.is is Copyright © 2023 [Miðeind ehf.](https://mideind.is)  
+Yfirlestur.is is Copyright © 2020-2025 [Miðeind ehf.](https://mideind.is)  
 The original author of this software is *Vilhjálmur Þorsteinsson*.
 
 <a href="https://mideind.is"><img src="static/img/mideind-horizontal-small.png" alt="Miðeind ehf."

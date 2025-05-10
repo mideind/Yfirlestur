@@ -4,7 +4,7 @@
 
     High-level wrappers for checking grammar and spelling
 
-    Copyright (C) 2022 Miðeind ehf.
+    Copyright (C) 2020-2025 Miðeind ehf.
 
     This software is licensed under the MIT License:
 
@@ -70,9 +70,7 @@ END_SALT = "*[GC end]*"
 
 # Type definitions
 
-
 class StatsDict(TypedDict):
-
     """Statistics returned from an annotation task"""
 
     num_tokens: int
@@ -83,7 +81,6 @@ class StatsDict(TypedDict):
 
 
 class AnnDict(TypedDict):
-
     """A single annotation, as returned by the API"""
 
     start: int
@@ -99,7 +96,6 @@ class AnnDict(TypedDict):
 
 
 class AnnTokenDict(TypedDict, total=False):
-
     """Type of the token dictionaries returned from check_grammar()"""
 
     # Token kind
@@ -129,7 +125,6 @@ CheckResult = Tuple[List[List[AnnResultDict]], StatsDict]
 
 
 class RecognitionPipeline(CorrectionPipeline):
-
     """Derived class that adds a named entity recognition pass
     to the GreynirCorrect tokenization pipeline"""
 
