@@ -11,6 +11,7 @@
 
 *Yfirlestur.is* is a web application where you can enter or submit
 Icelandic text and have it checked for spelling and grammar errors.
+Requires CPython or PyPy 3.9 or later.
 
 The tool also gives hints on words and structures that might not be appropriate,
 depending on the intended audience for the text.
