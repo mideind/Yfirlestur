@@ -30,7 +30,7 @@
 
 """
 
-from typing import Any, Optional, cast
+from typing import Any, cast
 
 from datetime import datetime
 
@@ -42,8 +42,6 @@ from sqlalchemy import (
     Float,
     DateTime,
     Sequence,
-    Boolean,
-    UniqueConstraint,
     Index,
     ForeignKey,
     func,

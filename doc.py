@@ -38,13 +38,10 @@ from io import BytesIO, StringIO
 from zipfile import ZipFile
 
 from html2text import HTML2Text
-
 from striprtf.striprtf import rtf_to_text
-
 from odf import teletype
 from odf import text as odf_text
 from odf.opendocument import load as load_odf
-
 from pdfminer.converter import TextConverter
 from pdfminer.layout import LAParams
 from pdfminer.pdfdocument import PDFDocument as PDFMinerDocument
@@ -72,10 +69,10 @@ class Document(abc.ABC):
         if isinstance(path_or_bytes, str):
             # It's a file path
             with open(path_or_bytes, "rb") as file:
-                self.data = file.read()
+                self.data: bytes = file.read()
         else:
             # It's a byte stream
-            self.data = path_or_bytes
+            self.data: bytes = path_or_bytes
 
     @staticmethod
     def for_mimetype(mime_type: str) -> DocumentType:

@@ -270,9 +270,9 @@ def opts_from_request(rq: Request) -> Dict[str, Any]:
             if b is not None:
                 d[k] = b
         elif v == "list":
-            l = rqd.get_list(k)
-            if l:  # No need to specify empty lists
-                d[k] = l
+            lst = rqd.get_list(k)
+            if lst:  # No need to specify empty lists
+                d[k] = lst
 
     return d
 

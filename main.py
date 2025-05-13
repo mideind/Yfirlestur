@@ -117,8 +117,8 @@ else:
 
 app.register_blueprint(routes_blueprint)
 
-from routes import start_task_cleanup_thread
-from routes.api import start_delete_old_child_tasks_thread
+from routes import start_task_cleanup_thread # noqa: E402
+from routes.api import start_delete_old_child_tasks_thread  # noqa: E402
 
 start_task_cleanup_thread()
 start_delete_old_child_tasks_thread()
