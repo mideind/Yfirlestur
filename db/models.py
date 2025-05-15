@@ -2,7 +2,7 @@
 
     Yfirlestur: Online spelling and grammar correction for Icelandic
 
-    Copyright (C) 2022 Miðeind ehf.
+    Copyright (C) 2020-2025 Miðeind ehf.
 
     This software is licensed under the MIT License:
 
@@ -30,7 +30,7 @@
 
 """
 
-from typing import Any, Optional, cast
+from typing import Any, cast
 
 from datetime import datetime
 
@@ -42,8 +42,6 @@ from sqlalchemy import (
     Float,
     DateTime,
     Sequence,
-    Boolean,
-    UniqueConstraint,
     Index,
     ForeignKey,
     func,

@@ -2,7 +2,7 @@
 
     Yfirlestur: Online spelling and grammar correction for Icelandic
 
-    Copyright (C) 2022 Miðeind ehf.
+    Copyright (C) 2020-2025 Miðeind ehf.
 
     This software is licensed under the MIT License:
 
@@ -270,9 +270,9 @@ def opts_from_request(rq: Request) -> Dict[str, Any]:
             if b is not None:
                 d[k] = b
         elif v == "list":
-            l = rqd.get_list(k)
-            if l:  # No need to specify empty lists
-                d[k] = l
+            lst = rqd.get_list(k)
+            if lst:  # No need to specify empty lists
+                d[k] = lst
 
     return d
 

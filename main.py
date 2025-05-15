@@ -3,7 +3,7 @@
 
     Yfirlestur: Online spelling and grammar correction for Icelandic
 
-    Copyright (C) 2022 Miðeind ehf.
+    Copyright (C) 2020-2025 Miðeind ehf.
 
     This software is licensed under the MIT License:
 
@@ -117,8 +117,8 @@ else:
 
 app.register_blueprint(routes_blueprint)
 
-from routes import start_task_cleanup_thread
-from routes.api import start_delete_old_child_tasks_thread
+from routes import start_task_cleanup_thread # noqa: E402
+from routes.api import start_delete_old_child_tasks_thread  # noqa: E402
 
 start_task_cleanup_thread()
 start_delete_old_child_tasks_thread()

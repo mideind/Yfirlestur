@@ -2,7 +2,7 @@
 
     Yfirlestur: Online spelling and grammar correction for Icelandic
 
-    Copyright (C) 2021 Miðeind ehf.
+    Copyright (C) 2020-2025 Miðeind ehf.
 
     This software is licensed under the MIT License:
 
@@ -38,22 +38,17 @@ from io import BytesIO, StringIO
 from zipfile import ZipFile
 
 from html2text import HTML2Text
-
-from striprtf.striprtf import rtf_to_text  # type: ignore
-
-from odf import teletype  # type: ignore
-from odf import text as odf_text  # type: ignore
-from odf.opendocument import load as load_odf  # type: ignore
-
-from pdfminer.converter import TextConverter  # type: ignore
-from pdfminer.layout import LAParams  # type: ignore
-from pdfminer.pdfdocument import PDFDocument as PDFMinerDocument  # type: ignore
-from pdfminer.pdfinterp import PDFResourceManager, PDFPageInterpreter  # type: ignore
-from pdfminer.pdfpage import PDFPage  # type: ignore
-from pdfminer.pdfparser import PDFParser  # type: ignore
-
-# Use defusedxml module to prevent parsing of malicious XML
-from defusedxml import ElementTree  # type: ignore
+from striprtf.striprtf import rtf_to_text
+from odf import teletype
+from odf import text as odf_text
+from odf.opendocument import load as load_odf
+from pdfminer.converter import TextConverter
+from pdfminer.layout import LAParams
+from pdfminer.pdfdocument import PDFDocument as PDFMinerDocument
+from pdfminer.pdfinterp import PDFResourceManager, PDFPageInterpreter
+from pdfminer.pdfpage import PDFPage
+from pdfminer.pdfparser import PDFParser
+from defusedxml import ElementTree # Use defusedxml module to prevent parsing of malicious XML
 
 
 DEFAULT_TEXT_ENCODING = "UTF-8"
@@ -74,10 +69,10 @@ class Document(abc.ABC):
         if isinstance(path_or_bytes, str):
             # It's a file path
             with open(path_or_bytes, "rb") as file:
-                self.data = file.read()
+                self.data: bytes = file.read()
         else:
             # It's a byte stream
-            self.data = path_or_bytes
+            self.data: bytes = path_or_bytes
 
     @staticmethod
     def for_mimetype(mime_type: str) -> DocumentType:
