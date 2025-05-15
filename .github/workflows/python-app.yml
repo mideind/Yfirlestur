@@ -12,7 +12,7 @@ jobs:
     strategy:
       matrix:
         os: [ubuntu-latest]
-        python-version: [ "3.9", "3.11", "pypy-3.9"]
+        python-version: [ "3.9", "3.13", "pypy-3.9", "pypy-3.10" ]
     steps:
     - uses: actions/checkout@v4
     - name: Set up Python ${{ matrix.python-version }}
@@ -27,11 +27,3 @@ jobs:
     - name: Test with pytest
       run: |
         python -m pytest
-    - name: Slack notification
-      uses: 8398a7/action-slack@v2
-      with:
-        status: ${{ job.status }}
-        author_name: Integration Testing
-      env:
-        SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }} # required
-      if: failure() # Pick up event if the job fails
